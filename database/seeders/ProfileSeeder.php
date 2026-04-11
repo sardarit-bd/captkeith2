@@ -1,0 +1,216 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class ProfileSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $now = now();
+
+        DB::table('owner_profiles')->upsert(
+            [
+                [
+                    'id' => SeedIds::OWNER_PROFILE,
+                    'user_id' => SeedIds::USER_OWNER,
+                    'full_name' => 'Keith Owner',
+                    'phone' => '+1-555-0100',
+                    'company_name' => 'Captain Keith Charters LLC',
+                    'bio' => 'Owner and operator of private charter vessels.',
+                    'avatar_path' => null,
+                    'payment_account_id' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'deleted_at' => null,
+                ],
+            ],
+            ['user_id'],
+            ['full_name', 'phone', 'company_name', 'bio', 'avatar_path', 'payment_account_id', 'updated_at', 'deleted_at']
+        );
+
+        DB::table('captain_profiles')->upsert(
+            [
+                [
+                    'id' => SeedIds::CAPTAIN_PROFILE_1,
+                    'user_id' => SeedIds::USER_CAPTAIN_1,
+                    'full_name' => 'Captain Morgan',
+                    'phone' => '+1-555-0200',
+                    'address' => '12 Marina Blvd',
+                    'city' => 'Miami',
+                    'state' => 'FL',
+                    'zip_code' => '33101',
+                    'latitude' => 25.7617,
+                    'longitude' => -80.1918,
+                    'travel_radius_miles' => 35,
+                    'license_type' => 'masters',
+                    'endorsement' => 'near_coastal',
+                    'tonnage_rating' => 100,
+                    'years_experience' => 9,
+                    'boats_worked_on' => 'Sportfish, Yacht',
+                    'bodies_of_water' => 'Atlantic',
+                    'geographic_area' => 'South Florida',
+                    'resume_path' => null,
+                    'license_doc_path' => null,
+                    'hourly_rate' => 120.00,
+                    'can_provide_deckhand' => true,
+                    'deckhand_hourly_rate' => 45.00,
+                    'photo_path' => null,
+                    'is_verified' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'deleted_at' => null,
+                ],
+                [
+                    'id' => SeedIds::CAPTAIN_PROFILE_2,
+                    'user_id' => SeedIds::USER_CAPTAIN_2,
+                    'full_name' => 'Captain Reyes',
+                    'phone' => '+1-555-0201',
+                    'address' => '90 Harbor Way',
+                    'city' => 'Miami',
+                    'state' => 'FL',
+                    'zip_code' => '33132',
+                    'latitude' => 25.7806,
+                    'longitude' => -80.1300,
+                    'travel_radius_miles' => 25,
+                    'license_type' => 'oupv',
+                    'endorsement' => 'inland',
+                    'tonnage_rating' => 50,
+                    'years_experience' => 6,
+                    'boats_worked_on' => 'Center console',
+                    'bodies_of_water' => 'Biscayne Bay',
+                    'geographic_area' => 'Miami',
+                    'resume_path' => null,
+                    'license_doc_path' => null,
+                    'hourly_rate' => 90.00,
+                    'can_provide_deckhand' => false,
+                    'deckhand_hourly_rate' => null,
+                    'photo_path' => null,
+                    'is_verified' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'deleted_at' => null,
+                ],
+            ],
+            ['user_id'],
+            [
+                'full_name',
+                'phone',
+                'address',
+                'city',
+                'state',
+                'zip_code',
+                'latitude',
+                'longitude',
+                'travel_radius_miles',
+                'license_type',
+                'endorsement',
+                'tonnage_rating',
+                'years_experience',
+                'boats_worked_on',
+                'bodies_of_water',
+                'geographic_area',
+                'resume_path',
+                'license_doc_path',
+                'hourly_rate',
+                'can_provide_deckhand',
+                'deckhand_hourly_rate',
+                'photo_path',
+                'is_verified',
+                'updated_at',
+                'deleted_at',
+            ]
+        );
+
+        DB::table('deckhand_profiles')->upsert(
+            [
+                [
+                    'id' => SeedIds::DECKHAND_PROFILE_1,
+                    'user_id' => SeedIds::USER_DECKHAND_1,
+                    'full_name' => 'Alex Deckhand',
+                    'phone' => '+1-555-0300',
+                    'address' => '44 Ocean Ave',
+                    'city' => 'Miami',
+                    'state' => 'FL',
+                    'zip_code' => '33133',
+                    'latitude' => 25.7280,
+                    'longitude' => -80.2410,
+                    'travel_radius_miles' => 30,
+                    'years_experience' => 4,
+                    'has_server_experience' => true,
+                    'has_bartending_experience' => true,
+                    'resume_path' => null,
+                    'photo_path' => null,
+                    'hourly_rate' => 35.00,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'deleted_at' => null,
+                ],
+                [
+                    'id' => SeedIds::DECKHAND_PROFILE_2,
+                    'user_id' => SeedIds::USER_DECKHAND_2,
+                    'full_name' => 'Jamie Deckhand',
+                    'phone' => '+1-555-0301',
+                    'address' => '18 Bay St',
+                    'city' => 'Miami',
+                    'state' => 'FL',
+                    'zip_code' => '33145',
+                    'latitude' => 25.7500,
+                    'longitude' => -80.2200,
+                    'travel_radius_miles' => 20,
+                    'years_experience' => 2,
+                    'has_server_experience' => false,
+                    'has_bartending_experience' => true,
+                    'resume_path' => null,
+                    'photo_path' => null,
+                    'hourly_rate' => 28.00,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'deleted_at' => null,
+                ],
+            ],
+            ['user_id'],
+            [
+                'full_name',
+                'phone',
+                'address',
+                'city',
+                'state',
+                'zip_code',
+                'latitude',
+                'longitude',
+                'travel_radius_miles',
+                'years_experience',
+                'has_server_experience',
+                'has_bartending_experience',
+                'resume_path',
+                'photo_path',
+                'hourly_rate',
+                'updated_at',
+                'deleted_at',
+            ]
+        );
+
+        DB::table('charterer_profiles')->upsert(
+            [
+                [
+                    'id' => SeedIds::CHARTERER_PROFILE,
+                    'user_id' => SeedIds::USER_CHARTERER,
+                    'full_name' => 'Taylor Charterer',
+                    'address' => '500 Seaside Dr',
+                    'city' => 'Miami',
+                    'state' => 'FL',
+                    'zip_code' => '33139',
+                    'phone' => '+1-555-0400',
+                    'photo_path' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            ],
+            ['user_id'],
+            ['full_name', 'address', 'city', 'state', 'zip_code', 'phone', 'photo_path', 'updated_at']
+        );
+    }
+}
