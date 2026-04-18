@@ -246,4 +246,8 @@ Security.layout = {
             href: edit(),
         },
     ],
+    pageHeader: {
+        title: 'Security Settings',
+        description: 'Update your password and two-factor authentication.',
+    },
 };

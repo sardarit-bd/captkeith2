@@ -13,8 +13,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+        <SidebarGroup className="px-0 py-0">
+            <SidebarGroupLabel className="sr-only">Navigation</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
@@ -22,10 +22,13 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                             asChild
                             isActive={isCurrentUrl(item.href)}
                             tooltip={{ children: item.title }}
+                            className="h-11 rounded-xl px-4 text-[16px] font-normal text-[#364153] [&>svg]:text-[#364153] data-[active=true]:bg-[#11395d] data-[active=true]:font-normal data-[active=true]:text-[#FFFFFF] data-[active=true]:[&>svg]:text-[#FFFFFF] hover:bg-[#e8edf3] hover:text-[#11395d]"
                         >
                             <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
+                                {item.icon && <item.icon className="h-5 w-5" />}
+                                <span className="text-[16px] font-normal tracking-[0.002em]">
+                                    {item.title}
+                                </span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

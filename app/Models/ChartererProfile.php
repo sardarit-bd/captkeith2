@@ -37,4 +37,14 @@ class ChartererProfile extends Model
     {
         return $this->hasMany(CharterEvent::class, 'charterer_id');
     }
+
+    public function hireAgreements(): HasMany
+    {
+        return $this->hasMany(CharterHireAgreement::class, 'charterer_id');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(CharterPayment::class, 'charterer_id');
+    }
 }

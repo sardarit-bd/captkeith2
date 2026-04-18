@@ -1,7 +1,7 @@
 export const homeTheme = {
     primary: '#0D314D',
     secondary: '#35ADD5',
-    footerBg: '#091E2E',
+    footerBg: '#101828',
     menuText: '#2B2B2B',
     secondaryText: '#737C8A',
     cardBg: '#F8FAFC',

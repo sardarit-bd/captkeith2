@@ -73,6 +73,22 @@ class DeckhandProfile extends Model
     }
 
     /**
+     * Get deckhand hire agreements linked to this deckhand.
+     */
+    public function hireAgreements(): HasMany
+    {
+        return $this->hasMany(CharterHireAgreement::class, 'deckhand_profile_id');
+    }
+
+    /**
+     * Get payments made to this deckhand.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(CharterPayment::class, 'deckhand_profile_id');
+    }
+
+    /**
      * Get crew response rows for this deckhand profile.
      */
     public function crewResponses(): HasMany

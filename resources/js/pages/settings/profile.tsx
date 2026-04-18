@@ -110,4 +110,8 @@ Profile.layout = {
             href: edit(),
         },
     ],
+    pageHeader: {
+        title: 'Profile Settings',
+        description: 'Manage your profile and account settings.',
+    },
 };

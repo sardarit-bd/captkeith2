@@ -33,8 +33,8 @@ export function AboutSection() {
                             About Us
                         </span>
                         <h2 className="mb-6 text-3xl font-bold leading-tight md:text-[44px]" style={{ color: homeTheme.primary }}>
-                            Simplifying The <span className="captmatch-playfair font-medium italic">Charter</span>
-                            <br className="hidden md:block" />& <span className="captmatch-playfair font-medium italic">Captain Experience</span>
+                            Simplifying The <span className="captmatch-playfair font-bold italic">Charter</span>
+                            <br className="hidden md:block" />& <span className="captmatch-playfair font-bold italic">Captain Experience</span>
                         </h2>
                         <p className="mb-10 max-w-xl text-base leading-relaxed md:text-[20px]" style={{ color: homeTheme.secondaryText }}>
                             Captain Match simplifies the complexities of legal yacht charters by connecting boat

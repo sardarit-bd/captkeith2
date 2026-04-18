@@ -1,5 +1,5 @@
-import { footerQuickLinks, footerSupportLinks, homeTheme } from '@/components/home/home-data';
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from 'lucide-react';
+import { footerQuickLinks, footerSupportLinks, homeTheme } from '@/components/home/home-data';
 
 const socialLinks = [
     { name: 'Facebook', icon: Facebook, href: '#' },
@@ -11,10 +11,10 @@ const socialLinks = [
 export function Footer() {
     return (
         <footer className="overflow-hidden px-6 pt-20 pb-10 text-white" style={{ backgroundColor: homeTheme.footerBg }}>
-            <div className="mx-auto max-w-[88rem]">
+            <div className="mx-auto max-w-8xl">
                 <div className="mb-20 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
                     <div className="space-y-8">
-                        <img src="/images/footer-icon.png" alt="CaptMatch" className="h-auto w-32 md:w-40" />
+                        <img src="/images/logo2.svg" alt="CaptMatch" className="h-auto w-32 md:w-40" />
                         <p className="max-w-xs text-[14px] leading-relaxed text-[#F9FCFF]">
                             Connecting boat owners, charterers, and USCG-licensed captains for safe and legal yacht
                             charters.

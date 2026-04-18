@@ -7,12 +7,12 @@ export function WhyChooseSection() {
             <div className="mx-auto max-w-[98rem] px-6 md:px-10 lg:px-[30px]">
                 <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
                     <div className="text-left">
-                        <span className="mb-4 block text-[24px] font-bold uppercase" style={{ color: homeTheme.secondary }}>
+                        <span className="mb-4 block text-[24px] font-semibold uppercase" style={{ color: homeTheme.secondary }}>
                             Why Choose Us
                         </span>
                         <h2 className="mb-8 text-3xl leading-tight font-bold md:text-[44px]" style={{ color: homeTheme.primary }}>
                             The Trusted Platform <br className="hidden md:block" />
-                            <span className="captmatch-playfair font-normal italic">For Maritime Charters</span>
+                            <span className="captmatch-playfair font-bold italic">For Maritime Charters</span>
                         </h2>
                         <p className="mb-10 max-w-xl text-base leading-relaxed md:text-[18px]" style={{ color: homeTheme.secondaryText }}>
                             Captain Match was built by maritime professionals who understand the complexities of USCG

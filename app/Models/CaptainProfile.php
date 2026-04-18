@@ -81,6 +81,22 @@ class CaptainProfile extends Model
     }
 
     /**
+     * Get captain hire agreements linked to this captain.
+     */
+    public function hireAgreements(): HasMany
+    {
+        return $this->hasMany(CharterHireAgreement::class, 'captain_profile_id');
+    }
+
+    /**
+     * Get payments made to this captain.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(CharterPayment::class, 'captain_profile_id');
+    }
+
+    /**
      * Get crew response rows for this captain profile.
      */
     public function crewResponses(): HasMany

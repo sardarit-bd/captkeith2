@@ -5,10 +5,9 @@ import { contact, dashboard, home, login } from '@/routes';
 
 const defaultNavLinks = [
     { label: 'Home', href: home.url() },
-    { label: 'Contact', href: contact.url() },
     { label: 'Yachts', href: '#' },
     { label: 'Captains', href: '#' },
-    { label: 'Jobs', href: '#' },
+    { label: 'Contact', href: contact.url() },
 ];
 
 type PublicPageProps = {

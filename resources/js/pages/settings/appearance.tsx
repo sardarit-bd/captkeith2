@@ -29,4 +29,8 @@ Appearance.layout = {
             href: editAppearance(),
         },
     ],
+    pageHeader: {
+        title: 'Appearance Settings',
+        description: "Update your account's appearance settings.",
+    },
 };
