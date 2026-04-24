@@ -160,6 +160,9 @@ class RoleAndPermissionSeeder extends Seeder
         if (!in_array('roles.permissions.update', $permissions, true)) {
             $permissions[] = 'roles.permissions.update';
         }
+        if (!in_array('dashboard.admin.view', $permissions, true)) {
+            $permissions[] = 'dashboard.admin.view';
+        }
 
         return $permissions;
     }

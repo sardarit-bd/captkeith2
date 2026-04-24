@@ -18,7 +18,7 @@ class AdminDashboardStrategy implements DashboardStrategy
 
     public function resolve(User $user): DashboardViewData
     {
-        $this->ensurePermission($user, 'dashboard.owner.view');
+        $this->ensurePermission($user, 'dashboard.admin.view');
 
         return new DashboardViewData('dashboard', [
             'dashboard' => [
@@ -27,4 +27,3 @@ class AdminDashboardStrategy implements DashboardStrategy
         ]);
     }
 }
-

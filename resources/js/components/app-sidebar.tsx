@@ -7,6 +7,7 @@ import {
     LogOut,
     MessageCircle,
     Settings,
+    ShieldCheck,
     Ship,
     User,
     Users,
@@ -25,10 +26,20 @@ import {
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { dashboard } from '@/routes';
 import { messages } from '@/routes';
+import { myBooking } from '@/routes';
 import { myYachts } from '@/routes';
+import { myProfile } from '@/routes';
+import { adminUsers } from '@/routes';
+import { notifications } from '@/routes';
 import { logout } from '@/routes';
 import { captains } from '@/routes';
-import { edit as editProfile } from '@/routes/profile';
+import { requests } from '@/routes';
+import { yachtsMatch } from '@/routes';
+import { charterers } from '@/routes';
+import { vesselInventory } from '@/routes';
+import { complianceLog } from '@/routes';
+import { platformSettings } from '@/routes';
+import { request as chartererRequest } from '@/routes/charterer';
 import type { NavItem } from '@/types';
 
 function resolveNavItems(role: string | null | undefined): NavItem[] {
@@ -43,14 +54,35 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
             href: messages(),
             icon: MessageCircle,
         },
-        {
-            title: 'Settings',
-            href: editProfile(),
-            icon: Settings,
-        },
     ];
 
-    if (role === 'owner' || role === 'admin') {
+    if (role === 'admin') {
+        return [
+            sharedItems[0],
+            {
+                title: 'Users',
+                href: adminUsers(),
+                icon: Users,
+            },
+            {
+                title: 'Vessel Inventory',
+                href: vesselInventory(),
+                icon: Ship,
+            },
+            {
+                title: 'Compliance Log',
+                href: complianceLog(),
+                icon: ShieldCheck,
+            },
+            {
+                title: 'Platform Settings',
+                href: platformSettings(),
+                icon: Settings,
+            },
+        ];
+    }
+
+    if (role === 'owner') {
         return [
             sharedItems[0],
             {
@@ -65,34 +97,49 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
             },
             {
                 title: 'Charterers',
-                href: '#',
+                href: charterers(),
                 icon: Users,
             },
             sharedItems[1],
-            sharedItems[2],
         ];
     }
 
-    if (role === 'captain' || role === 'deckhand') {
+    if (role === 'captain') {
         return [
             sharedItems[0],
             {
                 title: 'Yachts Match',
-                href: '#',
+                href: yachtsMatch(),
                 icon: Ship,
             },
             {
                 title: 'Requests',
-                href: '#',
+                href: requests(),
                 icon: ClipboardList,
             },
             sharedItems[1],
+        ];
+    }
+
+    if (role === 'deckhand') {
+        return [
+            sharedItems[0],
+            {
+                title: 'Yachts Match',
+                href: yachtsMatch(),
+                icon: Ship,
+            },
             {
                 title: 'My Profile',
-                href: editProfile(),
+                href: myProfile(),
                 icon: User,
             },
-            sharedItems[2],
+            {
+                title: 'Requests',
+                href: requests(),
+                icon: ClipboardList,
+            },
+            sharedItems[1],
         ];
     }
 
@@ -101,21 +148,20 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
             sharedItems[0],
             {
                 title: 'My Booking',
-                href: '#',
+                href: myBooking(),
                 icon: CalendarDays,
             },
             {
+                title: 'Request',
+                href: chartererRequest(),
+                icon: ClipboardList,
+            },
+            {
                 title: 'Notifications',
-                href: '#',
+                href: notifications(),
                 icon: Bell,
             },
             sharedItems[1],
-            {
-                title: 'My Profile',
-                href: editProfile(),
-                icon: User,
-            },
-            sharedItems[2],
         ];
     }
 
@@ -153,7 +199,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter className="px-4 pb-4">
-                <SidebarSeparator className="mb-3 mt-auto" />
+                <SidebarSeparator className="mt-auto mb-3" />
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton

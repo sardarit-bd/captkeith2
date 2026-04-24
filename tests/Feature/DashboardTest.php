@@ -25,6 +25,21 @@ test('owner users with dashboard permission can visit the dashboard', function (
     $response->assertOk();
 });
 
+test('admin users with dashboard permission can visit the dashboard', function () {
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+    Permission::findOrCreate('dashboard.admin.view', 'web');
+    $adminRole = Role::findOrCreate('admin', 'web');
+    $adminRole->syncPermissions(['dashboard.admin.view']);
+
+    $user = User::factory()->create();
+    $user->assignRole($adminRole);
+    $this->actingAs($user);
+
+    $response = $this->get(route('dashboard'));
+    $response->assertOk();
+});
+
 test('users without a supported dashboard role cannot visit dashboard', function () {
     $user = User::factory()->create();
     $this->actingAs($user);

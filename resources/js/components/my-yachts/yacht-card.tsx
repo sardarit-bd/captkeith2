@@ -165,7 +165,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                 </div>
 
                 <div className="flex flex-1 flex-col bg-[#F9FCFF] p-5 lg:p-6">
-                    <div className="mb-5 grid w-full grid-cols-1 gap-1 rounded-2xl bg-[#ECECF0] p-1 sm:inline-flex sm:w-auto sm:grid-cols-none sm:gap-0 sm:rounded-full">
+                    <div className="mb-5 grid w-full grid-cols-1 gap-1 rounded-2xl bg-[#ECECF0] p-1 sm:inline-flex sm:w-fit sm:grid-cols-none sm:gap-0 sm:rounded-full">
                         {(['details', 'captain', 'charters'] as const).map((tab) => {
                             const isActive = activeTab === tab;
 

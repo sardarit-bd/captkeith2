@@ -1,7 +1,17 @@
 import { usePage } from '@inertiajs/react';
+import { AdminDashboard } from '@/components/dashboard/admin/admin-dashboard';
+import { CaptainDashboard } from '@/components/dashboard/captain/captain-dashboard';
+import { ChartererDashboard } from '@/components/dashboard/charterer/charterer-dashboard';
+import { DeckhandDashboard } from '@/components/dashboard/deckhand/deckhand-dashboard';
 import { OwnerDashboard } from '@/components/dashboard/owner/owner-dashboard';
 
-type DashboardRole = 'owner' | 'captain' | 'deckhand' | 'charterer' | 'admin' | 'unknown';
+type DashboardRole =
+    | 'owner'
+    | 'captain'
+    | 'deckhand'
+    | 'charterer'
+    | 'admin'
+    | 'unknown';
 
 type DashboardPageProps = {
     dashboard?: {
@@ -30,8 +40,24 @@ export function DashboardRoleView() {
     const page = usePage<DashboardPageProps>();
     const role = page.props.dashboard?.role ?? 'unknown';
 
-    if (role === 'owner' || role === 'admin') {
+    if (role === 'owner') {
         return <OwnerDashboard />;
+    }
+
+    if (role === 'captain') {
+        return <CaptainDashboard />;
+    }
+
+    if (role === 'deckhand') {
+        return <DeckhandDashboard />;
+    }
+
+    if (role === 'charterer') {
+        return <ChartererDashboard />;
+    }
+
+    if (role === 'admin') {
+        return <AdminDashboard />;
     }
 
     return <DashboardUnavailable role={role} />;
