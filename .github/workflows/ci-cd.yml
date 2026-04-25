@@ -107,12 +107,11 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          source: "./*"
-          strip_components: 1
+          source: "app,bootstrap,config,database,public,resources,routes,storage,vendor,artisan,composer.json,composer.lock,package.json,package-lock.json,.env.example"
           target: ${{ env.APP_PATH }}
+          strip_components: 0
           overwrite: true
           rm: false
-          exclude: ".git,node_modules,.env,storage/logs/*,storage/framework/cache/*,storage/framework/sessions/*,storage/framework/views/*"
 
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
