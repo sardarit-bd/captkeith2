@@ -8,6 +8,7 @@ use App\Enums\RegistrableRole;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -34,14 +35,12 @@ class CreateNewUser implements CreatesNewUsers
                 'string',
                 Rule::in($registrableRoles),
                 Rule::notIn(['admin']),
-                Rule::exists(Role::class, 'name')->where('guard_name', 'web'),
             ],
             'password' => $this->passwordRules(),
         ], [
             'role.required' => 'Please select the account type you want to register as.',
             'role.in' => 'Selected role is not allowed for self-registration.',
             'role.not_in' => 'Admin accounts cannot be self-registered.',
-            'role.exists' => 'Selected role is currently unavailable. Please contact support.',
             'password.min' => 'Password must be at least 12 characters.',
             'password.mixed' => 'Password must include both uppercase and lowercase letters.',
             'password.letters' => 'Password must include at least one letter.',
@@ -52,17 +51,28 @@ class CreateNewUser implements CreatesNewUsers
 
         return DB::transaction(function () use ($input, $registrableRoles): User {
             $selectedRole = $input['role'];
+            $authGuard = (string) config('fortify.guard', 'web');
 
             // Resolve only from the explicit self-registration allowlist.
             $role = Role::query()
-                ->where('guard_name', 'web')
-                ->where('name', $selectedRole)
+                ->where('guard_name', $authGuard)
+                ->whereRaw('LOWER(name) = ?', [$selectedRole])
                 ->whereIn('name', $registrableRoles)
                 ->first();
 
             if ($role === null || $role->name === 'admin') {
+                Log::error('Registration blocked because no registrable role could be resolved.', [
+                    'submitted_role' => $selectedRole,
+                    'guard' => $authGuard,
+                    'registrable_roles' => $registrableRoles,
+                    'available_roles_for_guard' => Role::query()
+                        ->where('guard_name', $authGuard)
+                        ->pluck('name')
+                        ->all(),
+                ]);
+
                 throw ValidationException::withMessages([
-                    'role' => 'Admin accounts cannot be self-registered.',
+                    'role' => 'Selected role is currently unavailable. Please contact support.',
                 ]);
             }
 
