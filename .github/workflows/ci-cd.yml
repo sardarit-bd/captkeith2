@@ -117,19 +117,21 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          # Use printf to preserve newlines in the private key
+          printf '%s\n' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          # Verify key format is correct
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
+          # Add host to known_hosts
+          ssh-keyscan -p 22 -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
-      - name: Upload archive via SSH
+      - name: Upload archive via SCP
         run: |
-          ssh -i ~/.ssh/deploy_key \
-              -o StrictHostKeyChecking=no \
-              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-              "mkdir -p ${{ env.APP_PATH }}"
-
           scp -i ~/.ssh/deploy_key \
               -o StrictHostKeyChecking=no \
+              -o IdentitiesOnly=yes \
+              -P 22 \
               /tmp/deploy.tar.gz \
               ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/deploy.tar.gz
 
