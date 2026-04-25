@@ -1,4 +1,11 @@
-import { Calendar, ChevronDown, Download, Search } from 'lucide-react';
+import { Calendar, Download, Search } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     complianceStatusFilters,
     complianceWindowFilters,
@@ -17,26 +24,34 @@ export function ComplianceLogFilters() {
             </div>
 
             <div className="flex w-full flex-wrap items-center gap-3 xl:w-auto">
-                <label className="flex flex-1 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 sm:flex-none">
-                    <span className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <select className="cursor-pointer bg-transparent font-medium focus:outline-none">
+                <div className="flex flex-1 items-center rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-600 sm:flex-none">
+                    <Calendar className="ml-3 h-4 w-4 shrink-0" />
+                    <Select defaultValue={complianceWindowFilters[0]}>
+                        <SelectTrigger className="h-10 w-full min-w-[11rem] border-0 bg-transparent font-medium text-slate-600 shadow-none focus-visible:ring-0 sm:w-[11rem]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent side="bottom" align="start" sideOffset={6}>
                             {complianceWindowFilters.map((option) => (
-                                <option key={option}>{option}</option>
+                                <SelectItem key={option} value={option}>
+                                    {option}
+                                </SelectItem>
                             ))}
-                        </select>
-                    </span>
-                    <ChevronDown className="h-3 w-3 text-slate-400 sm:hidden" />
-                </label>
+                        </SelectContent>
+                    </Select>
+                </div>
 
-                <label className="flex flex-1 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 sm:flex-none">
-                    <select className="cursor-pointer bg-transparent font-medium focus:outline-none">
+                <Select defaultValue={complianceStatusFilters[0]}>
+                    <SelectTrigger className="h-10 w-full min-w-[11rem] rounded-lg border-slate-200 bg-slate-50 font-medium text-slate-600 shadow-none focus-visible:ring-0 sm:w-[11rem]">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent side="bottom" align="start" sideOffset={6}>
                         {complianceStatusFilters.map((option) => (
-                            <option key={option}>{option}</option>
+                            <SelectItem key={option} value={option}>
+                                {option}
+                            </SelectItem>
                         ))}
-                    </select>
-                    <ChevronDown className="h-3 w-3 text-slate-400 sm:hidden" />
-                </label>
+                    </SelectContent>
+                </Select>
 
                 <button
                     type="button"

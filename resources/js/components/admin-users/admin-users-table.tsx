@@ -2,10 +2,20 @@ import {
     AlertCircle,
     Anchor,
     CreditCard,
+    Eye,
     FileText,
     LifeBuoy,
     Navigation,
+    PencilLine,
+    Trash2,
 } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { adminUsers } from './admin-users-data';
 import type {
     AdminUserRecord,
@@ -60,36 +70,38 @@ const statusMap: Record<
     },
 };
 
+const rowsPerPageOptions = [10, 25, 50, 100];
+
 function RowAction({ user }: { user: AdminUserRecord }) {
-    if (user.status === 'Pending Review') {
-        return (
-            <button
-                type="button"
-                className="rounded-lg bg-[#11395d] px-4 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
-            >
-                {user.actionLabel}
-            </button>
-        );
-    }
-
-    if (user.status === 'Suspended') {
-        return (
-            <button
-                type="button"
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100"
-            >
-                {user.actionLabel}
-            </button>
-        );
-    }
-
     return (
-        <button
-            type="button"
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#35ADD5] transition-colors hover:bg-blue-50"
-        >
-            {user.actionLabel}
-        </button>
+        <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+            <button
+                type="button"
+                title={`View ${user.name}`}
+                aria-label={`View ${user.name}`}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#1d4f73] transition-all hover:bg-[#eaf6fb] hover:text-[#11395d] focus-visible:ring-2 focus-visible:ring-[#35ADD5]/40 focus-visible:outline-none"
+            >
+                <Eye className="h-4 w-4" />
+            </button>
+
+            <button
+                type="button"
+                title={`Edit ${user.name}`}
+                aria-label={`Edit ${user.name}`}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:outline-none"
+            >
+                <PencilLine className="h-4 w-4" />
+            </button>
+
+            <button
+                type="button"
+                title={`Delete ${user.name}`}
+                aria-label={`Delete ${user.name}`}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-500 transition-all hover:bg-red-50 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-red-200 focus-visible:outline-none"
+            >
+                <Trash2 className="h-4 w-4" />
+            </button>
+        </div>
     );
 }
 
@@ -213,27 +225,58 @@ export function AdminUsersTable() {
                 </table>
             </div>
 
-            <footer className="flex items-center justify-between border-t border-[#e6ebf1] bg-slate-50 px-6 py-4">
-                <p className="text-xs text-slate-500">
-                    Showing <span className="font-medium text-slate-800">1</span>{' '}
-                    to <span className="font-medium text-slate-800">5</span> of{' '}
-                    <span className="font-medium text-slate-800">842</span>{' '}
-                    results
-                </p>
-                <div className="flex items-center gap-2 text-sm">
-                    <button
-                        type="button"
-                        disabled
-                        className="cursor-not-allowed rounded-lg border border-slate-200 bg-white px-3 py-1 text-slate-400"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        type="button"
-                        className="rounded-lg border border-[#e6ebf1] bg-white px-3 py-1 font-medium text-[#11395d] transition-colors hover:bg-slate-100"
-                    >
-                        Next
-                    </button>
+            <footer className="border-t border-[#e6ebf1] bg-slate-50 px-6 py-4">
+                <div className="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:items-center">
+                    <p className="text-center text-xs text-slate-500 sm:text-left">
+                        Showing{' '}
+                        <span className="font-medium text-slate-800">1</span> to{' '}
+                        <span className="font-medium text-slate-800">5</span> of{' '}
+                        <span className="font-medium text-slate-800">842</span>{' '}
+                        results
+                    </p>
+
+                    <div className="flex justify-center">
+                        <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+                            <span className="text-xs font-medium whitespace-nowrap text-slate-600">
+                                Rows per page
+                            </span>
+                            <Select defaultValue={String(rowsPerPageOptions[0])}>
+                                <SelectTrigger className="h-8 w-[4.75rem] border-slate-200 bg-slate-50 text-xs font-semibold text-[#11395d] shadow-none focus-visible:ring-[#35ADD5]/35">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent
+                                    side="top"
+                                    align="center"
+                                    sideOffset={8}
+                                >
+                                    {rowsPerPageOptions.map((option) => (
+                                        <SelectItem
+                                            key={option}
+                                            value={String(option)}
+                                        >
+                                            {option}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2 text-sm sm:justify-end">
+                        <button
+                            type="button"
+                            disabled
+                            className="cursor-not-allowed rounded-lg border border-slate-200 bg-white px-3 py-1 text-slate-400"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            type="button"
+                            className="rounded-lg border border-[#e6ebf1] bg-white px-3 py-1 font-medium text-[#11395d] transition-colors hover:bg-slate-100"
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             </footer>
         </section>

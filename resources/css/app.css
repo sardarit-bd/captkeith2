@@ -147,6 +147,11 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    body[data-scroll-locked] {
+        margin-right: 0 !important;
+        padding-right: 0 !important;
+    }
 }
 
 @layer components {

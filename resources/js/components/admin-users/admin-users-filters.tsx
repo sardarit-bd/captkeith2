@@ -1,5 +1,12 @@
 import { Download, Filter, Search } from 'lucide-react';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     adminUserRoleFilters,
     adminUserStatusFilters,
 } from './admin-users-data';
@@ -17,22 +24,34 @@ export function AdminUsersFilters() {
             </div>
 
             <div className="flex w-full items-center gap-3 overflow-x-auto pb-1 lg:w-auto lg:pb-0">
-                <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                    <Filter className="h-4 w-4" />
-                    <select className="cursor-pointer bg-transparent font-medium focus:outline-none">
-                        {adminUserRoleFilters.map((option) => (
-                            <option key={option}>{option}</option>
-                        ))}
-                    </select>
-                </label>
+                <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-600">
+                    <Filter className="ml-3 h-4 w-4" />
+                    <Select defaultValue={adminUserRoleFilters[0]}>
+                        <SelectTrigger className="h-10 w-[11rem] border-0 bg-transparent shadow-none focus-visible:ring-0">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent side="bottom" align="start" sideOffset={6}>
+                            {adminUserRoleFilters.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                    {option}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-                <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                    <select className="cursor-pointer bg-transparent font-medium focus:outline-none">
+                <Select defaultValue={adminUserStatusFilters[0]}>
+                    <SelectTrigger className="h-10 w-[11rem] rounded-lg border-slate-200 bg-slate-50 font-medium text-slate-600 shadow-none focus-visible:ring-0">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent side="bottom" align="start" sideOffset={6}>
                         {adminUserStatusFilters.map((option) => (
-                            <option key={option}>{option}</option>
+                            <SelectItem key={option} value={option}>
+                                {option}
+                            </SelectItem>
                         ))}
-                    </select>
-                </label>
+                    </SelectContent>
+                </Select>
 
                 <button
                     type="button"

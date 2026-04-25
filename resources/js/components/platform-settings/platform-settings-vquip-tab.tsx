@@ -23,7 +23,7 @@ export function PlatformSettingsVquipTab() {
                 </div>
 
                 <div className="space-y-5">
-                    <label className="block space-y-1.5">
+                    <label className="block space-y-1.5 space-x-2">
                         <span className="text-sm font-medium text-slate-700">
                             Environment
                         </span>
