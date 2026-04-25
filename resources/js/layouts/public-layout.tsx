@@ -5,8 +5,7 @@ import { contact, dashboard, home, login } from '@/routes';
 
 const defaultNavLinks = [
     { label: 'Home', href: home.url() },
-    { label: 'Yachts', href: '#' },
-    { label: 'Captains', href: '#' },
+    { label: 'About Us', href: '/about-us' },
     { label: 'Contact', href: contact.url() },
 ];
 
