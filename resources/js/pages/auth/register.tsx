@@ -1,6 +1,7 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Compass, Home, LifeBuoy, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Compass, Home, LifeBuoy, ShieldCheck, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { home, login } from '@/routes';
@@ -35,7 +36,34 @@ function RoleOption({
     );
 }
 
-export default function Register() {
+type RegistrableRole = 'owner' | 'captain' | 'deckhand' | 'charterer';
+
+const roleLabels: Record<RegistrableRole, { label: string; icon: ReactNode }> = {
+    owner: { label: 'Owner', icon: <Home className="h-7 w-7" strokeWidth={1.5} /> },
+    captain: { label: 'Captain', icon: <Compass className="h-7 w-7" strokeWidth={1.5} /> },
+    deckhand: { label: 'Deckhand', icon: <LifeBuoy className="h-7 w-7" strokeWidth={1.5} /> },
+    charterer: { label: 'Charterer', icon: <Users className="h-7 w-7" strokeWidth={1.5} /> },
+};
+
+interface RegisterProps {
+    roles?: RegistrableRole[];
+    passwordRequirements?: string[];
+}
+
+export default function Register({ roles = ['owner', 'captain', 'deckhand', 'charterer'], passwordRequirements = [] }: RegisterProps) {
+    const availableRoles = roles.filter((role): role is RegistrableRole => role in roleLabels);
+    const [passwordValue, setPasswordValue] = useState('');
+
+    const passwordChecks = useMemo(() => {
+        return [
+            { label: 'Minimum 12 characters', matched: passwordValue.length >= 12 },
+            { label: 'At least one uppercase letter', matched: /[A-Z]/.test(passwordValue) },
+            { label: 'At least one lowercase letter', matched: /[a-z]/.test(passwordValue) },
+            { label: 'At least one number', matched: /\d/.test(passwordValue) },
+            { label: 'At least one special character', matched: /[^A-Za-z0-9]/.test(passwordValue) },
+        ];
+    }, [passwordValue]);
+
     return (
         <>
             <Head title="Create Account - CaptMatch" />
@@ -87,11 +115,18 @@ export default function Register() {
                                     <div>
                                         <p className="mb-3 block text-sm font-semibold text-[#0D314D]">I am registering as a:</p>
                                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                            <RoleOption id="role-owner" value="owner" label="Owner" icon={<Home className="h-7 w-7" strokeWidth={1.5} />} defaultChecked />
-                                            <RoleOption id="role-captain" value="captain" label="Captain" icon={<Compass className="h-7 w-7" strokeWidth={1.5} />} />
-                                            <RoleOption id="role-deckhand" value="deckhand" label="Deckhand" icon={<LifeBuoy className="h-7 w-7" strokeWidth={1.5} />} />
-                                            <RoleOption id="role-charterer" value="charterer" label="Charterer" icon={<Users className="h-7 w-7" strokeWidth={1.5} />} />
+                                            {availableRoles.map((role, index) => (
+                                                <RoleOption
+                                                    key={role}
+                                                    id={`role-${role}`}
+                                                    value={role}
+                                                    label={roleLabels[role].label}
+                                                    icon={roleLabels[role].icon}
+                                                    defaultChecked={index === 0}
+                                                />
+                                            ))}
                                         </div>
+                                        <InputError message={errors.role} className="mt-2" />
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -113,7 +148,36 @@ export default function Register() {
 
                                     <div>
                                         <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">Password</label>
-                                        <PasswordInput id="password" name="password" required autoComplete="new-password" placeholder="••••••••" className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]" />
+                                        <PasswordInput
+                                            id="password"
+                                            name="password"
+                                            required
+                                            minLength={12}
+                                            autoComplete="new-password"
+                                            placeholder="••••••••••••"
+                                            className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]"
+                                            onChange={(event) => setPasswordValue(event.target.value)}
+                                        />
+                                        {passwordRequirements.length > 0 && (
+                                            <div className="mt-3 rounded-lg border border-[#3DB3DE26] bg-[#F4FAFE] p-3">
+                                                <p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0D314D] uppercase">
+                                                    <ShieldCheck className="h-4 w-4 text-[#015291]" />
+                                                    Password requirements
+                                                </p>
+                                                <ul className="space-y-1 text-sm text-gray-600">
+                                                    {passwordRequirements.map((requirement) => {
+                                                        const matched = passwordChecks.find((check) => check.label === requirement)?.matched ?? false;
+
+                                                        return (
+                                                            <li key={requirement} className="flex items-start gap-2">
+                                                                <span className={`mt-1 block h-1.5 w-1.5 rounded-full ${matched ? 'bg-emerald-500' : 'bg-[#3DB3DE]'}`} />
+                                                                <span className={matched ? 'font-bold text-emerald-700' : ''}>{requirement}</span>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        )}
                                         <InputError message={errors.password} className="mt-2" />
                                     </div>
 
@@ -123,6 +187,7 @@ export default function Register() {
                                             id="password_confirmation"
                                             name="password_confirmation"
                                             required
+                                            minLength={12}
                                             autoComplete="new-password"
                                             placeholder="••••••••"
                                             className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]"
