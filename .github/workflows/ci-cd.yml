@@ -17,7 +17,7 @@ concurrency:
 env:
   APP_PATH: /var/www/capt.sardarit.cloud
   PHP_VERSION: '8.3'
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
 
 jobs:
   ci:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # fixed
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -36,7 +36,7 @@ jobs:
           extensions: mbstring, bcmath, pdo_mysql
 
       - name: Setup Node
-        uses: actions/setup-node@v4  # fixed
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
