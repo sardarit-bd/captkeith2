@@ -8,6 +8,12 @@ const socialLinks = [
     { name: 'LinkedIn', icon: Linkedin, href: '#' },
 ];
 
+const footerLinkHrefMap: Record<string, string> = {
+    Home: '/',
+    'About Us': '/about-us',
+    'Contact Us': '/contact',
+};
+
 export function Footer() {
     return (
         <footer className="overflow-hidden px-6 pt-20 pb-10 text-white" style={{ backgroundColor: homeTheme.footerBg }}>
@@ -81,7 +87,10 @@ function FooterLinkColumn({ title, links }: { title: string; links: readonly str
             <ul className="space-y-4">
                 {links.map((link) => (
                     <li key={link}>
-                        <a href="#" className="text-[15px] leading-[1.3] text-[#D1D5DC] transition hover:text-[#35ADD5]">
+                        <a
+                            href={footerLinkHrefMap[link] ?? '#'}
+                            className="text-[15px] leading-[1.3] text-[#D1D5DC] transition hover:text-[#35ADD5]"
+                        >
                             {link}
                         </a>
                     </li>

@@ -75,7 +75,7 @@ export const whyChooseCards = [
     },
 ] as const;
 
-export const footerQuickLinks = ['Home', 'Yachts', 'Captains', 'Employment', 'About Us'] as const;
+export const footerQuickLinks = ['Home', 'Yachts', 'Captains', 'About Us'] as const;
 
 export const footerSupportLinks = [
     'Safety & Compliance',
