@@ -101,17 +101,37 @@ jobs:
           php artisan key:generate --force
           npm run build
 
-      - name: Upload application files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          source: "app,bootstrap,config,database,public,resources,routes,storage,vendor,artisan,composer.json,composer.lock,package.json,package-lock.json,.env.example"
-          target: ${{ env.APP_PATH }}
-          strip_components: 0
-          overwrite: true
-          rm: false
+      - name: Create deployment archive
+        run: |
+          tar --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='.env' \
+              --exclude='storage/logs' \
+              --exclude='storage/framework/cache' \
+              --exclude='storage/framework/sessions' \
+              --exclude='storage/framework/views' \
+              -czf /tmp/deploy.tar.gz \
+              app bootstrap config database public resources routes storage vendor \
+              artisan composer.json composer.lock package.json package-lock.json .env.example
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload archive via SSH
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+              "mkdir -p ${{ env.APP_PATH }}"
+
+          scp -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              /tmp/deploy.tar.gz \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/deploy.tar.gz
 
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -135,8 +155,14 @@ jobs:
 
             sudo mkdir -p "$APP_PATH"
             sudo chown -R "$USER":"$USER" "$APP_PATH"
+
+            # Extract archive
+            tar -xzf /tmp/deploy.tar.gz -C "$APP_PATH"
+            rm -f /tmp/deploy.tar.gz
+
             cd "$APP_PATH"
 
+            # Write .env from secret if not present
             if [ ! -f .env ] && [ -n "${APP_ENV_FILE:-}" ]; then
               printf '%s' "$APP_ENV_FILE" > .env
             fi
