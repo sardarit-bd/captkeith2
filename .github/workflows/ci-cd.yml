@@ -2,15 +2,9 @@ name: CI/CD VPS Deploy
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [main, master, develop]
   pull_request:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [main, master, develop]
   workflow_dispatch:
 
 permissions:
@@ -29,10 +23,9 @@ jobs:
   ci:
     name: CI Build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4  # fixed
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -43,7 +36,7 @@ jobs:
           extensions: mbstring, bcmath, pdo_mysql
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4  # fixed
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -58,7 +51,7 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
 
-      - name: Run required app setup
+      - name: Build assets
         run: |
           npm run build
           php artisan config:cache
@@ -74,7 +67,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4  # fixed
+
+      - name: Setup Node & build assets
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Build frontend assets in CI before upload
+        run: npm ci && npm run build
 
       - name: Upload application files
         uses: appleboy/scp-action@v0.1.7
@@ -82,11 +84,11 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          source: "."
+          source: "./*"          # fixed
+          strip_components: 1    # fixed — prevents nested path issue
           target: ${{ env.APP_PATH }}
           overwrite: true
           rm: false
-          strip_components: 0
           exclude: ".git,node_modules,vendor,storage/logs/*,storage/framework/cache/*,storage/framework/sessions/*,storage/framework/views/*,.env"
 
       - name: Deploy over SSH
@@ -113,6 +115,7 @@ jobs:
             sudo chown -R "$USER":"$USER" "$APP_PATH"
             cd "$APP_PATH"
 
+            # Write .env from secret if not present
             if [ ! -f .env ] && [ -n "${APP_ENV_FILE:-}" ]; then
               printf '%s' "$APP_ENV_FILE" > .env
             fi
@@ -121,15 +124,15 @@ jobs:
               cp .env.example .env
             fi
 
+            # PHP deps only (Node build already done in CI)
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-            npm ci
-            npm run build
 
             if ! grep -q '^APP_KEY=base64:' .env; then
               php artisan key:generate --force
             fi
 
             php artisan storage:link || true
+            php artisan migrate --force  # added
 
             php artisan optimize:clear
             php artisan config:cache
