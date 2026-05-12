@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+import { captains , charterers } from '@/routes';
 import { useState } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 import type { YachtRecord, YachtTab } from './my-yachts-data';
@@ -10,7 +12,7 @@ const tabLabels: Record<YachtTab, string> = {
 
 function SectionLabel({ label, value }: { label: string; value: string }) {
     return (
-        <div>
+        <div className=''>
             <p className="mb-1 text-xs text-gray-500">{label}</p>
             <p className="text-sm font-semibold text-gray-900">{value}</p>
         </div>
@@ -80,19 +82,20 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
                 />
             </div>
 
-            <button
-                type="button"
+            <Link
+              
+                href={captains()}
                 className="mt-5 inline-flex w-auto self-start rounded-sm bg-[#0A273F] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
             >
                 Find Matching Captains
-            </button>
+            </Link>
         </div>
     );
 }
 
 function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
     return (
-        <div className="flex h-full min-h-[220px] w-full flex-col items-start">
+        <div className="flex h-full min-h-55 w-full flex-col items-start">
             <h4 className="mb-1 text-base font-semibold text-[#0A0A0A]">Charter History</h4>
             <p className="mb-6 text-sm text-gray-500">
                 Past and upcoming charters for this yacht
@@ -104,12 +107,13 @@ function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
                     : 'No charters scheduled yet'}
             </p>
 
-            <button
+            <Link
+                href={charterers()}
                 type="button"
                 className="rounded-sm bg-[#0A273F] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
             >
                 Create Charter
-            </button>
+            </Link>
         </div>
     );
 }
@@ -155,8 +159,8 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                 </div>
             </div>
 
-            <div className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm lg:h-[430px] lg:flex-row">
-                <div className="relative h-64 w-full shrink-0 lg:h-full lg:w-[450px]">
+            <div className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm lg:h-107.5 lg:flex-row">
+                <div className="relative h-64 w-full shrink-0 lg:h-full lg:w-112.5">
                     <img
                         src={yacht.image}
                         alt={`${yacht.name} Yacht`}
@@ -174,7 +178,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                                     key={tab}
                                     type="button"
                                     onClick={() => setActiveTab(tab)}
-                                    className={`w-full rounded-xl px-4 py-2 text-sm font-medium transition-all sm:w-auto sm:rounded-full sm:px-5 sm:py-1.5 ${
+                                    className={`w-full cursor-pointer rounded-xl px-4 py-2 text-sm font-medium transition-all sm:w-auto sm:rounded-full sm:px-5 sm:py-1.5 ${
                                         isActive
                                             ? 'bg-white text-gray-900 shadow-sm'
                                             : 'text-gray-600 hover:text-gray-900'
