@@ -16,6 +16,7 @@ export type OwnerQuickAction = {
     icon: LucideIcon;
     iconColor: string;
     iconBg: string;
+    href: string;
 };
 
 export type OwnerYacht = {
@@ -66,6 +67,7 @@ export const ownerQuickActions: OwnerQuickAction[] = [
         icon: Ship,
         iconColor: '#0f3d66',
         iconBg: '#e8eef7',
+        href: '/my-yachts/create'
     },
     {
         title: 'Review Requests',
@@ -73,6 +75,7 @@ export const ownerQuickActions: OwnerQuickAction[] = [
         icon: UserRoundCheck,
         iconColor: '#16a34a',
         iconBg: '#eaf7ef',
+         href: '/my-yachts/create'
     },
     {
         title: 'Manage Charters',
@@ -80,6 +83,7 @@ export const ownerQuickActions: OwnerQuickAction[] = [
         icon: CalendarDays,
         iconColor: OWNER_ACCENT,
         iconBg: '#f1eafa',
+         href: '/charterers'
     },
 ];
 

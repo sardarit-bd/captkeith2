@@ -1,3 +1,8 @@
+import {Link} from '@inertiajs/react'
+import { myYachts } from "@/routes";
+
+
+
 import { ownerYachts } from './owner-dashboard-data';
 
 export function OwnerYachtsList() {
@@ -35,12 +40,12 @@ export function OwnerYachtsList() {
                 ))}
             </div>
 
-            <button
-                type="button"
+            <Link
+                href={myYachts()}
                 className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#0D314D] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#0a273f]"
             >
                 View All Yachts
-            </button>
+            </Link>
         </section>
     );
 }

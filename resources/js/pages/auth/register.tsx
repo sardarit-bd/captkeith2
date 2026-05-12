@@ -71,7 +71,7 @@ export default function Register({ roles = ['owner', 'captain', 'deckhand', 'cha
             <div className="captmatch-home flex h-screen overflow-hidden bg-white text-gray-800">
                 <div className="relative hidden flex-col justify-between bg-[#0D314D] p-10 md:flex md:w-5/12 lg:w-1/2 lg:p-14">
                     <img src="/images/home/cta.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay" aria-hidden="true" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#015291E6] to-[#041728F2]" />
+                    <div className="absolute inset-0 bg-linear-to-br from-[#015291E6] to-[#041728F2]" />
 
                     <div className="relative z-20">
                         <Link href={home()} className="inline-flex items-center">
@@ -97,7 +97,7 @@ export default function Register({ roles = ['owner', 'captain', 'deckhand', 'cha
                         Back
                     </Link>
 
-                    <div className="m-auto w-full max-w-[560px] px-6 py-20 sm:px-10 lg:px-12">
+                    <div className="m-auto w-full max-w-140 px-6 py-20 sm:px-10 lg:px-12">
                         <div className="mb-8 flex justify-center md:hidden">
                             <Link href={home()}>
                                 <img src="/images/logo1.svg" alt="CaptMatch" className="h-auto w-36" />
@@ -200,11 +200,11 @@ export default function Register({ roles = ['owner', 'captain', 'deckhand', 'cha
                                             <input id="terms" type="checkbox" required className="h-4 w-4 cursor-pointer rounded border border-gray-300 bg-white accent-[#3DB3DE]" />
                                         </div>
                                         <label htmlFor="terms" className="ml-3 cursor-pointer text-sm text-gray-500">
-                                            I agree to the{' '}
+                                            I agree to the
                                             <a href="#" className="font-medium text-[#3DB3DE] hover:underline">
                                                 Terms of Service
-                                            </a>{' '}
-                                            and{' '}
+                                            </a>
+                                            and
                                             <a href="#" className="font-medium text-[#3DB3DE] hover:underline">
                                                 Privacy Policy
                                             </a>
@@ -223,7 +223,7 @@ export default function Register({ roles = ['owner', 'captain', 'deckhand', 'cha
                                     </button>
 
                                     <p className="pt-2 text-center text-sm text-gray-500">
-                                        Already have an account?{' '}
+                                        Already have an account?
                                         <Link href={login()} className="font-semibold text-[#0D314D] transition-colors hover:text-[#3DB3DE]">
                                             Sign in here
                                         </Link>
