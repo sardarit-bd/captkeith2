@@ -23,7 +23,6 @@ export type OwnerStatCardConfig = {
     iconColor: string;
 };
 
-// Stat card display config — values come from backend
 export const ownerStatCardConfigs: OwnerStatCardConfig[] = [
     {
         key: 'total_vessels',

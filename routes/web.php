@@ -7,7 +7,9 @@ use Laravel\Fortify\Features;
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
-
+Route::post('test-vessel', function (\Illuminate\Http\Request $request) {
+    dd($request->all());
+});
 Route::inertia('/contact', 'public/contact')->name('contact');
 Route::inertia('/about-us', 'public/about', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -27,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::inertia('charterers', 'charterers')->name('charterers');
         Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
         Route::inertia('owner/settings', 'owner-settings')->name('owner-settings');
+        Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
     });
 
     Route::middleware('role:admin')->group(function () {
@@ -60,4 +63,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
