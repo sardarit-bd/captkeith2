@@ -26,3 +26,6 @@ export function queryParams(options?: RouteQueryOptions): string {
 
     return query ? `?${query}` : '';
 }
+export function applyUrlDefaults(url: string): string {
+    return url;
+}

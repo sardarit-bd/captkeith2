@@ -4,7 +4,7 @@ export type YachtRecord = {
     id: string;
     name: string;
     registrationNo: string;
-    image: string;
+    image: string | null;
     defaultTab: YachtTab;
     specs: {
         type: string;

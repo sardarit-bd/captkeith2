@@ -7,9 +7,7 @@ use Laravel\Fortify\Features;
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
-Route::post('test-vessel', function (\Illuminate\Http\Request $request) {
-    dd($request->all());
-});
+
 Route::inertia('/contact', 'public/contact')->name('contact');
 Route::inertia('/about-us', 'public/about', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -23,12 +21,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:owner')->group(function () {
-        Route::inertia('my-yachts', 'my-yachts')->name('my-yachts');
+        Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
         Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
         Route::inertia('captains', 'captains')->name('captains');
         Route::inertia('charterers', 'charterers')->name('charterers');
         Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
         Route::inertia('owner/settings', 'owner-settings')->name('owner-settings');
+        Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
+        Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
         Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
     });
 

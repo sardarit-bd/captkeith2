@@ -73,7 +73,7 @@ class OwnerDashboardStrategy implements DashboardStrategy
             ->map(function (Vessel $vessel) {
                 $photo = $vessel->photos->first();
                 $photoUrl = $photo
-                    ? Storage::url($photo->photo_path)
+                    ? Storage::url($photo->image_path)
                     : null;
 
                 return [
