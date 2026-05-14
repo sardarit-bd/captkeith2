@@ -1,8 +1,8 @@
 import { usePage, Link } from '@inertiajs/react';
 import { UserRoundCheck } from 'lucide-react';
 import { captains } from '@/routes';
-import { OWNER_ACCENT } from './owner-dashboard-data';
 import type { OwnerDashboardProps } from '@/types';
+import { OWNER_ACCENT } from './owner-dashboard-data';
 
 type DashboardPageProps = {
     dashboard?: OwnerDashboardProps;
@@ -13,14 +13,16 @@ export function OwnerCaptainMatches() {
     const matches = props.dashboard?.captain_matches ?? [];
 
     return (
-        <section className="rounded-2xl border border-[#d4dbe3] bg-white p-4">
-            <h3 className="text-[17px] font-semibold text-[#0f172a]">
-                Matched Captains
-            </h3>
-            <p className="text-[13px] text-[#6b7280]">
-                Top qualified captains for your yachts
-            </p>
+        <section className="flex h-full flex-col justify-between gap-2 rounded-2xl border border-[#d4dbe3] bg-white p-4">
+            <div>
+                <h3 className="text-[17px] font-semibold text-[#0f172a]">
+                    Matched Captains
+                </h3>
 
+                <p className="text-[13px] text-[#6b7280]">
+                    Top qualified captains for your yachts
+                </p>
+            </div>
             <div className="mt-4 space-y-4">
                 {matches.length === 0 ? (
                     <p className="py-4 text-center text-[13px] text-[#9ca3af]">

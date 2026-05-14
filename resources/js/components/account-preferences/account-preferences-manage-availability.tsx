@@ -29,7 +29,7 @@ export function AccountPreferencesManageAvailability() {
                             </span>
                             <button
                                 type="button"
-                                className="p-1 text-[#f87171] transition-colors hover:text-[#dc2626]"
+                                className="cursor-pointer rounded-full bg-red-100 p-2 text-[#f87171] transition-colors hover:bg-red-200 hover:text-red-500"
                                 title="Remove Date"
                             >
                                 <Trash2 className="h-4 w-4" />
@@ -41,7 +41,7 @@ export function AccountPreferencesManageAvailability() {
 
             <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
             >
                 <Plus className="h-4 w-4" />
                 Add Unavailable Date

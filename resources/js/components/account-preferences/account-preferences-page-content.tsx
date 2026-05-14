@@ -8,7 +8,7 @@ export function AccountPreferencesPageContent() {
     return (
         <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
             <div className="flex-1 overflow-y-auto px-4 py-8 sm:px-6">
-                <div className="mx-auto max-w-[1000px] space-y-6">
+                <div className="mx-auto max-w-250 space-y-6">
                     <AccountPreferencesCurrentStatus />
                     <AccountPreferencesAvailability />
                     <AccountPreferencesManageAvailability />
