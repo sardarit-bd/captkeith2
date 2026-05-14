@@ -104,6 +104,7 @@ export default function DeleteUser() {
                                             <button
                                                 type="submit"
                                                 data-test="confirm-delete-user-button"
+                                                className="cursor-pointer"
                                             >
                                                 Delete account
                                             </button>
