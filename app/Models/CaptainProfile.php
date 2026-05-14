@@ -39,66 +39,50 @@ class CaptainProfile extends Model
 {
     use HasUuids, SoftDeletes;
 
-    /**
-     * Get the user that owns this captain profile.
-     */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get vessel qualification rows for this captain.
-     */
+
     public function vesselQualifications(): HasMany
     {
         return $this->hasMany(VesselQualifiedCaptain::class, 'captain_id');
     }
 
-    /**
-     * Get cached match rows for this captain profile.
-     */
+
     public function matches(): HasMany
     {
         return $this->hasMany(VesselMatch::class, 'profile_id')
             ->where('profile_type', 'captain');
     }
 
-    /**
-     * Get vessel interest rows for this captain.
-     */
+
     public function vesselInterests(): HasMany
     {
         return $this->hasMany(CaptainVesselInterest::class, 'captain_id');
     }
 
-    /**
-     * Get charter events where this captain was selected.
-     */
+
     public function selectedCharterEvents(): HasMany
     {
         return $this->hasMany(CharterEvent::class, 'selected_captain_id');
     }
 
-    /**
-     * Get captain hire agreements linked to this captain.
-     */
+
     public function hireAgreements(): HasMany
     {
         return $this->hasMany(CharterHireAgreement::class, 'captain_profile_id');
     }
 
-    /**
-     * Get payments made to this captain.
-     */
+
     public function payments(): HasMany
     {
         return $this->hasMany(CharterPayment::class, 'captain_profile_id');
     }
 
-    /**
-     * Get crew response rows for this captain profile.
-     */
+
     public function crewResponses(): HasMany
     {
         return $this->hasMany(CharterCrewResponse::class, 'profile_id')

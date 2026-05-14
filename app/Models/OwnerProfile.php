@@ -22,17 +22,13 @@ class OwnerProfile extends Model
 {
     use HasUuids, SoftDeletes;
 
-    /**
-     * Get the user that owns this owner profile.
-     */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the vessels owned by this owner profile.
-     */
+
     public function vessels(): HasMany
     {
         return $this->hasMany(Vessel::class, 'owner_id');

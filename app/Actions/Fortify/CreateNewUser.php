@@ -53,12 +53,6 @@ class CreateNewUser implements CreatesNewUsers
             $selectedRole = $input['role'];
             $authGuard = (string) config('fortify.guard', 'web');
 
-            // Resolve only from the explicit self-registration allowlist.
-            // $role = Role::query()
-            //     ->where('guard_name', $authGuard)
-            //     ->whereRaw('LOWER(name) = ?', [$selectedRole])
-            //     ->whereIn('name', $registrableRoles)
-            //     ->first();
             $role = Role::query()
                 ->where('guard_name', $authGuard)
                 ->whereRaw('LOWER(name) = ?', [$selectedRole])

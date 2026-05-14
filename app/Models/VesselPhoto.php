@@ -16,16 +16,13 @@ class VesselPhoto extends Model
 {
     use HasUuids;
 
-    /**
-     * Get the vessel that this photo belongs to.
-     */
+
     public function vessel(): BelongsTo
     {
         return $this->belongsTo(Vessel::class);
     }
 
     /**
-     * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
