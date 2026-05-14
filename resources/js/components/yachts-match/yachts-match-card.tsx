@@ -1,15 +1,21 @@
-import { Heart, MapPin, MessageSquare } from 'lucide-react';
+import { Heart, MapPin, MessageSquare, Ship } from 'lucide-react';
 import type { YachtMatchRecord } from './yachts-match-data';
 
 export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
     return (
         <article className="group flex flex-col overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm transition-shadow hover:shadow-md">
-            <div className="h-48 w-full overflow-hidden sm:h-56">
-                <img
-                    src={yacht.image}
-                    alt={`${yacht.name} yacht`}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+            <div className="h-48 w-full overflow-hidden bg-[#f3f4f6] sm:h-56">
+                {yacht.image ? (
+                    <img
+                        src={yacht.image}
+                        alt={`${yacht.name} yacht`}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                        <Ship className="h-12 w-12 text-[#d1d5db]" />
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-1 flex-col p-6">
@@ -22,9 +28,6 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                             {yacht.registrationNo}
                         </p>
                     </div>
-                    <span className="rounded-md bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-[#374151]">
-                        {yacht.matchPercent}
-                    </span>
                 </div>
 
                 <div className="mb-4 grid grid-cols-2 gap-4">
@@ -46,22 +49,30 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                     </div>
                 </div>
 
-                <p className="mb-6 flex items-center gap-2 text-[13px] text-[#4b5563]">
+                <p className="mb-3 flex items-center gap-2 text-[13px] text-[#4b5563]">
                     <MapPin className="h-4 w-4 shrink-0 text-[#9ca3af]" />
                     {yacht.marina}
+                    {yacht.city ? `, ${yacht.city}` : ''}
+                    {yacht.state ? `, ${yacht.state}` : ''}
                 </p>
+
+                {yacht.operatingArea && (
+                    <p className="mb-4 line-clamp-2 text-[12px] text-[#6b7280]">
+                        {yacht.operatingArea}
+                    </p>
+                )}
 
                 <div className="mb-8">
                     <p className="mb-2.5 text-[12px] text-[#6b7280]">
                         Required Qualifications:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {yacht.qualifications.map((qualification) => (
+                        {yacht.qualifications.map((q) => (
                             <span
-                                key={qualification}
+                                key={q}
                                 className="rounded-md border border-[#f3f4f6] bg-[#f9fafb] px-2.5 py-1.5 text-[11px] font-medium text-[#374151]"
                             >
-                                {qualification}
+                                {q}
                             </span>
                         ))}
                     </div>
