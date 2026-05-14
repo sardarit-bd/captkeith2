@@ -1,13 +1,17 @@
+import { Link } from '@inertiajs/react';
 import { captainQuickActions } from './captain-dashboard-data';
 
 export function CaptainQuickActions() {
     return (
         <section className="rounded-2xl border border-[#d4dbe3] bg-white p-5 shadow-sm">
-            <h2 className="text-[16px] font-semibold text-[#0D314D]">Quick Actions</h2>
+            <h2 className="text-[16px] font-semibold text-[#0D314D]">
+                Quick Actions
+            </h2>
 
             <div className="mt-4 grid gap-3 md:grid-cols-3">
                 {captainQuickActions.map((item) => (
-                    <button
+                    <Link
+                        href={item.href}
                         key={item.title}
                         type="button"
                         className="flex items-center gap-4 rounded-xl border border-[#d4dbe3] bg-white p-4 text-left transition-colors hover:bg-[#f8fbfd]"
@@ -29,7 +33,7 @@ export function CaptainQuickActions() {
                                 {item.description}
                             </span>
                         </span>
-                    </button>
+                    </Link>
                 ))}
             </div>
         </section>

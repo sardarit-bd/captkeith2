@@ -12,6 +12,7 @@ import {
     User,
     Users,
 } from 'lucide-react';
+
 import { NavMain } from '@/components/nav-main';
 import {
     Sidebar,
@@ -94,6 +95,11 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 title: 'Captains',
                 href: captains(),
                 icon: User,
+            },
+            {
+                title: 'Requests',
+                href: captains(),
+                icon: ClipboardList,
             },
             {
                 title: 'Charterers',
@@ -189,7 +195,7 @@ export function AppSidebar() {
                     <img
                         src="/images/logo1.svg"
                         alt="CAPTMATCH"
-                        className="h-auto w-[220px] object-contain"
+                        className="h-auto w-55 object-contain"
                     />
                 </Link>
             </SidebarHeader>

@@ -22,8 +22,12 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                         <h3 className="text-[15px] font-bold text-[#111827]">
                             {request.yachtName}
                         </h3>
-                        <p className="text-[13px] text-[#6b7280]">{request.yachtSpec}</p>
-                        <p className="text-[13px] text-[#6b7280]">{request.marina}</p>
+                        <p className="text-[13px] text-[#6b7280]">
+                            {request.yachtSpec}
+                        </p>
+                        <p className="text-[13px] text-[#6b7280]">
+                            {request.marina}
+                        </p>
                     </div>
                 </div>
 
@@ -41,14 +45,18 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
             </div>
 
             <section className="mb-6">
-                <p className="mb-1 text-[12px] font-medium text-[#6b7280]">Special Notes</p>
-                <p className="text-[14px] text-[#1f2937]">{request.specialNotes}</p>
+                <p className="mb-1 text-[12px] font-medium text-[#6b7280]">
+                    Special Notes
+                </p>
+                <p className="text-[14px] text-[#1f2937]">
+                    {request.specialNotes}
+                </p>
             </section>
 
             <footer className="flex flex-wrap items-center gap-3">
                 <button
                     type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937]"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937]"
                 >
                     <Check className="h-4 w-4" />
                     Accept Request
@@ -56,7 +64,7 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
 
                 <button
                     type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
                 >
                     <X className="h-4 w-4" />
                     Decline
@@ -64,7 +72,7 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
 
                 <button
                     type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
                 >
                     <MessageSquare className="h-4 w-4" />
                     Message Owner
@@ -77,7 +85,9 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
 function RequestInfoItem({ label, value }: { label: string; value: string }) {
     return (
         <div>
-            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">{label}</p>
+            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">
+                {label}
+            </p>
             <p className="text-[15px] font-bold text-[#111827]">{value}</p>
         </div>
     );

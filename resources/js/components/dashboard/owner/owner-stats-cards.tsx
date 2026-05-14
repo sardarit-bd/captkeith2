@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react';
-import { ownerStatCardConfigs } from './owner-dashboard-data';
 import type { OwnerDashboardProps } from '@/types';
+import { ownerStatCardConfigs } from './owner-dashboard-data';
 
 type DashboardPageProps = {
     dashboard?: OwnerDashboardProps;

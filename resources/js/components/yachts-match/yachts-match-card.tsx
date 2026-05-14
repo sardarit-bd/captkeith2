@@ -29,12 +29,20 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
 
                 <div className="mb-4 grid grid-cols-2 gap-4">
                     <div>
-                        <p className="mb-0.5 text-[11px] font-medium text-[#6b7280]">Type</p>
-                        <p className="text-sm font-semibold text-[#111827]">{yacht.type}</p>
+                        <p className="mb-0.5 text-[11px] font-medium text-[#6b7280]">
+                            Type
+                        </p>
+                        <p className="text-sm font-semibold text-[#111827]">
+                            {yacht.type}
+                        </p>
                     </div>
                     <div>
-                        <p className="mb-0.5 text-[11px] font-medium text-[#6b7280]">Length</p>
-                        <p className="text-sm font-semibold text-[#111827]">{yacht.length}</p>
+                        <p className="mb-0.5 text-[11px] font-medium text-[#6b7280]">
+                            Length
+                        </p>
+                        <p className="text-sm font-semibold text-[#111827]">
+                            {yacht.length}
+                        </p>
                     </div>
                 </div>
 
@@ -62,14 +70,14 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                 <div className="mt-auto flex items-center gap-3">
                     <button
                         type="button"
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#0D314D] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f]"
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0D314D] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f]"
                     >
                         <Heart className="h-4 w-4" />
                         Interested
                     </button>
                     <button
                         type="button"
-                        className="rounded-lg border border-[#e5e7eb] p-3 text-[#4b5563] shadow-sm transition-colors hover:bg-[#f9fafb] hover:text-[#111827]"
+                        className="cursor-pointer rounded-lg border border-[#e5e7eb] p-3 text-[#4b5563] shadow-sm transition-colors hover:bg-[#f9fafb] hover:text-[#111827]"
                     >
                         <MessageSquare className="h-5 w-5" />
                     </button>

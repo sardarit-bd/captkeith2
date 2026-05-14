@@ -1,10 +1,4 @@
-import {
-    AlertCircle,
-    CalendarDays,
-    Ship,
-    User,
-    UserCheck,
-} from 'lucide-react';
+import { AlertCircle, CalendarDays, Ship, User, UserCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type CaptainStatCard = {
@@ -21,6 +15,7 @@ export type CaptainQuickAction = {
     icon: LucideIcon;
     iconColor: string;
     iconBg: string;
+    href?: string;
 };
 
 export type CaptainYacht = {
@@ -76,6 +71,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: User,
         iconColor: '#2563eb',
         iconBg: '#EFF6FF',
+        href: '#',
     },
     {
         title: 'Browse Yachts',
@@ -83,6 +79,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: Ship,
         iconColor: '#0D314D',
         iconBg: '#F1F5F9',
+        href: '#',
     },
     {
         title: 'Manage Availability',
@@ -90,6 +87,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: CalendarDays,
         iconColor: '#16a34a',
         iconBg: '#F0FDF4',
+        href: '#',
     },
 ];
 
