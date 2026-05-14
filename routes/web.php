@@ -43,7 +43,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:owner|captain|deckhand')->group(function () {
-        Route::inertia('my-profile', 'my-profile')->name('my-profile');
+        Route::get('my-profile', [\App\Http\Controllers\MyProfileController::class, 'edit'])
+            ->name('my-profile');
+        Route::post('my-profile', [\App\Http\Controllers\MyProfileController::class, 'update'])
+            ->name('my-profile.update');
     });
 
     Route::middleware('role:captain|deckhand')->group(function () {

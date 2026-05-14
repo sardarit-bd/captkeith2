@@ -10,36 +10,19 @@ export type ProfileToggleOption = {
 };
 
 export const licenseTypes: ProfileSelectOption[] = [
-    { value: '200ton', label: 'USCG Master 200 Ton' },
-    { value: '100ton', label: 'USCG Master 100 Ton' },
+    { value: 'oupv', label: 'OUPV (Six-Pack)' },
+    { value: 'masters', label: 'Master' },
 ];
 
-export const ratingOptions: ProfileSelectOption[] = [
-    { value: 'master', label: 'Master' },
-    { value: 'mate', label: 'Mate' },
-];
-
-export const endorsementOptions: ProfileToggleOption[] = [
-    { id: 'near-coastal', label: 'Near Coastal', checked: true },
-    { id: 'sailing', label: 'Sailing', checked: true },
-    { id: 'auxiliary-sail', label: 'Auxiliary Sail' },
-    { id: 'towing', label: 'Towing' },
-    { id: 'assistance-towing', label: 'Assistance Towing' },
+export const endorsementOptions: ProfileSelectOption[] = [
+    { value: 'inland', label: 'Inland' },
+    { value: 'near_coastal', label: 'Near Coastal' },
+    { value: 'unlimited', label: 'Unlimited' },
 ];
 
 export const workPreferenceOptions: ProfileToggleOption[] = [
-    { id: 'deckhand-availability', label: 'Available to work as deckhand' },
     {
-        id: 'charter-availability',
-        label: 'Currently available for charters',
-        checked: true,
+        id: 'can_provide_deckhand',
+        label: 'Available to work as deckhand',
     },
-];
-
-export const additionalQualifications: string[] = [
-    'STCW Basic Safety',
-    'Maritime First Aid',
-    'Radar Observer',
-    'Advanced Firefighting',
-    'Dynamic Positioning',
 ];
