@@ -13,7 +13,6 @@ export function CaptainQuickActions() {
                     <Link
                         href={item.href}
                         key={item.title}
-                        type="button"
                         className="flex items-center gap-4 rounded-xl border border-[#d4dbe3] bg-white p-4 text-left transition-colors hover:bg-[#f8fbfd]"
                     >
                         <span
