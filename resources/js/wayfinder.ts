@@ -26,6 +26,38 @@ export function queryParams(options?: RouteQueryOptions): string {
 
     return query ? `?${query}` : '';
 }
+
 export function applyUrlDefaults(url: string): string {
     return url;
+}
+
+export const create = {
+    url: () => '/my-yachts/create',
+    method: 'GET',
+};
+
+export const store = {
+    url: () => '/my-yachts',
+    method: 'POST',
+};
+
+export function edit(params: { vessel: number | string }) {
+    return {
+        url: `/my-yachts/${params.vessel}/edit`,
+        method: 'GET',
+    };
+}
+
+export function update(params: { vessel: number | string }) {
+    return {
+        url: `/my-yachts/${params.vessel}`,
+        method: 'PUT',
+    };
+}
+
+export function destroy(params: { vessel: number | string }) {
+    return {
+        url: `/my-yachts/${params.vessel}`,
+        method: 'DELETE',
+    };
 }

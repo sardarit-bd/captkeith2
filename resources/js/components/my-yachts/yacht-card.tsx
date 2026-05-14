@@ -193,7 +193,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                             </button>
                         </div>
                         <p className="mb-6 text-sm text-gray-500">
-                            Are you sure you want to delete{' '}
+                            Are you sure you want to delete
                             <strong>{yacht.name}</strong>? This action cannot be
                             undone and will permanently remove the vessel and
                             all its photos.

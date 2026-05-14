@@ -9,10 +9,10 @@ export type ActiveBooking = {
     yachtType: string;
     yachtLength: string;
     date: string;
-    yachtImage: string;
+    yachtImage: string | null;
     chartererName: string;
-    chartererAvatar: string;
-    status: 'Booked';
+    chartererAvatar: string | null;
+    status: string;
 };
 
 export const charterYachtOptions: CharterYachtOption[] = [

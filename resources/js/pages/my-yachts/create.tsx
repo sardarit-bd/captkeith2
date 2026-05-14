@@ -1,10 +1,12 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { ChevronDown, FileText, Plus, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { myYachts } from '@/routes';
 import {
     create as myYachtsCreate,
     store as myYachtsStore,
+    update as myYachtsUpdate,
 } from '@/routes/my-yachts';
 
 const VESSEL_TYPES = [
@@ -25,6 +27,11 @@ const ENDORSEMENTS = [
 
 const MIN_PHOTOS = 6;
 
+interface ExistingPhoto {
+    id: string;
+    url: string;
+}
+
 interface PreviewPhoto {
     id: string;
     url: string;
@@ -34,6 +41,30 @@ interface PreviewPhoto {
 interface PreviewDocument {
     id: string;
     file: File;
+}
+
+interface VesselData {
+    id: string;
+    name: string;
+    official_number: string;
+    make: string;
+    model: string;
+    vessel_type: string;
+    length_ft: string;
+    beam_ft: string;
+    draft_ft: string;
+    marina_name: string;
+    marina_address: string;
+    marina_city: string;
+    marina_state: string;
+    marina_zip: string;
+    operating_area: string;
+    required_license_type: string;
+    required_endorsement: string;
+    required_tonnage_rating: string;
+    required_years_experience: string;
+    requires_deckhand: boolean;
+    existing_photos: ExistingPhoto[];
 }
 
 type VesselFormData = {
@@ -78,7 +109,14 @@ const selectErrCls =
     'w-full appearance-none rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-gray-700 transition-colors focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500';
 
 export default function CreateYachtPage() {
-    const [photos, setPhotos] = useState<PreviewPhoto[]>([]);
+    const { vessel } = usePage<{ vessel?: VesselData }>().props;
+    const isEditing = !!vessel;
+
+    const [existingPhotos, setExistingPhotos] = useState<ExistingPhoto[]>(
+        vessel?.existing_photos ?? [],
+    );
+
+    const [newPhotos, setNewPhotos] = useState<PreviewPhoto[]>([]);
     const [documents, setDocuments] = useState<PreviewDocument[]>([]);
 
     const photoInputRef = useRef<HTMLInputElement>(null);
@@ -86,45 +124,45 @@ export default function CreateYachtPage() {
 
     const { data, setData, post, processing, errors, reset, transform } =
         useForm<VesselFormData>({
-            name: '',
-            official_number: '',
-            make: '',
-            model: '',
-            vessel_type: '',
-            length_ft: '',
-            beam_ft: '',
-            draft_ft: '',
-            marina_name: '',
-            marina_address: '',
-            marina_city: '',
-            marina_state: '',
-            marina_zip: '',
-            operating_area: '',
-            required_license_type: '',
-            required_endorsement: '',
-            required_tonnage_rating: '',
-            required_years_experience: '',
-            requires_deckhand: false,
+            name: vessel?.name ?? '',
+            official_number: vessel?.official_number ?? '',
+            make: vessel?.make ?? '',
+            model: vessel?.model ?? '',
+            vessel_type: vessel?.vessel_type ?? '',
+            length_ft: vessel?.length_ft ?? '',
+            beam_ft: vessel?.beam_ft ?? '',
+            draft_ft: vessel?.draft_ft ?? '',
+            marina_name: vessel?.marina_name ?? '',
+            marina_address: vessel?.marina_address ?? '',
+            marina_city: vessel?.marina_city ?? '',
+            marina_state: vessel?.marina_state ?? '',
+            marina_zip: vessel?.marina_zip ?? '',
+            operating_area: vessel?.operating_area ?? '',
+            required_license_type: vessel?.required_license_type ?? '',
+            required_endorsement: vessel?.required_endorsement ?? '',
+            required_tonnage_rating: vessel?.required_tonnage_rating ?? '',
+            required_years_experience: vessel?.required_years_experience ?? '',
+            requires_deckhand: vessel?.requires_deckhand ?? false,
             photos: [],
             documents: [],
         });
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files ?? []);
-        const newPhotos: PreviewPhoto[] = files.map((file) => ({
+        const previews: PreviewPhoto[] = files.map((file) => ({
             id: crypto.randomUUID(),
             url: URL.createObjectURL(file),
             file,
         }));
-        setPhotos((prev) => [...prev, ...newPhotos]);
+        setNewPhotos((prev) => [...prev, ...previews]);
 
         if (photoInputRef.current) {
             photoInputRef.current.value = '';
         }
     };
 
-    const removePhoto = (id: string) => {
-        setPhotos((prev) => {
+    const removeNewPhoto = (id: string) => {
+        setNewPhotos((prev) => {
             const removed = prev.find((p) => p.id === id);
 
             if (removed) {
@@ -133,6 +171,10 @@ export default function CreateYachtPage() {
 
             return prev.filter((p) => p.id !== id);
         });
+    };
+
+    const removeExistingPhoto = (id: string) => {
+        setExistingPhotos((prev) => prev.filter((p) => p.id !== id));
     };
 
     const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,31 +194,79 @@ export default function CreateYachtPage() {
         setDocuments((prev) => prev.filter((d) => d.id !== id));
     };
 
+    const totalPhotoCount = existingPhotos.length + newPhotos.length;
+    const missingSlots = Math.max(0, MIN_PHOTOS - totalPhotoCount);
+
+    const canSubmit =
+        (isEditing || totalPhotoCount >= MIN_PHOTOS) && !processing;
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        transform((formData) => ({
-            ...formData,
-            photos: photos.map((p) => p.file),
-            documents: documents.map((d) => d.file),
-        }));
+        if (isEditing) {
+            const formData = new FormData();
+            formData.append('_method', 'PUT');
+            formData.append('name', data.name);
+            formData.append('official_number', data.official_number);
+            formData.append('make', data.make);
+            formData.append('model', data.model);
+            formData.append('vessel_type', data.vessel_type);
+            formData.append('length_ft', data.length_ft);
+            formData.append('beam_ft', data.beam_ft);
+            formData.append('draft_ft', data.draft_ft);
+            formData.append('marina_name', data.marina_name);
+            formData.append('marina_address', data.marina_address);
+            formData.append('marina_city', data.marina_city);
+            formData.append('marina_state', data.marina_state);
+            formData.append('marina_zip', data.marina_zip);
+            formData.append('operating_area', data.operating_area);
+            formData.append(
+                'required_license_type',
+                data.required_license_type,
+            );
+            formData.append('required_endorsement', data.required_endorsement);
+            formData.append(
+                'required_tonnage_rating',
+                data.required_tonnage_rating,
+            );
+            formData.append(
+                'required_years_experience',
+                data.required_years_experience,
+            );
+            formData.append(
+                'requires_deckhand',
+                data.requires_deckhand ? '1' : '0',
+            );
+            newPhotos.forEach((p) => formData.append('photos[]', p.file));
+            documents.forEach((d) => formData.append('documents[]', d.file));
 
-        post(myYachtsStore.url(), {
-            forceFormData: true,
-            onSuccess: () => {
-                reset();
-                setPhotos([]);
-                setDocuments([]);
-            },
-        });
+            router.post(myYachtsUpdate({ vessel: vessel.id }).url, formData, {
+                onSuccess: () => {
+                    setNewPhotos([]);
+                    setDocuments([]);
+                },
+            });
+        } else {
+            transform((formData) => ({
+                ...formData,
+                photos: newPhotos.map((p) => p.file),
+                documents: documents.map((d) => d.file),
+            }));
+
+            post(myYachtsStore.url(), {
+                forceFormData: true,
+                onSuccess: () => {
+                    reset();
+                    setNewPhotos([]);
+                    setDocuments([]);
+                },
+            });
+        }
     };
-
-    const missingSlots = Math.max(0, MIN_PHOTOS - photos.length);
-    const canSubmit = photos.length >= MIN_PHOTOS && !processing;
 
     return (
         <>
-            <Head title="Add New Yacht" />
+            <Head title={isEditing ? 'Edit Yacht' : 'Add New Yacht'} />
 
             <div className="flex h-full flex-1 flex-col overflow-x-auto bg-[#F6FDFF] px-4 py-5 sm:px-6 lg:px-8">
                 <div className="mx-auto w-full max-w-5xl rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
@@ -490,7 +580,7 @@ export default function CreateYachtPage() {
 
                                 <div>
                                     <label className="mb-2 block text-sm font-semibold text-gray-900">
-                                        ZIP Code
+                                        ZIP Code{' '}
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -516,7 +606,7 @@ export default function CreateYachtPage() {
 
                             <div className="mt-6">
                                 <label className="mb-2 block text-sm font-semibold text-gray-900">
-                                    Operating Area
+                                    Operating Area{' '}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -623,28 +713,31 @@ export default function CreateYachtPage() {
                                     Photos
                                 </h3>
                                 <p className="mt-1 text-sm text-gray-500">
-                                    Add at least {MIN_PHOTOS} photos of your
-                                    yacht (JPG, PNG, WEBP — max 10 MB each)
+                                    {isEditing
+                                        ? 'Manage existing photos or upload new ones'
+                                        : `Add at least ${MIN_PHOTOS} photos of your yacht (JPG, PNG, WEBP — max 10 MB each)`}
                                 </p>
                             </div>
 
-                            <div className="mb-4 flex items-center gap-2">
-                                <span
-                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                                        photos.length >= MIN_PHOTOS
-                                            ? 'bg-emerald-50 text-emerald-700'
-                                            : 'bg-amber-50 text-amber-700'
-                                    }`}
-                                >
-                                    {photos.length} / {MIN_PHOTOS} minimum
-                                    photos
-                                    {photos.length < MIN_PHOTOS && (
-                                        <span className="ml-1">
-                                            — {missingSlots} more required
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
+                            {!isEditing && (
+                                <div className="mb-4 flex items-center gap-2">
+                                    <span
+                                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                                            totalPhotoCount >= MIN_PHOTOS
+                                                ? 'bg-emerald-50 text-emerald-700'
+                                                : 'bg-amber-50 text-amber-700'
+                                        }`}
+                                    >
+                                        {totalPhotoCount} / {MIN_PHOTOS} minimum
+                                        photos
+                                        {totalPhotoCount < MIN_PHOTOS && (
+                                            <span className="ml-1">
+                                                — {missingSlots} more required
+                                            </span>
+                                        )}
+                                    </span>
+                                </div>
+                            )}
 
                             {(errors.photos ||
                                 Object.keys(errors).some((k) =>
@@ -672,9 +765,9 @@ export default function CreateYachtPage() {
                             )}
 
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                                {photos.map((photo, index) => (
+                                {existingPhotos.map((photo, index) => (
                                     <div
-                                        key={photo.id}
+                                        key={`existing-${photo.id}`}
                                         className="group relative aspect-square overflow-hidden rounded-xl border border-gray-100 bg-gray-50"
                                     >
                                         <img
@@ -686,7 +779,9 @@ export default function CreateYachtPage() {
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    removePhoto(photo.id)
+                                                    removeExistingPhoto(
+                                                        photo.id,
+                                                    )
                                                 }
                                                 className="scale-75 rounded-full bg-white/90 p-1.5 opacity-0 shadow transition-all group-hover:scale-100 group-hover:opacity-100 hover:bg-red-50"
                                             >
@@ -699,18 +794,46 @@ export default function CreateYachtPage() {
                                     </div>
                                 ))}
 
-                                {Array.from({ length: missingSlots }).map(
-                                    (_, i) => (
-                                        <div
-                                            key={`empty-${i}`}
-                                            className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50"
-                                        >
-                                            <span className="text-[10px] font-medium text-gray-300">
-                                                Required
-                                            </span>
+                                {newPhotos.map((photo, index) => (
+                                    <div
+                                        key={photo.id}
+                                        className="group relative aspect-square overflow-hidden rounded-xl border border-blue-100 bg-gray-50"
+                                    >
+                                        <img
+                                            src={photo.url}
+                                            alt={`New photo ${index + 1}`}
+                                            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/30">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    removeNewPhoto(photo.id)
+                                                }
+                                                className="scale-75 rounded-full bg-white/90 p-1.5 opacity-0 shadow transition-all group-hover:scale-100 group-hover:opacity-100 hover:bg-red-50"
+                                            >
+                                                <X className="h-3.5 w-3.5 text-gray-700 hover:text-red-500" />
+                                            </button>
                                         </div>
-                                    ),
-                                )}
+                                        <span className="absolute bottom-1.5 left-1.5 rounded-md bg-blue-500/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                                            New
+                                        </span>
+                                    </div>
+                                ))}
+
+                                {!isEditing &&
+                                    Array.from({ length: missingSlots }).map(
+                                        (_, i) => (
+                                            <div
+                                                key={`empty-${i}`}
+                                                className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50"
+                                            >
+                                                <span className="text-[10px] font-medium text-gray-300">
+                                                    Required
+                                                </span>
+                                            </div>
+                                        ),
+                                    )}
 
                                 <button
                                     type="button"
@@ -721,7 +844,7 @@ export default function CreateYachtPage() {
                                 >
                                     <Upload className="mb-1.5 h-5 w-5 transition-transform group-hover:scale-110" />
                                     <span className="px-1 text-center text-[11px] leading-tight font-medium">
-                                        {photos.length === 0
+                                        {totalPhotoCount === 0
                                             ? 'Upload Photos'
                                             : 'Add More'}
                                     </span>
@@ -910,7 +1033,7 @@ export default function CreateYachtPage() {
                                 type="submit"
                                 disabled={!canSubmit}
                                 title={
-                                    photos.length < MIN_PHOTOS
+                                    !isEditing && totalPhotoCount < MIN_PHOTOS
                                         ? `Please upload at least ${MIN_PHOTOS} photos`
                                         : undefined
                                 }
@@ -943,7 +1066,9 @@ export default function CreateYachtPage() {
                                 ) : (
                                     <>
                                         <Plus className="h-4 w-4" />
-                                        Add Vessel
+                                        {isEditing
+                                            ? 'Save Changes'
+                                            : 'Add Vessel'}
                                     </>
                                 )}
                             </button>
@@ -956,7 +1081,7 @@ export default function CreateYachtPage() {
                             </Link>
                         </div>
 
-                        {photos.length < MIN_PHOTOS && (
+                        {!isEditing && totalPhotoCount < MIN_PHOTOS && (
                             <p className="text-xs text-amber-600">
                                 ⚠ Please upload at least {MIN_PHOTOS} photos
                                 before submitting.
@@ -969,13 +1094,27 @@ export default function CreateYachtPage() {
     );
 }
 
-CreateYachtPage.layout = {
-    breadcrumbs: [
-        { title: 'My Yachts', href: myYachts.url() },
-        { title: 'Add New Yacht', href: myYachtsCreate.url() },
-    ],
-    pageHeader: {
-        title: 'Add New Yacht',
-        description: 'List your vessel and set captain requirements.',
-    },
+CreateYachtPage.layout = (
+    page: React.ReactNode & { props?: { vessel?: VesselData } },
+) => {
+    const vessel = (page as any)?.props?.vessel;
+    const isEditing = !!vessel;
+
+    return {
+        breadcrumbs: isEditing
+            ? [
+                  { title: 'My Yachts', href: myYachts.url() },
+                  { title: 'Edit Yacht' },
+              ]
+            : [
+                  { title: 'My Yachts', href: myYachts.url() },
+                  { title: 'Add New Yacht' },
+              ],
+        pageHeader: {
+            title: isEditing ? 'Edit Yacht' : 'Add New Yacht',
+            description: isEditing
+                ? 'Update your vessel details and captain requirements.'
+                : 'List your vessel and set captain requirements.',
+        },
+    };
 };

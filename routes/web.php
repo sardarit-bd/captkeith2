@@ -23,13 +23,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:owner')->group(function () {
         Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
         Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
-        Route::inertia('captains', 'captains')->name('captains');
-        Route::inertia('charterers', 'charterers')->name('charterers');
+        Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
+        Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
+        Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
         Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
         Route::inertia('owner/settings', 'owner-settings')->name('owner-settings');
         Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
         Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
         Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
+        Route::match(['PUT', 'PATCH'], 'my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.update');
     });
 
     Route::middleware('role:admin')->group(function () {
