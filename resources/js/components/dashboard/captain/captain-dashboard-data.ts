@@ -71,7 +71,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: User,
         iconColor: '#2563eb',
         iconBg: '#EFF6FF',
-        href: '#',
+        href: '/my-profile',
     },
     {
         title: 'Browse Yachts',
@@ -79,7 +79,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: Ship,
         iconColor: '#0D314D',
         iconBg: '#F1F5F9',
-        href: '#',
+        href: '/yachts-match',
     },
     {
         title: 'Manage Availability',
@@ -87,7 +87,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: CalendarDays,
         iconColor: '#16a34a',
         iconBg: '#F0FDF4',
-        href: '#',
+        href: '/yachts-match',
     },
 ];
 
