@@ -1,7 +1,14 @@
-import { currentStatus } from './account-preferences-data';
 import { PreferencesCard, ToggleSwitch } from './account-preferences-shared';
 
-export function AccountPreferencesCurrentStatus() {
+interface Props {
+    isAvailable: boolean;
+    onToggle: (value: boolean) => void;
+}
+
+export function AccountPreferencesCurrentStatus({
+    isAvailable,
+    onToggle,
+}: Props) {
     return (
         <PreferencesCard title="Current Status">
             <div className="flex items-center justify-between gap-4 rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] p-5 sm:p-6">
@@ -11,18 +18,22 @@ export function AccountPreferencesCurrentStatus() {
                     </div>
                     <div>
                         <h4 className="text-[15px] font-bold text-[#111827]">
-                            {currentStatus.title}
+                            {isAvailable
+                                ? 'Currently Available'
+                                : 'Currently Unavailable'}
                         </h4>
                         <p className="mt-0.5 text-[13px] text-[#4b5563]">
-                            {currentStatus.description}
+                            {isAvailable
+                                ? 'You will receive charter notifications'
+                                : 'You will not receive charter notifications'}
                         </p>
                     </div>
                 </div>
-
                 <div className="shrink-0">
                     <ToggleSwitch
                         id="current-status"
-                        defaultChecked={currentStatus.enabled}
+                        checked={isAvailable}
+                        onChange={onToggle}
                     />
                 </div>
             </div>

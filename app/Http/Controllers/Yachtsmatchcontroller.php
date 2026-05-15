@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CaptainVesselInterest;
 use App\Models\User;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
@@ -17,11 +18,11 @@ class YachtsMatchController extends Controller
         $user    = $request->user();
         $profile = $user->captainProfile ?? $user->deckhandProfile;
 
-
         if (! $profile) {
             return Inertia::render('yachts-match', [
-                'vessels'        => [],
-                'profileMissing' => true,
+                'vessels'             => [],
+                'profileMissing'      => true,
+                'interestedVesselIds' => [],
             ]);
         }
 
@@ -84,9 +85,18 @@ class YachtsMatchController extends Controller
                 ];
             });
 
+
+        $interestedVesselIds = [];
+        if ($user->captainProfile) {
+            $interestedVesselIds = CaptainVesselInterest::where('captain_id', $user->captainProfile->id)
+                ->pluck('vessel_id')
+                ->toArray();
+        }
+
         return Inertia::render('yachts-match', [
-            'vessels'        => $vessels,
-            'profileMissing' => false,
+            'vessels'             => $vessels,
+            'profileMissing'      => false,
+            'interestedVesselIds' => $interestedVesselIds,
         ]);
     }
 }

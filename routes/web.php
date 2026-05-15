@@ -54,8 +54,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('yachts-match');
         Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
         Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
-        Route::inertia('account-preferences', 'account-preferences')->name('account-preferences');
+        Route::get('account-preferences', [\App\Http\Controllers\AccountPreferencesController::class, 'index'])
+            ->name('account-preferences');
+
+        Route::patch('account-preferences/toggles', [\App\Http\Controllers\AccountPreferencesController::class, 'updateToggles'])
+            ->name('account-preferences.toggles');
+
+        Route::post('account-preferences/dates', [\App\Http\Controllers\AccountPreferencesController::class, 'storeDate'])
+            ->name('account-preferences.dates.store');
+
+        Route::delete('account-preferences/dates/{dateId}', [\App\Http\Controllers\AccountPreferencesController::class, 'destroyDate'])
+            ->name('account-preferences.dates.destroy');
         Route::inertia('yacht/details', 'yacht/details')->name('yacht-details');
+        Route::post(
+            'vessels/{vessel}/interest',
+            [\App\Http\Controllers\VesselInterestController::class, 'store']
+        )->name('vessels.interest.store');
+
+        Route::delete(
+            'vessels/{vessel}/interest',
+            [\App\Http\Controllers\VesselInterestController::class, 'destroy']
+        )->name('vessels.interest.destroy');
     });
 
     Route::middleware('role:charterer')->group(function () {

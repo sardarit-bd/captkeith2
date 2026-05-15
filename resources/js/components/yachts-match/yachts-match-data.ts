@@ -1,4 +1,3 @@
-// Runtime type — matches what YachtsMatchController returns
 export type YachtMatchRecord = {
     id: string;
     name: string;
@@ -11,4 +10,5 @@ export type YachtMatchRecord = {
     operatingArea: string;
     qualifications: string[];
     image: string | null;
+    isInterested: boolean;
 };

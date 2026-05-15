@@ -15,6 +15,8 @@ class CaptainVesselInterest extends Model
 {
     use HasUuids;
 
+    protected $table = 'captain_vessel_interest';
+
     public const UPDATED_AT = null;
 
     public function captain(): BelongsTo

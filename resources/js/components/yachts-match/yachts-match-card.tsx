@@ -1,7 +1,41 @@
-import { Heart, MapPin, MessageSquare, Ship } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Heart, Loader2, MessageSquare, Ship } from 'lucide-react';
+import { useState } from 'react';
 import type { YachtMatchRecord } from './yachts-match-data';
 
 export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
+    const [isInterested, setIsInterested] = useState(yacht.isInterested);
+    const [isLoading, setIsLoading] = useState(false);
+
+    function handleInterestToggle() {
+        if (isLoading) {
+            return;
+        }
+
+        const nextState = !isInterested;
+
+        setIsInterested(nextState);
+        setIsLoading(true);
+
+        const url = `/vessels/${yacht.id}/interest`;
+
+        const options = {
+            preserveScroll: true,
+            onError: () => {
+                setIsInterested(!nextState);
+            },
+            onFinish: () => {
+                setIsLoading(false);
+            },
+        };
+
+        if (nextState) {
+            router.post(url, {}, options);
+        } else {
+            router.delete(url, options);
+        }
+    }
+
     return (
         <article className="group flex flex-col overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm transition-shadow hover:shadow-md">
             <div className="h-48 w-full overflow-hidden bg-[#f3f4f6] sm:h-56">
@@ -50,7 +84,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                 </div>
 
                 <p className="mb-3 flex items-center gap-2 text-[13px] text-[#4b5563]">
-                    <MapPin className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                    <Ship className="h-4 w-4 shrink-0 text-[#9ca3af]" />
                     {yacht.marina}
                     {yacht.city ? `, ${yacht.city}` : ''}
                     {yacht.state ? `, ${yacht.state}` : ''}
@@ -81,11 +115,25 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                 <div className="mt-auto flex items-center gap-3">
                     <button
                         type="button"
-                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0D314D] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f]"
+                        disabled={isLoading}
+                        onClick={handleInterestToggle}
+                        className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-3 text-[14px] font-medium shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                            isInterested
+                                ? 'bg-[#14532d] text-white hover:bg-[#166534]'
+                                : 'bg-[#0D314D] text-white hover:bg-[#0a273f]'
+                        }`}
                     >
-                        <Heart className="h-4 w-4" />
-                        Interested
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Heart
+                                className="h-4 w-4"
+                                fill={isInterested ? 'currentColor' : 'none'}
+                            />
+                        )}
+                        {isInterested ? 'Interested' : 'Interested'}
                     </button>
+
                     <button
                         type="button"
                         className="cursor-pointer rounded-lg border border-[#e5e7eb] p-3 text-[#4b5563] shadow-sm transition-colors hover:bg-[#f9fafb] hover:text-[#111827]"
