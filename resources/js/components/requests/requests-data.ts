@@ -8,7 +8,7 @@ export type CaptainRequestRecord = {
     time: string;
     duration: string;
     specialNotes: string;
-    status: 'pending' | 'accepted' | 'declined';
+    status: 'pending' | 'available' | 'unavailable';
 };
 
 export const captainRequestRecords: CaptainRequestRecord[] = [

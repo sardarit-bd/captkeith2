@@ -1,19 +1,45 @@
+import { router } from '@inertiajs/react';
 import { Check, MessageSquare, X } from 'lucide-react';
+import { respond } from '@/routes/requests';
 import type { CaptainRequestRecord } from './requests-data';
 
 const statusStyles: Record<CaptainRequestRecord['status'], string> = {
     pending: 'bg-[#111827] text-white',
-    accepted: 'bg-[#14532d] text-white',
-    declined: 'bg-[#7f1d1d] text-white',
+    available: 'bg-[#14532d] text-white',
+    unavailable: 'bg-[#7f1d1d] text-white',
+};
+
+const statusLabels: Record<CaptainRequestRecord['status'], string> = {
+    pending: 'Pending',
+    available: 'Accepted',
+    unavailable: 'Declined',
 };
 
 export function RequestCard({ request }: { request: CaptainRequestRecord }) {
+    function handleAccept() {
+        router.patch(
+            respond({ crewResponse: request.id }).url,
+            { response: 'available' },
+            { preserveScroll: true },
+        );
+    }
+
+    function handleDecline() {
+        router.patch(
+            respond({ crewResponse: request.id }).url,
+            { response: 'unavailable' },
+            { preserveScroll: true },
+        );
+    }
+
+    const fallbackImage = '/images/home/about3.jpg';
+
     return (
         <article className="rounded-xl border border-[#eef2f6] bg-white p-6 shadow-sm">
             <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-4">
                     <img
-                        src={request.image}
+                        src={request.image ?? fallbackImage}
                         alt={request.yachtName}
                         className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover"
                     />
@@ -34,7 +60,7 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                 <span
                     className={`inline-flex self-start rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${statusStyles[request.status]}`}
                 >
-                    {request.status}
+                    {statusLabels[request.status]}
                 </span>
             </header>
 
@@ -49,14 +75,16 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                     Special Notes
                 </p>
                 <p className="text-[14px] text-[#1f2937]">
-                    {request.specialNotes}
+                    {request.specialNotes || '—'}
                 </p>
             </section>
 
             <footer className="flex flex-wrap items-center gap-3">
                 <button
                     type="button"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937]"
+                    disabled={request.status !== 'pending'}
+                    onClick={handleAccept}
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     <Check className="h-4 w-4" />
                     Accept Request
@@ -64,7 +92,9 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
 
                 <button
                     type="button"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                    disabled={request.status !== 'pending'}
+                    onClick={handleDecline}
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     <X className="h-4 w-4" />
                     Decline

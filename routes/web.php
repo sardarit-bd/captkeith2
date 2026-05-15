@@ -52,7 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:captain|deckhand')->group(function () {
         Route::get('yachts-match', [\App\Http\Controllers\YachtsMatchController::class, 'index'])
             ->name('yachts-match');
-        Route::inertia('requests', 'requests')->name('requests');
+        Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
+        Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
         Route::inertia('account-preferences', 'account-preferences')->name('account-preferences');
         Route::inertia('yacht/details', 'yacht/details')->name('yacht-details');
     });

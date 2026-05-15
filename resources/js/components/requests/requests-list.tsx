@@ -1,10 +1,22 @@
 import { RequestCard } from './request-card';
-import { captainRequestRecords } from './requests-data';
+import type { CaptainRequestRecord } from './requests-data';
 
-export function RequestsList() {
+interface RequestsListProps {
+    requests: CaptainRequestRecord[];
+}
+
+export function RequestsList({ requests }: RequestsListProps) {
+    if (requests.length === 0) {
+        return (
+            <p className="py-12 text-center text-[14px] text-[#6b7280]">
+                No requests found.
+            </p>
+        );
+    }
+
     return (
         <section className="space-y-6">
-            {captainRequestRecords.map((request) => (
+            {requests.map((request) => (
                 <RequestCard key={request.id} request={request} />
             ))}
         </section>

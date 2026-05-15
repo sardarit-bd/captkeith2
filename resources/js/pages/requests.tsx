@@ -1,12 +1,20 @@
 import { Head } from '@inertiajs/react';
+import type { CaptainRequestRecord } from '@/components/requests/requests-data';
 import { RequestsPageContent } from '@/components/requests/requests-page-content';
+
 import { requests } from '@/routes';
 
-export default function RequestsPage() {
+interface RequestsPageProps {
+    requests: CaptainRequestRecord[];
+}
+
+export default function RequestsPage({
+    requests: requestRecords,
+}: RequestsPageProps) {
     return (
         <>
             <Head title="Requests" />
-            <RequestsPageContent />
+            <RequestsPageContent requests={requestRecords} />
         </>
     );
 }
