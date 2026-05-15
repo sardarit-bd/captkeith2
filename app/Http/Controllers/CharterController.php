@@ -87,7 +87,7 @@ class CharterController extends Controller
             'start_time'       => $validated['start_time'],
             'duration_minutes' => (int) $validated['duration_hours'] * 60,
             'special_notes'    => $validated['special_notes'] ?? null,
-            'status'           => 'pending',
+            'status'           => 'draft',
             'invite_token'     => Str::random(32),
             'invite_token_expires_at' => now()->addDays(7),
         ]);

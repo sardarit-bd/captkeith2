@@ -130,48 +130,6 @@ class VesselController extends Controller
 
         $vessel->load(['photos' => fn($q) => $q->orderBy('display_order')]);
 
-        // $vessels = Vessel::where('owner_id', $owner->id)
-        //     ->whereNull('deleted_at')
-        //     ->with(['photos' => fn($q) => $q->orderBy('display_order')])
-        //     ->latest()
-        //     ->get()
-        //     ->map(function (Vessel $vessel) {
-        //         return [
-        //             'id'                        => $vessel->id,
-        //             'name'                      => $vessel->name,
-        //             'registrationNo'            => $vessel->official_number,
-        //             'image'                     => $vessel->photos->first()
-        //                 ? Storage::url($vessel->photos->first()->image_path)
-        //                 : null,
-        //             'defaultTab'                => 'details',
-        //             'specs' => [
-        //                 'type'             => ucfirst($vessel->vessel_type ?? ''),
-        //                 'length'           => $vessel->length_ft ? $vessel->length_ft . ' ft' : '—',
-        //                 'draft'            => $vessel->draft_ft ? $vessel->draft_ft . ' ft' : '—',
-        //                 'mooringLocation'  => trim(collect([
-        //                     $vessel->marina_name,
-        //                     $vessel->marina_city,
-        //                     $vessel->marina_state,
-        //                 ])->filter()->implode(', ')),
-        //                 'operatingArea'    => $vessel->operating_area ?? '—',
-        //                 'deckhandRequired' => $vessel->requires_deckhand ? 'Yes' : 'No',
-        //             ],
-        //             'captainRequirements' => [
-        //                 'licenseTypes'      => array_filter([$vessel->required_license_type]),
-        //                 'rating'            => $vessel->required_license_type ?? '—',
-        //                 'endorsements'      => array_filter([$vessel->required_endorsement]),
-        //                 'minimumExperience' => $vessel->required_years_experience
-        //                     ? $vessel->required_years_experience . ' years'
-        //                     : '—',
-        //             ],
-        //             'charters' => [
-        //                 'hasScheduledCharters' => false,
-        //             ],
-        //         ];
-        //     });
-        // return Inertia::render('my-yachts', [
-        //     'vessels' => $vessels,
-        // ]);
         return Inertia::render('my-yachts/create', [
             'vessel' => [
                 'id'                        => $vessel->id,
