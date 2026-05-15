@@ -32,6 +32,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
         Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
         Route::match(['PUT', 'PATCH'], 'my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.update');
+        Route::get(
+            'captain-requests',
+            [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'index']
+        )->name('captain-requests');
+
+        Route::patch(
+            'captain-requests/{interest}/respond',
+            [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'respond']
+        )->name('captain-requests.respond');
     });
 
     Route::middleware('role:admin')->group(function () {

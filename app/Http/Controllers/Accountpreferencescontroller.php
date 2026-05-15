@@ -73,6 +73,7 @@ class AccountPreferencesController extends Controller
             'preferences' => array_merge($current, ['unavailable_dates' => $dates]),
         ]);
 
+
         return back()->with('success', 'Unavailable date added.');
     }
 

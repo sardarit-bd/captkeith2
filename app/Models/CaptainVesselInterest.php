@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'captain_id',
     'vessel_id',
+    'status',
 ])]
 class CaptainVesselInterest extends Model
 {
