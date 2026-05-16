@@ -27,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
         Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
         Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
+        Route::post('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'store'])
+            ->name('captains.invite.store');
+        Route::delete('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'destroy'])
+            ->name('captains.invite.destroy');
         Route::inertia('owner/settings', 'owner-settings')->name('owner-settings');
         Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
         Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');

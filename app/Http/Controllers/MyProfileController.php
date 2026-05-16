@@ -10,10 +10,28 @@ use Inertia\Response;
 
 class MyProfileController extends Controller
 {
-
     public function edit(Request $request): Response
     {
-        $user    = $request->user();
+        $user = $request->user();
+
+
+        if ($user->hasRole('owner')) {
+            $profile = $user->ownerProfile;
+
+            return Inertia::render('my-profile', [
+                'profile' => $profile ? [
+                    'full_name'    => $profile->full_name,
+                    'phone'        => $profile->phone,
+                    'company_name' => $profile->company_name,
+                    'bio'          => $profile->bio,
+                    'photo_url'    => $profile->avatar_path
+                        ? Storage::url($profile->avatar_path)
+                        : null,
+                ] : null,
+            ]);
+        }
+
+
         $profile = $user->captainProfile;
 
         return Inertia::render('my-profile', [
@@ -48,9 +66,42 @@ class MyProfileController extends Controller
         ]);
     }
 
-
     public function update(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+
+        if ($user->hasRole('owner')) {
+            $validated = $request->validate([
+                'full_name'    => ['required', 'string', 'max:150'],
+                'phone'        => ['nullable', 'string', 'max:20'],
+                'company_name' => ['nullable', 'string', 'max:150'],
+                'bio'          => ['nullable', 'string', 'max:1000'],
+                'photo'        => ['nullable', 'image', 'max:5120'],
+            ]);
+
+            $profile = $user->ownerProfile()->firstOrNew(['user_id' => $user->id]);
+
+            if ($request->hasFile('photo')) {
+                if ($profile->avatar_path) {
+                    Storage::disk('public')->delete($profile->avatar_path);
+                }
+                $validated['avatar_path'] = $request->file('photo')
+                    ->store('owner-photos', 'public');
+            }
+
+            unset($validated['photo']);
+
+            $profile->fill($validated);
+            $profile->user_id = $user->id;
+            $profile->save();
+
+            session()->flash('toast', ['type' => 'success', 'message' => 'Profile updated successfully.']);
+
+            return to_route('my-profile');
+        }
+
+
         $validated = $request->validate([
             'full_name'            => ['required', 'string', 'max:150'],
             'phone'                => ['required', 'string', 'max:20'],
@@ -74,7 +125,6 @@ class MyProfileController extends Controller
             'license_doc'          => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $user    = $request->user();
         $profile = $user->captainProfile()->firstOrNew(['user_id' => $user->id]);
 
         if ($request->hasFile('photo')) {
@@ -106,7 +156,6 @@ class MyProfileController extends Controller
         $profile->fill($validated);
         $profile->user_id = $user->id;
         $profile->save();
-
 
         session()->flash('toast', ['type' => 'success', 'message' => 'Profile updated successfully.']);
 

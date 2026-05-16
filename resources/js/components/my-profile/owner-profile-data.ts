@@ -16,3 +16,10 @@ export const ownerStateOptions = [
     { value: 'TX', label: 'Texas' },
     { value: 'WA', label: 'Washington' },
 ] as const;
+export type OwnerProfileFormData = {
+    full_name: string;
+    phone: string;
+    company_name: string;
+    bio: string;
+    email: string;
+};

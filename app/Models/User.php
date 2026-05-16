@@ -24,7 +24,7 @@ class User extends Authenticatable
     use HasFactory, HasRoles, HasUuids, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 
 
-    public function ownerProfile(): HasOne
+    public function ownerProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(OwnerProfile::class);
     }

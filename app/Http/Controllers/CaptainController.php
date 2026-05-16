@@ -24,9 +24,7 @@ class CaptainController extends Controller
             $query->where('years_experience', '>=', (int) $request->input('min_experience'));
         }
 
-        $captains = $query
-            ->latest()
-            ->get()
+        $captains = $query->latest()->get()
             ->map(fn(CaptainProfile $captain) => [
                 'id'           => $captain->id,
                 'name'         => $captain->full_name,
@@ -41,9 +39,47 @@ class CaptainController extends Controller
                 'is_verified'  => $captain->is_verified,
             ]);
 
+
+        $owner = \App\Models\OwnerProfile::where('user_id', $request->user()->id)->first();
+
+        $vessels = $owner
+            ? \App\Models\Vessel::where('owner_id', $owner->id)
+            ->whereNull('deleted_at')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn($v) => ['value' => $v->id, 'label' => $v->name])
+            : [];
+
+
+        $invitations = $owner
+            ? \App\Models\OwnerCaptainInvitation::where('owner_id', $owner->id)
+            ->get()
+            ->groupBy('captain_id')
+            ->map(fn($group) => $group->pluck('status', 'vessel_id'))
+            : collect();
+
+        $acceptedCaptainIds = $owner
+            ? \App\Models\CaptainVesselInterest::whereIn(
+                'vessel_id',
+                \App\Models\Vessel::where('owner_id', $owner->id)
+                    ->whereNull('deleted_at')
+                    ->pluck('id')
+            )
+            ->where('status', 'accepted')
+            ->pluck('captain_id')
+            ->unique()
+            ->values()
+            ->toArray()
+            : [];
+
+
         return Inertia::render('captains', [
-            'captains' => $captains,
-            'filters'  => $request->only(['license_type', 'min_experience']),
+            'captains'           => $captains,
+            'filters'            => $request->only(['license_type', 'min_experience']),
+            'vessels'            => $vessels,
+            'invitations'        => $invitations,
+            'acceptedCaptainIds' => $acceptedCaptainIds,
         ]);
     }
 }
