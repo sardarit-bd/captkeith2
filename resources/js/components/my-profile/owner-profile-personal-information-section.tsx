@@ -1,4 +1,6 @@
-import { Camera, Mail, Phone, UserCircle } from 'lucide-react';
+import { Camera, Mail, Phone, Save, UserCircle, X } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
+
 import type { OwnerProfileFormData } from './owner-profile-data';
 
 interface Props {
@@ -16,15 +18,34 @@ interface Props {
 }
 
 const inputCls =
-    'block w-full rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 py-3.5 text-[14px] text-[#111827] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#0a273f] focus:bg-white focus:ring-4 focus:ring-[#0a273f]/10 focus:outline-none';
+    'block w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-[14px] text-[#111827] transition-all duration-200 placeholder:text-[#c4c9d4] focus:border-[#3DB3DE] focus:ring-3 focus:ring-[#3DB3DE]/15 focus:outline-none';
 
 const inputErrCls =
-    'block w-full rounded-xl border border-red-300 bg-red-50 px-4 py-3.5 text-[14px] text-[#111827] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:outline-none';
+    'block w-full rounded-xl border border-red-300 bg-red-50/50 px-4 py-3 text-[14px] text-[#111827] transition-all duration-200 placeholder:text-[#c4c9d4] focus:border-red-400 focus:ring-3 focus:ring-red-400/15 focus:outline-none';
 
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
+    return (
+        <p className="mt-1.5 flex items-center gap-1 text-[12px] text-red-500">
+            <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
+            {message}
+        </p>
+    );
+}
 
-    return <p className="mt-1 text-xs text-red-500">{message}</p>;
+function Label({
+    children,
+    required,
+}: {
+    children: React.ReactNode;
+    required?: boolean;
+}) {
+    return (
+        <label className="mb-2 block text-[13px] font-semibold text-[#374151]">
+            {children}
+            {required && <span className="ml-0.5 text-[#3DB3DE]">*</span>}
+        </label>
+    );
 }
 
 export function OwnerProfilePersonalInformationSection({
@@ -38,22 +59,89 @@ export function OwnerProfilePersonalInformationSection({
     processing,
 }: Props) {
     return (
-        <section className="rounded-3xl border border-[#f1f5f9] bg-white shadow-sm">
-            <div className="border-b border-[#f8fafc] p-6 sm:p-8 lg:p-10">
-                <div className="mb-8 flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eff6ff] text-[#3b82f6]">
+        <section className="overflow-hidden rounded-2xl border border-[#edf0f7] bg-white shadow-sm">
+            {/* ── Header ── */}
+            <div className="border-b border-[#f1f5f9] bg-gradient-to-r from-[#f8faff] to-white px-6 py-5 sm:px-8">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EFF8FD] text-[#3DB3DE]">
                         <UserCircle className="h-5 w-5" />
                     </div>
-                    <h3 className="text-[18px] font-bold text-[#111827]">
-                        Personal Information
-                    </h3>
+                    <div>
+                        <h3 className="text-[16px] font-bold text-[#0D314D]">
+                            Personal Information
+                        </h3>
+                        <p className="text-[12px] text-[#9ca3af]">
+                            Update your profile details and photo
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Body ── */}
+            <div className="p-6 sm:p-8">
+                {/* Photo + Name row */}
+                <div className="mb-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+                    {/* Avatar */}
+                    <div className="relative shrink-0">
+                        <div className="h-20 w-20 overflow-hidden rounded-2xl border-2 border-[#e5e7eb] bg-[#f3f4f6] shadow-sm">
+                            {photoUrl ? (
+                                <img
+                                    src={photoUrl}
+                                    alt="Profile"
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center">
+                                    <UserCircle className="h-10 w-10 text-[#d1d5db]" />
+                                </div>
+                            )}
+                        </div>
+                        {/* Camera badge */}
+                        <label className="absolute -right-1 -bottom-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#3DB3DE] shadow-md transition-colors hover:bg-[#2A9BCA]">
+                            <Camera className="h-3.5 w-3.5 text-white" />
+                            <input
+                                type="file"
+                                className="sr-only"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) onPhotoChange(file);
+                                }}
+                            />
+                        </label>
+                    </div>
+
+                    {/* Name + hint */}
+                    <div className="flex-1">
+                        <p className="mb-1 text-[13px] font-semibold text-[#0D314D]">
+                            Profile Photo
+                        </p>
+                        <p className="mb-3 text-[12px] text-[#9ca3af]">
+                            JPG, PNG or GIF · Max 5 MB
+                        </p>
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-all hover:border-[#3DB3DE] hover:text-[#3DB3DE]">
+                            <Camera className="h-3.5 w-3.5" />
+                            {photoUrl ? 'Change photo' : 'Upload photo'}
+                            <input
+                                type="file"
+                                className="sr-only"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) onPhotoChange(file);
+                                }}
+                            />
+                        </label>
+                    </div>
                 </div>
 
-                <div className="space-y-6">
+                {/* Divider */}
+                <div className="mb-7 h-px bg-gradient-to-r from-transparent via-[#e5e7eb] to-transparent" />
+
+                <div className="space-y-5">
+                    {/* Full Name */}
                     <div>
-                        <label className="mb-2 block text-[13px] font-semibold text-[#374151]">
-                            Full Name <span className="text-[#ef4444]">*</span>
-                        </label>
+                        <Label required>Full Name</Label>
                         <input
                             type="text"
                             value={data.full_name}
@@ -68,13 +156,12 @@ export function OwnerProfilePersonalInformationSection({
                         <FieldError message={errors.full_name} />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    {/* Phone + Company */}
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
-                            <label className="mb-2 block text-[13px] font-semibold text-[#374151]">
-                                Phone Number
-                            </label>
+                            <Label>Phone Number</Label>
                             <div className="relative">
-                                <Phone className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#9ca3af]" />
+                                <Phone className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-[#c4c9d4]" />
                                 <input
                                     type="tel"
                                     value={data.phone}
@@ -82,16 +169,14 @@ export function OwnerProfilePersonalInformationSection({
                                         onChange('phone', e.target.value)
                                     }
                                     placeholder="+1 (555) 000-0000"
-                                    className={`${errors.phone ? inputErrCls : inputCls} pl-11`}
+                                    className={`${errors.phone ? inputErrCls : inputCls} pl-10`}
                                 />
                             </div>
                             <FieldError message={errors.phone} />
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-[13px] font-semibold text-[#374151]">
-                                Company Name
-                            </label>
+                            <Label>Company Name</Label>
                             <input
                                 type="text"
                                 value={data.company_name}
@@ -107,28 +192,26 @@ export function OwnerProfilePersonalInformationSection({
                         </div>
                     </div>
 
+                    {/* Email — disabled */}
                     <div>
-                        <label className="mb-2 block text-[13px] font-semibold text-[#374151]">
-                            Email Address
-                        </label>
+                        <Label>Email Address</Label>
                         <div className="relative">
-                            <Mail className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#9ca3af]" />
+                            <Mail className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-[#c4c9d4]" />
                             <input
                                 type="email"
                                 value={data.email}
                                 disabled
-                                className="block w-full cursor-not-allowed rounded-xl border border-[#e5e7eb] bg-[#f3f4f6] py-3.5 pr-4 pl-11 text-[14px] text-[#6b7280]"
+                                className="block w-full cursor-not-allowed rounded-xl border border-[#e5e7eb] bg-[#f9fafb] py-3 pr-4 pl-10 text-[14px] text-[#9ca3af]"
                             />
                         </div>
-                        <p className="mt-1 text-xs text-[#9ca3af]">
+                        <p className="mt-1.5 text-[12px] text-[#b0b7c3]">
                             Email cannot be changed here. Update it in Settings.
                         </p>
                     </div>
 
+                    {/* Bio */}
                     <div>
-                        <label className="mb-2 block text-[13px] font-semibold text-[#374151]">
-                            Bio
-                        </label>
+                        <Label>Bio</Label>
                         <textarea
                             rows={4}
                             value={data.bio}
@@ -138,69 +221,38 @@ export function OwnerProfilePersonalInformationSection({
                         />
                         <FieldError message={errors.bio} />
                     </div>
-
-                    <div className="pt-4">
-                        <label className="mb-3 block text-[13px] font-semibold text-[#374151]">
-                            Profile Photo
-                        </label>
-
-                        {photoUrl && (
-                            <div className="mb-4">
-                                <img
-                                    src={photoUrl}
-                                    alt="Current profile"
-                                    className="h-20 w-20 rounded-full object-cover ring-2 ring-[#e5e7eb]"
-                                />
-                            </div>
-                        )}
-
-                        <label className="group mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#d1d5db] px-6 py-10 transition-colors hover:border-[#0a273f] hover:bg-[#eff6ff]/60">
-                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f9fafb] shadow-sm transition-all group-hover:bg-white">
-                                <Camera className="h-5 w-5 text-[#6b7280] transition-colors group-hover:text-[#0a273f]" />
-                            </div>
-                            <span className="mb-2 text-[14px] font-medium text-[#374151]">
-                                {photoUrl ? 'Change photo' : 'Upload photo'}
-                            </span>
-                            <span className="inline-flex items-center rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-[13px] font-medium text-[#4b5563] shadow-sm transition-colors group-hover:border-[#0a273f] group-hover:text-[#0a273f]">
-                                Choose File
-                            </span>
-                            <p className="mt-4 text-[11px] tracking-wider text-[#9ca3af] uppercase">
-                                JPG, PNG or GIF (Max 5MB)
-                            </p>
-                            <input
-                                type="file"
-                                className="sr-only"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-
-                                    if (file) {
-                                        onPhotoChange(file);
-                                    }
-                                }}
-                            />
-                        </label>
-                    </div>
                 </div>
             </div>
 
-            <div className="flex flex-col-reverse items-center justify-end gap-4 border-t border-[#f1f5f9] bg-[#f9fafb]/70 px-6 py-5 sm:flex-row sm:px-8">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    disabled={processing}
-                    className="w-full cursor-pointer rounded-xl border border-[#e5e7eb] bg-white px-6 py-3 text-[14px] font-semibold text-[#374151] shadow-sm transition-all duration-200 hover:border-[#d1d5db] hover:bg-[#f3f4f6] disabled:opacity-50 sm:w-auto"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="button"
-                    onClick={onSubmit}
-                    disabled={processing}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0a273f] px-8 py-3 text-[14px] font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 sm:w-auto"
-                >
-                    {processing ? 'Saving…' : 'Save Profile'}
-                </button>
+            {/* ── Footer ── */}
+            <div className="flex flex-col-reverse items-center justify-between gap-3 border-t border-[#f1f5f9] bg-[#fafbfc] px-6 py-4 sm:flex-row sm:px-8">
+                <p className="text-[12px] text-[#b0b7c3]">
+                    <span className="text-[#3DB3DE]">*</span> Required fields
+                </p>
+                <div className="flex w-full flex-col-reverse gap-3 sm:w-auto sm:flex-row">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        disabled={processing}
+                        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-semibold text-[#374151] shadow-sm transition-all hover:border-[#d1d5db] hover:bg-[#f9fafb] disabled:opacity-50 sm:w-auto"
+                    >
+                        <X className="h-4 w-4" />
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onSubmit}
+                        disabled={processing}
+                        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0D314D] px-6 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#123651] hover:shadow-md disabled:opacity-50 sm:w-auto"
+                    >
+                        {processing ? (
+                            <Spinner />
+                        ) : (
+                            <Save className="h-4 w-4" />
+                        )}
+                        {processing ? 'Saving…' : 'Save Profile'}
+                    </button>
+                </div>
             </div>
         </section>
     );

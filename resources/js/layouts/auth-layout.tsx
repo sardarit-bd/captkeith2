@@ -12,7 +12,12 @@ export default function AuthLayout({
 }) {
     const { component } = usePage();
 
-    if (component === 'auth/register' || component === 'auth/login' || component === 'auth/forgot-password') {
+    if (
+        component === 'auth/register' ||
+        component === 'auth/login' ||
+        component === 'auth/forgot-password' ||
+        component === 'auth/confirm-password'
+    ) {
         return <>{children}</>;
     }
 

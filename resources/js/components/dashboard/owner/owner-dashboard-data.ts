@@ -65,7 +65,7 @@ export const ownerQuickActions: OwnerQuickAction[] = [
         icon: UserRoundCheck,
         iconColor: '#16a34a',
         iconBg: '#eaf7ef',
-        href: '/my-yachts/create',
+        href: '/captain-requests',
     },
     {
         title: 'Manage Charters',

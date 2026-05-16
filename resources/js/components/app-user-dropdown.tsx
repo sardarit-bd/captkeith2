@@ -20,7 +20,6 @@ import { adminMyProfile } from '@/routes';
 import { chartererSettings } from '@/routes';
 import { myProfile } from '@/routes';
 import { notifications } from '@/routes';
-import { ownerSettings } from '@/routes';
 import { platformSettings } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
 

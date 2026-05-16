@@ -31,7 +31,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('captains.invite.store');
         Route::delete('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'destroy'])
             ->name('captains.invite.destroy');
-        Route::inertia('owner/settings', 'owner-settings')->name('owner-settings');
+        Route::get('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'index'])
+            ->name('owner-settings');
+        Route::patch('owner/settings/preferences', [\App\Http\Controllers\OwnerSettingsController::class, 'updatePreferences'])
+            ->name('owner-settings.preferences');
+        Route::patch('owner/settings/deactivate', [\App\Http\Controllers\OwnerSettingsController::class, 'deactivate'])
+            ->name('owner-settings.deactivate');
+        Route::delete('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'destroy'])
+            ->name('owner-settings.destroy');
         Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
         Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
         Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');

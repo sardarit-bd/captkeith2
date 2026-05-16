@@ -86,6 +86,7 @@ function InviteModal({
 
     function handleSend() {
         if (!selectedVessel || isLoading) return;
+
         setIsLoading(true);
         router.post(
             `/captains/${captain.id}/invite`,
@@ -100,6 +101,7 @@ function InviteModal({
 
     function handleCancel() {
         if (!selectedVessel || isLoading) return;
+
         setIsLoading(true);
         router.delete(`/captains/${captain.id}/invite`, {
             data: { vessel_id: selectedVessel },
@@ -152,7 +154,6 @@ function InviteModal({
                         <ChevronDown className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     </div>
 
-                    {/* Status feedback for selected vessel */}
                     {currentStatus === 'pending' && (
                         <p className="mt-2 text-xs text-amber-600">
                             Invitation already sent — pending response.
@@ -328,7 +329,7 @@ export default function CaptainsPage() {
     return (
         <>
             <Head title="Captains" />
-
+            {console.log('modalCaptain', modalCaptain)}
             {modalCaptain && (
                 <InviteModal
                     captain={modalCaptain}
