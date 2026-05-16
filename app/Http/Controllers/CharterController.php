@@ -32,25 +32,44 @@ class CharterController extends Controller
             ->whereNull('deleted_at')
             ->pluck('id');
 
+        // Draft charters — owner created but no charterer yet
+        $drafts = CharterEvent::whereIn('vessel_id', $vesselIds)
+            ->whereNull('deleted_at')
+            ->where('status', 'draft')
+            ->with('vessel.photos')
+            ->latest('charter_date')
+            ->get()
+            ->map(fn(CharterEvent $event) => [
+                'id'          => $event->id,
+                'yachtName'   => $event->vessel->name,
+                'yachtType'   => ucfirst($event->vessel->vessel_type ?? ''),
+                'yachtLength' => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
+                'date'        => $event->charter_date?->format('M d, Y') ?? '—',
+                'startTime'   => $event->start_time ?? '—',
+                'duration'    => $event->duration_minutes ? round($event->duration_minutes / 60, 1) . ' hrs' : '—',
+                'yachtImage'  => $event->vessel->photos->first()
+                    ? Storage::url($event->vessel->photos->first()->image_path)
+                    : null,
+                'inviteLink'  => $event->invite_token
+                    ? url('/charterer/join/' . $event->invite_token)
+                    : null,
+                'inviteExpires' => $event->invite_token_expires_at?->format('M d, Y') ?? null,
+                'specialNotes'  => $event->special_notes,
+            ]);
+
+        // Active bookings — charterer has joined
         $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
             ->whereNull('deleted_at')
             ->whereIn('status', ['confirmed', 'booked', 'pending'])
-            ->with([
-                'vessel.photos',
-                'charterer.user',
-            ])
+            ->with(['vessel.photos', 'charterer.user'])
             ->latest('charter_date')
             ->get()
             ->map(fn(CharterEvent $event) => [
                 'id'              => $event->id,
                 'yachtName'       => $event->vessel->name,
                 'yachtType'       => ucfirst($event->vessel->vessel_type ?? ''),
-                'yachtLength'     => $event->vessel->length_ft
-                    ? $event->vessel->length_ft . ' ft'
-                    : '—',
-                'date'            => $event->charter_date
-                    ? $event->charter_date->format('M d, Y')
-                    : '—',
+                'yachtLength'     => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
+                'date'            => $event->charter_date?->format('M d, Y') ?? '—',
                 'yachtImage'      => $event->vessel->photos->first()
                     ? Storage::url($event->vessel->photos->first()->image_path)
                     : null,
@@ -61,6 +80,7 @@ class CharterController extends Controller
 
         return Inertia::render('charterers', [
             'vessels'  => $vessels,
+            'drafts'   => $drafts,
             'bookings' => $bookings,
         ]);
     }
@@ -95,5 +115,26 @@ class CharterController extends Controller
         return redirect()
             ->route('charterers')
             ->with('success', 'Charter created successfully.');
+    }
+
+
+    public function join(string $token): \Inertia\Response|\Illuminate\Http\RedirectResponse
+    {
+        $event = CharterEvent::where('invite_token', $token)
+            ->whereNull('deleted_at')
+            ->where('invite_token_expires_at', '>', now())
+            ->firstOrFail();
+        return Inertia::render('charterer/request', [
+            'charterEvent' => [
+                'id'         => $event->id,
+                'token'      => $token,
+                'yachtName'  => $event->vessel->name ?? '—',
+                'date'       => $event->charter_date?->format('M d, Y'),
+                'startTime'  => $event->start_time,
+                'duration'   => $event->duration_minutes
+                    ? round($event->duration_minutes / 60, 1) . ' hrs'
+                    : '—',
+            ],
+        ]);
     }
 }

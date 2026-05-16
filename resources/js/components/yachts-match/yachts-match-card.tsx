@@ -1,39 +1,115 @@
 import { router } from '@inertiajs/react';
-import { Heart, Loader2, MessageSquare, Ship } from 'lucide-react';
+import {
+    CheckCircle,
+    Heart,
+    Loader2,
+    MessageSquare,
+    Ship,
+    XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
-import type { YachtMatchRecord } from './yachts-match-data';
+import type { InterestStatus, YachtMatchRecord } from './yachts-match-data';
 
 export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
-    const [isInterested, setIsInterested] = useState(yacht.isInterested);
+    const [status, setStatus] = useState<InterestStatus | null>(
+        yacht.interestStatus,
+    );
     const [isLoading, setIsLoading] = useState(false);
 
-    function handleInterestToggle() {
+    function handleSendInterest() {
         if (isLoading) {
             return;
         }
 
-        const nextState = !isInterested;
-
-        setIsInterested(nextState);
         setIsLoading(true);
 
-        const url = `/vessels/${yacht.id}/interest`;
-
-        const options = {
-            preserveScroll: true,
-            onError: () => {
-                setIsInterested(!nextState);
+        router.post(
+            `/vessels/${yacht.id}/interest`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => setStatus('pending'),
+                onError: () => setStatus(null),
+                onFinish: () => setIsLoading(false),
             },
-            onFinish: () => {
-                setIsLoading(false);
-            },
-        };
+        );
+    }
 
-        if (nextState) {
-            router.post(url, {}, options);
-        } else {
-            router.delete(url, options);
+    function handleCancelInterest() {
+        if (isLoading) {
+            return;
         }
+
+        setIsLoading(true);
+
+        router.delete(`/vessels/${yacht.id}/interest`, {
+            preserveScroll: true,
+            onSuccess: () => setStatus(null),
+            onError: () => setStatus('pending'),
+            onFinish: () => setIsLoading(false),
+        });
+    }
+
+    function renderButton() {
+        if (status === 'accepted') {
+            return (
+                <button
+                    type="button"
+                    disabled
+                    className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-[#14532d] py-3 text-[14px] font-medium text-white opacity-90 shadow-sm"
+                >
+                    <CheckCircle className="h-4 w-4" />
+                    Accepted
+                </button>
+            );
+        }
+
+        if (status === 'declined') {
+            return (
+                <button
+                    type="button"
+                    disabled
+                    className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] py-3 text-[14px] font-medium text-[#9ca3af] shadow-sm"
+                >
+                    <XCircle className="h-4 w-4" />
+                    Request Declined
+                </button>
+            );
+        }
+
+        if (status === 'pending') {
+            return (
+                <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={handleCancelInterest}
+                    className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] py-3 text-[14px] font-medium text-[#374151] shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <Heart className="h-4 w-4 fill-current text-[#0D314D]" />
+                    )}
+                    Cancel Request
+                </button>
+            );
+        }
+
+        return (
+            <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleSendInterest}
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0D314D] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                    <Heart className="h-4 w-4" fill="none" />
+                )}
+                Send Interest
+            </button>
+        );
     }
 
     return (
@@ -113,27 +189,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                 </div>
 
                 <div className="mt-auto flex items-center gap-3">
-                    <button
-                        type="button"
-                        disabled={isLoading}
-                        onClick={handleInterestToggle}
-                        className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-3 text-[14px] font-medium shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                            isInterested
-                                ? 'bg-[#14532d] text-white hover:bg-[#166534]'
-                                : 'bg-[#0D314D] text-white hover:bg-[#0a273f]'
-                        }`}
-                    >
-                        {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Heart
-                                className="h-4 w-4"
-                                fill={isInterested ? 'currentColor' : 'none'}
-                            />
-                        )}
-                        {isInterested ? 'Interested' : 'Interested'}
-                    </button>
-
+                    {renderButton()}
                     <button
                         type="button"
                         className="cursor-pointer rounded-lg border border-[#e5e7eb] p-3 text-[#4b5563] shadow-sm transition-colors hover:bg-[#f9fafb] hover:text-[#111827]"

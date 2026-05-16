@@ -1,7 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     Award,
-    CheckCircle2,
     ChevronDown,
     MapPin,
     MessageSquare,
@@ -38,17 +37,22 @@ interface PageProps {
 }
 
 const LICENSE_OPTIONS = [
-    { value: '', label: 'All' },
+    { value: '', label: 'All Licenses' },
     { value: 'oupv', label: 'OUPV (6-Pack)' },
     { value: 'masters', label: 'Masters' },
 ];
 
 const EXPERIENCE_OPTIONS = [
-    { value: '', label: 'Any' },
+    { value: '', label: 'Any Experience' },
     { value: '5', label: '5+ Years' },
     { value: '10', label: '10+ Years' },
     { value: '15', label: '15+ Years' },
 ];
+
+const LICENSE_LABELS: Record<string, string> = {
+    oupv: 'OUPV (Six-Pack)',
+    masters: 'Master License',
+};
 
 export default function CaptainsPage() {
     const { captains: initialCaptains, filters } = usePage<PageProps>().props;
@@ -57,17 +61,31 @@ export default function CaptainsPage() {
     const [minExperience, setMinExperience] = useState(
         filters.min_experience ?? '',
     );
+    const [isSearching, setIsSearching] = useState(false);
 
     const handleSearch = () => {
+        setIsSearching(true);
         router.get(
             '/captains',
             {
                 ...(licenseType ? { license_type: licenseType } : {}),
                 ...(minExperience ? { min_experience: minExperience } : {}),
             },
-            { preserveState: true, preserveScroll: true },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => setIsSearching(false),
+            },
         );
     };
+
+    const handleClearFilters = () => {
+        setLicenseType('');
+        setMinExperience('');
+        router.get('/captains', {}, { preserveState: false });
+    };
+
+    const hasActiveFilters = licenseType !== '' || minExperience !== '';
 
     return (
         <>
@@ -77,7 +95,7 @@ export default function CaptainsPage() {
                 <div className="mx-auto w-full max-w-7xl space-y-8">
                     {/* Filters */}
                     <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="grid grid-cols-1 items-end gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
                                 <label className="mb-2 block text-sm font-semibold text-gray-900">
                                     License Type
@@ -88,7 +106,7 @@ export default function CaptainsPage() {
                                         onChange={(e) =>
                                             setLicenseType(e.target.value)
                                         }
-                                        className="w-full cursor-pointer appearance-none rounded-lg border-none bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
+                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
                                     >
                                         {LICENSE_OPTIONS.map((o) => (
                                             <option
@@ -113,7 +131,7 @@ export default function CaptainsPage() {
                                         onChange={(e) =>
                                             setMinExperience(e.target.value)
                                         }
-                                        className="w-full cursor-pointer appearance-none rounded-lg border-none bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
+                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
                                     >
                                         {EXPERIENCE_OPTIONS.map((o) => (
                                             <option
@@ -127,22 +145,65 @@ export default function CaptainsPage() {
                                     <ChevronDown className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 </div>
                             </div>
+
                             <div className="hidden lg:block" />
 
-                            <div>
+                            <div className="flex flex-col gap-2">
                                 <button
                                     type="button"
                                     onClick={handleSearch}
-                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                                    disabled={isSearching}
+                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     <Search className="h-4 w-4" />
-                                    Search
+                                    {isSearching ? 'Searching…' : 'Search'}
                                 </button>
+                                {hasActiveFilters && (
+                                    <button
+                                        type="button"
+                                        onClick={handleClearFilters}
+                                        className="w-full cursor-pointer text-center text-xs font-medium text-gray-400 underline-offset-2 hover:text-gray-600 hover:underline"
+                                    >
+                                        Clear filters
+                                    </button>
+                                )}
                             </div>
                         </div>
+
+                        {/* Active filter pills */}
+                        {hasActiveFilters && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                                {licenseType && (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-medium text-[#1d4ed8]">
+                                        {LICENSE_LABELS[licenseType] ??
+                                            licenseType}
+                                        <button
+                                            type="button"
+                                            onClick={() => setLicenseType('')}
+                                            className="cursor-pointer text-[#1d4ed8] hover:text-[#1e40af]"
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                )}
+                                {minExperience && (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-medium text-[#1d4ed8]">
+                                        {minExperience}+ years
+                                        <button
+                                            type="button"
+                                            onClick={() => setMinExperience('')}
+                                            className="cursor-pointer text-[#1d4ed8] hover:text-[#1e40af]"
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </section>
 
-                    <section>
+                    {/* Results header */}
+                    <section className="flex items-center justify-between">
                         <h2 className="text-2xl font-bold text-gray-900">
                             {initialCaptains.length > 0
                                 ? `${initialCaptains.length} Captain${initialCaptains.length !== 1 ? 's' : ''} Found`
@@ -150,26 +211,23 @@ export default function CaptainsPage() {
                         </h2>
                     </section>
 
+                    {/* Empty state */}
                     {initialCaptains.length === 0 ? (
                         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center">
                             <User className="mb-4 h-12 w-12 text-gray-300" />
-                            <p className="text-sm font-medium text-gray-500">
-                                No captains match your filters.
+                            <p className="text-sm font-semibold text-gray-700">
+                                No captains match your filters
+                            </p>
+                            <p className="mt-1 text-xs text-gray-400">
+                                Try adjusting the license type or experience
+                                requirements.
                             </p>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setLicenseType('');
-                                    setMinExperience('');
-                                    router.get(
-                                        '/captains',
-                                        {},
-                                        { preserveState: false },
-                                    );
-                                }}
-                                className="mt-4 cursor-pointer text-sm font-medium text-[#0A273F] underline hover:text-[#123651]"
+                                onClick={handleClearFilters}
+                                className="mt-5 cursor-pointer rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#123651]"
                             >
-                                Clear filters
+                                Clear all filters
                             </button>
                         </div>
                     ) : (
@@ -179,6 +237,7 @@ export default function CaptainsPage() {
                                     key={captain.id}
                                     className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-8"
                                 >
+                                    {/* Header */}
                                     <div className="mb-4 flex items-start justify-between gap-4">
                                         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                                             {/* Avatar */}
@@ -190,12 +249,12 @@ export default function CaptainsPage() {
                                                         className="h-16 w-16 rounded-full object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200">
+                                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                                                         <User className="h-8 w-8 text-gray-400" />
                                                     </div>
                                                 )}
                                                 {captain.is_verified && (
-                                                    <span className="absolute -right-1 -bottom-1 rounded-full bg-white p-0.5">
+                                                    <span className="absolute -right-1 -bottom-1 rounded-full bg-white p-0.5 shadow-sm">
                                                         <ShieldCheck className="h-4 w-4 text-emerald-500" />
                                                     </span>
                                                 )}
@@ -205,29 +264,35 @@ export default function CaptainsPage() {
                                                 <h3 className="text-xl leading-tight font-bold text-gray-900">
                                                     {captain.name}
                                                 </h3>
-                                                <div className="mt-3 space-y-1.5">
+                                                <div className="mt-2 space-y-1">
                                                     {captain.location && (
-                                                        <p className="flex items-center gap-2 text-sm text-gray-600">
-                                                            <MapPin className="h-4 w-4 text-gray-400" />
-                                                            <span>
-                                                                {
-                                                                    captain.location
-                                                                }
-                                                            </span>
+                                                        <p className="flex items-center gap-2 text-sm text-gray-500">
+                                                            <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                                                            {captain.location}
                                                         </p>
                                                     )}
-                                                    <p className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <Award className="h-4 w-4 text-gray-400" />
-                                                        <span>
-                                                            {captain.license}
-                                                        </span>
-                                                    </p>
-                                                    <p className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <Star className="h-4 w-4 text-gray-400" />
-                                                        <span>
-                                                            {captain.experience}
-                                                        </span>
-                                                    </p>
+                                                    {captain.license &&
+                                                        captain.license !==
+                                                            '—' && (
+                                                            <p className="flex items-center gap-2 text-sm text-gray-500">
+                                                                <Award className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                                                                {LICENSE_LABELS[
+                                                                    captain
+                                                                        .license
+                                                                ] ??
+                                                                    captain.license}
+                                                            </p>
+                                                        )}
+                                                    {captain.experience &&
+                                                        captain.experience !==
+                                                            '—' && (
+                                                            <p className="flex items-center gap-2 text-sm text-gray-500">
+                                                                <Star className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                                                                {
+                                                                    captain.experience
+                                                                }
+                                                            </p>
+                                                        )}
                                                 </div>
                                             </div>
                                         </div>
@@ -239,12 +304,13 @@ export default function CaptainsPage() {
                                         )}
                                     </div>
 
+                                    {/* Endorsements */}
                                     {captain.endorsement.length > 0 && (
-                                        <div className="mt-2 mb-4 flex flex-wrap gap-2">
+                                        <div className="mb-4 flex flex-wrap gap-2">
                                             {captain.endorsement.map((e) => (
                                                 <span
                                                     key={e}
-                                                    className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600"
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600"
                                                 >
                                                     {e}
                                                 </span>
@@ -252,34 +318,29 @@ export default function CaptainsPage() {
                                         </div>
                                     )}
 
+                                    {/* Bio */}
                                     {captain.bio && (
-                                        <p className="mb-6 flex-1 text-sm text-gray-500">
+                                        <p className="mb-6 line-clamp-3 flex-1 text-sm text-gray-500">
                                             {captain.bio}
                                         </p>
                                     )}
 
-                                    <footer className="mt-auto flex items-center justify-between border-t border-gray-50 pt-5">
+                                    {/* Footer */}
+                                    <footer className="mt-auto flex items-center justify-between border-t border-gray-100 pt-5">
                                         <div>
                                             <p className="text-lg leading-none font-bold text-gray-900">
                                                 {captain.rate}
                                             </p>
-                                            <p className="mt-1 text-xs text-gray-500">
+                                            <p className="mt-1 text-xs text-gray-400">
                                                 {captain.availability}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                                                className="cursor-pointer rounded-lg border border-gray-200 bg-white p-2.5 text-gray-500 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900"
                                             >
-                                                <CheckCircle2 className="h-4 w-4" />
-                                                Qualified
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="rounded-lg border border-gray-200 bg-white p-2 text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900"
-                                            >
-                                                <MessageSquare className="h-5 w-5" />
+                                                <MessageSquare className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </footer>

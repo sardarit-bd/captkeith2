@@ -85,18 +85,17 @@ class YachtsMatchController extends Controller
                 ];
             });
 
-
-        $interestedVesselIds = [];
+        $interestStatuses = [];
         if ($user->captainProfile) {
-            $interestedVesselIds = CaptainVesselInterest::where('captain_id', $user->captainProfile->id)
-                ->pluck('vessel_id')
+            $interestStatuses = CaptainVesselInterest::where('captain_id', $user->captainProfile->id)
+                ->pluck('status', 'vessel_id')
                 ->toArray();
         }
 
         return Inertia::render('yachts-match', [
-            'vessels'             => $vessels,
-            'profileMissing'      => false,
-            'interestedVesselIds' => $interestedVesselIds,
+            'vessels'          => $vessels,
+            'profileMissing'   => false,
+            'interestStatuses' => $interestStatuses,
         ]);
     }
 }

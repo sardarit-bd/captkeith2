@@ -5,13 +5,13 @@ import { YachtsMatchCard } from './yachts-match-card';
 import type { YachtMatchRecord } from './yachts-match-data';
 
 type YachtsMatchPageProps = {
-    vessels: Omit<YachtMatchRecord, 'isInterested'>[];
+    vessels: Omit<YachtMatchRecord, 'interestStatus'>[];
     profileMissing: boolean;
-    interestedVesselIds: string[];
+    interestStatuses: Record<string, InterestStatus>;
 };
 
 export function YachtsMatchGrid() {
-    const { vessels, profileMissing, interestedVesselIds } =
+    const { vessels, profileMissing, interestStatuses } =
         usePage<YachtsMatchPageProps>().props;
 
     if (profileMissing) {
@@ -56,11 +56,9 @@ export function YachtsMatchGrid() {
         );
     }
 
-    const interestedSet = new Set(interestedVesselIds);
-
     const enrichedVessels: YachtMatchRecord[] = vessels.map((vessel) => ({
         ...vessel,
-        isInterested: interestedSet.has(vessel.id),
+        interestStatus: interestStatuses[vessel.id] ?? null,
     }));
 
     return (

@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'captain-requests/{interest}/respond',
             [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'respond']
         )->name('captain-requests.respond');
+        Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])
+            ->name('charterer.join');
     });
 
     Route::middleware('role:admin')->group(function () {
