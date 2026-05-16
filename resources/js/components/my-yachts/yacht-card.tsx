@@ -53,6 +53,14 @@ function DetailsPanel({ yacht }: { yacht: YachtRecord }) {
 }
 
 function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
+    const raw = yacht.captainRequirementsRaw;
+
+    const params = new URLSearchParams();
+    if (raw.license_type) params.set('license_type', raw.license_type);
+    if (raw.min_experience)
+        params.set('min_experience', String(raw.min_experience));
+    const captainsUrl = `/captains?${params.toString()}`;
+
     return (
         <div className="flex flex-col">
             <h4 className="mb-1 text-base font-semibold text-[#0A0A0A]">
@@ -107,7 +115,7 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
             </div>
 
             <Link
-                href={captains()}
+                href={captainsUrl}
                 className="mt-5 inline-flex w-auto self-start rounded-sm bg-[#0A273F] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
             >
                 Find Matching Captains
@@ -117,6 +125,8 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
 }
 
 function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
+    const createCharterUrl = `/charterers?vessel_id=${yacht.id}`;
+
     return (
         <div className="flex h-full min-h-55 w-full flex-col items-start">
             <h4 className="mb-1 text-base font-semibold text-[#0A0A0A]">
@@ -133,8 +143,7 @@ function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
             </p>
 
             <Link
-                href={charterers()}
-                type="button"
+                href={createCharterUrl}
                 className="rounded-sm bg-[#0A273F] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
             >
                 Create Charter

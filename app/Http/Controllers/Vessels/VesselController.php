@@ -114,6 +114,11 @@ class VesselController extends Controller
                     'charters' => [
                         'hasScheduledCharters' => false,
                     ],
+                    'captainRequirementsRaw' => [
+                        'license_type'      => $vessel->required_license_type,
+                        'endorsement'       => $vessel->required_endorsement,
+                        'min_experience'    => $vessel->required_years_experience,
+                    ],
                 ];
             });
 

@@ -41,9 +41,13 @@ function FormField({
 }
 
 export function CharterersFormCard({ vessels }: Props) {
+    // Read vessel_id from URL query param (set by "Create Charter" button on yacht card)
+    const preselectedVesselId =
+        new URLSearchParams(window.location.search).get('vessel_id') ?? '';
+
     const { data, setData, post, processing, errors, reset } =
         useForm<FormData>({
-            vessel_id: '',
+            vessel_id: preselectedVesselId,
             charter_date: '',
             start_time: '',
             duration_hours: '6',
