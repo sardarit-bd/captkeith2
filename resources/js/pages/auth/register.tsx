@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
     ArrowRight,
@@ -9,12 +9,11 @@ import {
     ShieldCheck,
     Users,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { FormEventHandler, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { home, login } from '@/routes';
-import { store } from '@/routes/register';
 
 function RoleOption({
     id,
@@ -22,12 +21,14 @@ function RoleOption({
     label,
     icon,
     defaultChecked = false,
+    onChange,
 }: {
     id: string;
     value: string;
     label: string;
     icon: ReactNode;
     defaultChecked?: boolean;
+    onChange: (value: string) => void;
 }) {
     return (
         <label htmlFor={id} className="group relative cursor-pointer">
@@ -37,6 +38,7 @@ function RoleOption({
                 name="role"
                 value={value}
                 defaultChecked={defaultChecked}
+                onChange={() => onChange(value)}
                 className="peer sr-only"
             />
 
@@ -88,6 +90,16 @@ export default function Register({
     const availableRoles = roles.filter(
         (role): role is RegistrableRole => role in roleLabels,
     );
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        role: availableRoles[0] ?? 'owner',
+        first_name: '',
+        last_name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+    });
+
     const [passwordValue, setPasswordValue] = useState('');
 
     const passwordChecks = useMemo(() => {
@@ -111,6 +123,13 @@ export default function Register({
             },
         ];
     }, [passwordValue]);
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route('register'), {
+            onFinish: () => reset('password', 'password_confirmation'),
+        });
+    };
 
     return (
         <>
@@ -185,254 +204,253 @@ export default function Register({
                             </p>
                         </div>
 
-                        <Form
-                            {...store.form()}
-                            resetOnSuccess={[
-                                'password',
-                                'password_confirmation',
-                            ]}
-                            disableWhileProcessing
-                            className="space-y-6"
-                        >
-                            {({ processing, errors }) => (
-                                <>
-                                    <div>
-                                        <p className="mb-3 block text-sm font-semibold text-[#0D314D]">
-                                            I am registering as a:
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                            {availableRoles.map(
-                                                (role, index) => (
-                                                    <RoleOption
-                                                        key={role}
-                                                        id={`role-${role}`}
-                                                        value={role}
-                                                        label={
-                                                            roleLabels[role]
-                                                                .label
-                                                        }
-                                                        icon={
-                                                            roleLabels[role]
-                                                                .icon
-                                                        }
-                                                        defaultChecked={
-                                                            index === 0
-                                                        }
-                                                    />
-                                                ),
-                                            )}
-                                        </div>
-                                        <InputError
-                                            message={errors.role}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div>
-                                            <label
-                                                htmlFor="first_name"
-                                                className="mb-1.5 block text-sm font-medium text-gray-700"
-                                            >
-                                                First Name
-                                            </label>
-                                            <input
-                                                id="first_name"
-                                                name="first_name"
-                                                type="text"
-                                                placeholder="John"
-                                                className="w-full rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 transition-colors outline-none focus:border-[#3DB3DE] focus:ring-2 focus:ring-[#3DB3DE80]"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label
-                                                htmlFor="last_name"
-                                                className="mb-1.5 block text-sm font-medium text-gray-700"
-                                            >
-                                                Last Name
-                                            </label>
-                                            <input
-                                                id="last_name"
-                                                name="last_name"
-                                                type="text"
-                                                placeholder="Doe"
-                                                className="w-full rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 transition-colors outline-none focus:border-[#3DB3DE] focus:ring-2 focus:ring-[#3DB3DE80]"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            htmlFor="email"
-                                            className="mb-1.5 block text-sm font-medium text-gray-700"
-                                        >
-                                            Email Address
-                                        </label>
-                                        <input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            required
-                                            autoFocus
-                                            autoComplete="email"
-                                            placeholder="john@example.com"
-                                            className="w-full rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 transition-colors outline-none focus:border-[#3DB3DE] focus:ring-2 focus:ring-[#3DB3DE80]"
-                                        />
-                                        <InputError
-                                            message={errors.email}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            htmlFor="password"
-                                            className="mb-1.5 block text-sm font-medium text-gray-700"
-                                        >
-                                            Password
-                                        </label>
-                                        <PasswordInput
-                                            id="password"
-                                            name="password"
-                                            required
-                                            minLength={12}
-                                            autoComplete="new-password"
-                                            placeholder="••••••••••••"
-                                            className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]"
-                                            onChange={(event) =>
-                                                setPasswordValue(
-                                                    event.target.value,
+                        <form onSubmit={submit} className="space-y-6">
+                            <div>
+                                <p className="mb-3 block text-sm font-semibold text-[#0D314D]">
+                                    I am registering as a:
+                                </p>
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                    {availableRoles.map((role, index) => (
+                                        <RoleOption
+                                            key={role}
+                                            id={`role-${role}`}
+                                            value={role}
+                                            label={roleLabels[role].label}
+                                            icon={roleLabels[role].icon}
+                                            defaultChecked={index === 0}
+                                            onChange={(val) =>
+                                                setData(
+                                                    'role',
+                                                    val as RegistrableRole,
                                                 )
                                             }
                                         />
-                                        {passwordRequirements.length > 0 && (
-                                            <div className="mt-3 rounded-lg border border-[#3DB3DE26] bg-[#F4FAFE] p-3">
-                                                <p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0D314D] uppercase">
-                                                    <ShieldCheck className="h-4 w-4 text-[#015291]" />
-                                                    Password requirements
-                                                </p>
-                                                <ul className="space-y-1 text-sm text-gray-600">
-                                                    {passwordRequirements.map(
-                                                        (requirement) => {
-                                                            const matched =
-                                                                passwordChecks.find(
-                                                                    (check) =>
-                                                                        check.label ===
-                                                                        requirement,
-                                                                )?.matched ??
-                                                                false;
+                                    ))}
+                                </div>
+                                <InputError
+                                    message={errors.role}
+                                    className="mt-2"
+                                />
+                            </div>
 
-                                                            return (
-                                                                <li
-                                                                    key={
-                                                                        requirement
-                                                                    }
-                                                                    className="flex items-start gap-2"
-                                                                >
-                                                                    <span
-                                                                        className={`mt-1 block h-1.5 w-1.5 rounded-full ${matched ? 'bg-emerald-500' : 'bg-[#3DB3DE]'}`}
-                                                                    />
-                                                                    <span
-                                                                        className={
-                                                                            matched
-                                                                                ? 'font-bold text-emerald-700'
-                                                                                : ''
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            requirement
-                                                                        }
-                                                                    </span>
-                                                                </li>
-                                                            );
-                                                        },
-                                                    )}
-                                                </ul>
-                                            </div>
-                                        )}
-                                        <InputError
-                                            message={errors.password}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            htmlFor="password_confirmation"
-                                            className="mb-1.5 block text-sm font-medium text-gray-700"
-                                        >
-                                            Confirm Password
-                                        </label>
-                                        <PasswordInput
-                                            id="password_confirmation"
-                                            name="password_confirmation"
-                                            required
-                                            minLength={12}
-                                            autoComplete="new-password"
-                                            placeholder="••••••••"
-                                            className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]"
-                                        />
-                                        <InputError
-                                            message={
-                                                errors.password_confirmation
-                                            }
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div className="flex items-start">
-                                        <div className="flex h-5 items-center">
-                                            <input
-                                                id="terms"
-                                                type="checkbox"
-                                                required
-                                                className="h-4 w-4 cursor-pointer rounded border border-gray-300 bg-white accent-[#3DB3DE]"
-                                            />
-                                        </div>
-                                        <label
-                                            htmlFor="terms"
-                                            className="ml-3 cursor-pointer text-sm text-gray-500"
-                                        >
-                                            I agree to the
-                                            <a
-                                                href="#"
-                                                className="font-medium text-[#3DB3DE] hover:underline"
-                                            >
-                                                Terms of Service
-                                            </a>
-                                            and
-                                            <a
-                                                href="#"
-                                                className="font-medium text-[#3DB3DE] hover:underline"
-                                            >
-                                                Privacy Policy
-                                            </a>
-                                            .
-                                        </label>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#3DB3DE] px-4 py-3.5 font-semibold text-white shadow-lg shadow-[#3DB3DE33] transition-colors hover:bg-[#2A9BCA] disabled:cursor-not-allowed disabled:opacity-70"
-                                        data-test="register-user-button"
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label
+                                        htmlFor="first_name"
+                                        className="mb-1.5 block text-sm font-medium text-gray-700"
                                     >
-                                        Create Account
-                                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                                    </button>
+                                        First Name
+                                    </label>
+                                    <input
+                                        id="first_name"
+                                        name="first_name"
+                                        type="text"
+                                        value={data.first_name}
+                                        onChange={(e) =>
+                                            setData(
+                                                'first_name',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="John"
+                                        className="w-full rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 transition-colors outline-none focus:border-[#3DB3DE] focus:ring-2 focus:ring-[#3DB3DE80]"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        htmlFor="last_name"
+                                        className="mb-1.5 block text-sm font-medium text-gray-700"
+                                    >
+                                        Last Name
+                                    </label>
+                                    <input
+                                        id="last_name"
+                                        name="last_name"
+                                        type="text"
+                                        value={data.last_name}
+                                        onChange={(e) =>
+                                            setData('last_name', e.target.value)
+                                        }
+                                        placeholder="Doe"
+                                        className="w-full rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 transition-colors outline-none focus:border-[#3DB3DE] focus:ring-2 focus:ring-[#3DB3DE80]"
+                                    />
+                                </div>
+                            </div>
 
-                                    <p className="pt-2 text-center text-sm text-gray-500">
-                                        Already have an account?
-                                        <Link
-                                            href={login()}
-                                            className="font-semibold text-[#0D314D] transition-colors hover:text-[#3DB3DE]"
-                                        >
-                                            Sign in here
-                                        </Link>
-                                    </p>
-                                </>
-                            )}
-                        </Form>
+                            <div>
+                                <label
+                                    htmlFor="email"
+                                    className="mb-1.5 block text-sm font-medium text-gray-700"
+                                >
+                                    Email Address
+                                </label>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    autoFocus
+                                    autoComplete="email"
+                                    value={data.email}
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
+                                    placeholder="john@example.com"
+                                    className="w-full rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 transition-colors outline-none focus:border-[#3DB3DE] focus:ring-2 focus:ring-[#3DB3DE80]"
+                                />
+                                <InputError
+                                    message={errors.email}
+                                    className="mt-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="password"
+                                    className="mb-1.5 block text-sm font-medium text-gray-700"
+                                >
+                                    Password
+                                </label>
+                                <PasswordInput
+                                    id="password"
+                                    name="password"
+                                    required
+                                    minLength={12}
+                                    autoComplete="new-password"
+                                    placeholder="••••••••••••"
+                                    value={data.password}
+                                    className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]"
+                                    onChange={(e) => {
+                                        setData('password', e.target.value);
+                                        setPasswordValue(e.target.value);
+                                    }}
+                                />
+                                {passwordRequirements.length > 0 && (
+                                    <div className="mt-3 rounded-lg border border-[#3DB3DE26] bg-[#F4FAFE] p-3">
+                                        <p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-[#0D314D] uppercase">
+                                            <ShieldCheck className="h-4 w-4 text-[#015291]" />
+                                            Password requirements
+                                        </p>
+                                        <ul className="space-y-1 text-sm text-gray-600">
+                                            {passwordRequirements.map(
+                                                (requirement) => {
+                                                    const matched =
+                                                        passwordChecks.find(
+                                                            (check) =>
+                                                                check.label ===
+                                                                requirement,
+                                                        )?.matched ?? false;
+
+                                                    return (
+                                                        <li
+                                                            key={requirement}
+                                                            className="flex items-start gap-2"
+                                                        >
+                                                            <span
+                                                                className={`mt-1 block h-1.5 w-1.5 rounded-full ${matched ? 'bg-emerald-500' : 'bg-[#3DB3DE]'}`}
+                                                            />
+                                                            <span
+                                                                className={
+                                                                    matched
+                                                                        ? 'font-bold text-emerald-700'
+                                                                        : ''
+                                                                }
+                                                            >
+                                                                {requirement}
+                                                            </span>
+                                                        </li>
+                                                    );
+                                                },
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+                                <InputError
+                                    message={errors.password}
+                                    className="mt-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="password_confirmation"
+                                    className="mb-1.5 block text-sm font-medium text-gray-700"
+                                >
+                                    Confirm Password
+                                </label>
+                                <PasswordInput
+                                    id="password_confirmation"
+                                    name="password_confirmation"
+                                    required
+                                    minLength={12}
+                                    autoComplete="new-password"
+                                    placeholder="••••••••"
+                                    value={data.password_confirmation}
+                                    className="h-auto rounded-lg border-gray-300 bg-gray-50/50 py-3 pr-10 focus-visible:border-[#3DB3DE] focus-visible:ring-2 focus-visible:ring-[#3DB3DE80]"
+                                    onChange={(e) =>
+                                        setData(
+                                            'password_confirmation',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                <InputError
+                                    message={errors.password_confirmation}
+                                    className="mt-2"
+                                />
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="flex h-5 items-center">
+                                    <input
+                                        id="terms"
+                                        type="checkbox"
+                                        required
+                                        className="h-4 w-4 cursor-pointer rounded border border-gray-300 bg-white accent-[#3DB3DE]"
+                                    />
+                                </div>
+                                <label
+                                    htmlFor="terms"
+                                    className="ml-3 cursor-pointer text-sm text-gray-500"
+                                >
+                                    I agree to the{' '}
+                                    <a
+                                        href="#"
+                                        className="font-medium text-[#3DB3DE] hover:underline"
+                                    >
+                                        Terms of Service
+                                    </a>{' '}
+                                    and{' '}
+                                    <a
+                                        href="#"
+                                        className="font-medium text-[#3DB3DE] hover:underline"
+                                    >
+                                        Privacy Policy
+                                    </a>
+                                    .
+                                </label>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#3DB3DE] px-4 py-3.5 font-semibold text-white shadow-lg shadow-[#3DB3DE33] transition-colors hover:bg-[#2A9BCA] disabled:cursor-not-allowed disabled:opacity-70"
+                                data-test="register-user-button"
+                            >
+                                Create Account
+                                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                            </button>
+
+                            <p className="pt-2 text-center text-sm text-gray-500">
+                                Already have an account?{' '}
+                                <Link
+                                    href={login()}
+                                    className="font-semibold text-[#0D314D] transition-colors hover:text-[#3DB3DE]"
+                                >
+                                    Sign in here
+                                </Link>
+                            </p>
+                        </form>
                     </div>
                 </div>
             </div>

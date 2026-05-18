@@ -15,7 +15,8 @@ Route::inertia('/about-us', 'public/about', [
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
-    Route::inertia('messages', 'messages')->name('messages');
+    Route::get('messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
+    Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
     Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
         Route::inertia('notifications', 'notifications')->name('notifications');
     });
@@ -26,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
         Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
         Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
+        Route::delete('charterers/{charterEvent}', [\App\Http\Controllers\CharterController::class, 'destroy'])->name('charterers.destroy');
         Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
         Route::post('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'store'])
             ->name('captains.invite.store');
@@ -102,7 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:charterer')->group(function () {
         Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
         Route::get('charterer/request', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
-        Route::inertia('charterer/captain-select', 'charterer/captain-select')->name('charterer.captain-select');
+        Route::get('/charterer/captain-select', [\App\Http\Controllers\CharterController::class, 'captainSelect'])->name('charterer.captain-select');
         Route::inertia('charterer/information', 'charterer/information')->name('charterer.information');
         Route::inertia('charterer/agreement', 'charterer/agreement')->name('charterer.agreement');
         Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');

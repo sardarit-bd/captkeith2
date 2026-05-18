@@ -38,15 +38,14 @@ class MyBookingController extends Controller
             $photo   = $vessel?->photos->first();
             $captain = $event->selectedCaptain;
 
-            // Total paid — sum all succeeded payments for this event
             $totalPaid = $event->payments
                 ->where('status', 'succeeded')
                 ->sum('amount');
 
-            // Confirmation code — use short ID prefix
+
             $confirmationCode = 'CM-' . strtoupper(substr($event->id, 0, 8));
 
-            // Map status
+
             $status = match ($event->status) {
                 'completed'           => 'completed',
                 'confirmed', 'booked' => 'confirmed',
@@ -70,7 +69,7 @@ class MyBookingController extends Controller
                 ? $event->start_time . ' · ' . $durationHours . ' hrs'
                 : ($event->start_time ?? '—');
 
-            // Actions based on status
+
             $actions = match ($event->status) {
                 'completed' => [
                     ['id' => 'download-contract', 'label' => 'Download Contract', 'icon' => 'download'],
@@ -102,14 +101,14 @@ class MyBookingController extends Controller
                 'location'         => $vessel
                     ? trim(collect([$vessel->marina_name, $vessel->marina_city, $vessel->marina_state])->filter()->implode(', '))
                     : '—',
-                'passengers'       => '—',   // extend when passenger count is tracked
-                'coverage'         => '—',   // extend when insurance is linked
+                'passengers'       => '—',
+                'coverage'         => '—',
                 'date'             => $event->charter_date?->format('F j, Y') ?? '—',
                 'time'             => $timeLabel,
                 'totalPaid'        => $totalPaid > 0
                     ? '$' . number_format($totalPaid, 0)
                     : '—',
-                'rating'           => null,  // extend when ratings are tracked
+                'rating'           => null,
                 'actions'          => $actions,
             ];
         })->values()->toArray();

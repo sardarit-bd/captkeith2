@@ -12,6 +12,7 @@ import {
     Star,
     User,
     X,
+    AlertTriangle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { captains } from '@/routes';
@@ -93,22 +94,16 @@ function InviteModal({
             { vessel_id: selectedVessel },
             {
                 preserveScroll: true,
-                onSuccess: onClose,
+                preserveState: false,
+                onSuccess: () => {
+                    router.reload({
+                        only: ['invitations', 'acceptedCaptainIds'],
+                        onFinish: onClose,
+                    });
+                },
                 onFinish: () => setIsLoading(false),
             },
         );
-    }
-
-    function handleCancel() {
-        if (!selectedVessel || isLoading) return;
-
-        setIsLoading(true);
-        router.delete(`/captains/${captain.id}/invite`, {
-            data: { vessel_id: selectedVessel },
-            preserveScroll: true,
-            onSuccess: onClose,
-            onFinish: () => setIsLoading(false),
-        });
     }
 
     return (
@@ -154,11 +149,6 @@ function InviteModal({
                         <ChevronDown className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     </div>
 
-                    {currentStatus === 'pending' && (
-                        <p className="mt-2 text-xs text-amber-600">
-                            Invitation already sent — pending response.
-                        </p>
-                    )}
                     {currentStatus === 'accepted' && (
                         <p className="mt-2 text-xs text-emerald-600">
                             This captain already accepted for this vessel.
@@ -180,41 +170,102 @@ function InviteModal({
                     >
                         Close
                     </button>
+                    <button
+                        type="button"
+                        onClick={handleSend}
+                        disabled={
+                            !selectedVessel ||
+                            isLoading ||
+                            currentStatus === 'accepted'
+                        }
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4" />
+                        )}
+                        Send Invitation
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
-                    {currentStatus === 'pending' ? (
-                        <button
-                            type="button"
-                            onClick={handleCancel}
-                            disabled={isLoading}
-                            className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <X className="h-4 w-4" />
-                            )}
-                            Cancel Request
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={handleSend}
-                            disabled={
-                                !selectedVessel ||
-                                isLoading ||
-                                currentStatus === 'accepted' ||
-                                currentStatus === 'declined'
-                            }
-                            className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <Send className="h-4 w-4" />
-                            )}
-                            Send Invitation
-                        </button>
-                    )}
+function CancelConfirmModal({
+    captain,
+    vesselId,
+    onClose,
+}: {
+    captain: Captain;
+    vesselId: string;
+    onClose: () => void;
+}) {
+    const [isLoading, setIsLoading] = useState(false);
+
+    function handleConfirmCancel() {
+        if (isLoading) return;
+
+        setIsLoading(true);
+        router.delete(`/captains/${captain.id}/invite`, {
+            data: vesselId ? { vessel_id: vesselId } : {},
+            preserveScroll: true,
+            preserveState: false,
+            onSuccess: () => {
+                router.reload({
+                    only: ['invitations', 'acceptedCaptainIds'],
+                    onFinish: onClose,
+                });
+            },
+            onFinish: () => setIsLoading(false),
+        });
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                <div className="mb-4 flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div>
+                        <h3 className="text-base font-semibold text-gray-900">
+                            Cancel Invitation
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Are you sure you want to cancel the invitation sent
+                            to{' '}
+                            <span className="font-medium text-gray-700">
+                                {captain.name}
+                            </span>
+                            ? This action cannot be undone.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isLoading}
+                        className="flex-1 cursor-pointer rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Keep It
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleConfirmCancel}
+                        disabled={isLoading}
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <X className="h-4 w-4" />
+                        )}
+                        Yes, Cancel
+                    </button>
                 </div>
             </div>
         </div>
@@ -225,39 +276,38 @@ function InviteButton({
     captain,
     invitations,
     acceptedCaptainIds,
-    onClick,
+    onOpenInvite,
+    onOpenCancel,
 }: {
     captain: Captain;
     invitations: Record<string, Record<string, string>>;
     acceptedCaptainIds: string[];
-    onClick: () => void;
+    onOpenInvite: () => void;
+    onOpenCancel: () => void;
 }) {
-    if (acceptedCaptainIds.includes(captain.id)) {
-        return (
-            <button
-                type="button"
-                disabled
-                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700"
-            >
-                <Check className="h-3.5 w-3.5" />
-                Accepted
-            </button>
-        );
-    }
-
     const captainInvites = invitations[captain.id] ?? {};
     const statuses = Object.values(captainInvites);
 
-    if (statuses.includes('accepted')) {
+    const isAccepted =
+        acceptedCaptainIds.includes(captain.id) ||
+        statuses.includes('accepted');
+
+    if (isAccepted) {
         return (
-            <button
-                type="button"
-                disabled
-                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700"
-            >
-                <Check className="h-3.5 w-3.5" />
-                Accepted
-            </button>
+            <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                    <Check className="h-3.5 w-3.5" />
+                    Accepted
+                </span>
+                <button
+                    type="button"
+                    onClick={onOpenCancel}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
+                >
+                    <X className="h-3.5 w-3.5" />
+                    Cancel
+                </button>
+            </div>
         );
     }
 
@@ -265,11 +315,11 @@ function InviteButton({
         return (
             <button
                 type="button"
-                onClick={onClick}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100"
+                onClick={onOpenCancel}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
             >
-                <Loader2 className="h-3.5 w-3.5" />
-                Pending
+                <X className="h-3.5 w-3.5" />
+                Cancel Invitation
             </button>
         );
     }
@@ -277,30 +327,38 @@ function InviteButton({
     return (
         <button
             type="button"
-            onClick={onClick}
+            onClick={onOpenInvite}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#0A273F] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#123651]"
         >
             <Send className="h-3.5 w-3.5" />
-            Send Request
+            Send Invitation
         </button>
     );
 }
 
 export default function CaptainsPage() {
-    const {
-        captains: initialCaptains,
-        filters,
-        vessels,
-        invitations,
-        acceptedCaptainIds,
-    } = usePage<PageProps>().props;
+    const page = usePage<PageProps>();
+    const { captains: initialCaptains, filters, vessels } = page.props;
+
+    const invitations = page.props.invitations;
+    const acceptedCaptainIds = page.props.acceptedCaptainIds;
 
     const [licenseType, setLicenseType] = useState(filters.license_type ?? '');
     const [minExperience, setMinExperience] = useState(
         filters.min_experience ?? '',
     );
     const [isSearching, setIsSearching] = useState(false);
-    const [modalCaptain, setModalCaptain] = useState<Captain | null>(null);
+
+    const [inviteModalCaptain, setInviteModalCaptain] =
+        useState<Captain | null>(null);
+    const [cancelModalCaptain, setCancelModalCaptain] =
+        useState<Captain | null>(null);
+
+    const cancelVesselId = cancelModalCaptain
+        ? (Object.entries(invitations[cancelModalCaptain.id] ?? {}).find(
+              ([, status]) => status === 'pending' || status === 'accepted',
+          )?.[0] ?? '')
+        : '';
 
     const handleSearch = () => {
         setIsSearching(true);
@@ -329,13 +387,23 @@ export default function CaptainsPage() {
     return (
         <>
             <Head title="Captains" />
-            {console.log('modalCaptain', modalCaptain)}
-            {modalCaptain && (
+
+            {inviteModalCaptain && (
                 <InviteModal
-                    captain={modalCaptain}
+                    captain={inviteModalCaptain}
                     vessels={vessels}
-                    existingInvitations={invitations[modalCaptain.id] ?? {}}
-                    onClose={() => setModalCaptain(null)}
+                    existingInvitations={
+                        invitations[inviteModalCaptain.id] ?? {}
+                    }
+                    onClose={() => setInviteModalCaptain(null)}
+                />
+            )}
+
+            {cancelModalCaptain && (
+                <CancelConfirmModal
+                    captain={cancelModalCaptain}
+                    vesselId={cancelVesselId}
+                    onClose={() => setCancelModalCaptain(null)}
                 />
             )}
 
@@ -579,8 +647,15 @@ export default function CaptainsPage() {
                                                 acceptedCaptainIds={
                                                     acceptedCaptainIds
                                                 }
-                                                onClick={() =>
-                                                    setModalCaptain(captain)
+                                                onOpenInvite={() =>
+                                                    setInviteModalCaptain(
+                                                        captain,
+                                                    )
+                                                }
+                                                onOpenCancel={() =>
+                                                    setCancelModalCaptain(
+                                                        captain,
+                                                    )
                                                 }
                                             />
                                             <button

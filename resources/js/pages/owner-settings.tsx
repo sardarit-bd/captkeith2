@@ -198,7 +198,6 @@ export default function OwnerSettingsPage() {
             <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-12 sm:px-6">
                     <div className="mx-auto mt-6 max-w-3xl space-y-6">
-                        {/* Notifications */}
                         <SettingsSection
                             title="Notification Preferences"
                             icon={<Bell className="h-5 w-5 text-[#3b82f6]" />}
@@ -244,7 +243,6 @@ export default function OwnerSettingsPage() {
                             </button>
                         </SettingsSection>
 
-                        {/* Security */}
                         <SettingsSection
                             title="Security Settings"
                             icon={<Shield className="h-5 w-5 text-[#3b82f6]" />}
@@ -278,7 +276,6 @@ export default function OwnerSettingsPage() {
                             </div>
                         </SettingsSection>
 
-                        {/* Payment */}
                         <SettingsSection
                             title="Payment Methods"
                             icon={
@@ -297,7 +294,6 @@ export default function OwnerSettingsPage() {
                             </button>
                         </SettingsSection>
 
-                        {/* Danger Zone */}
                         <SettingsSection
                             title="Danger Zone"
                             icon={<Trash2 className="h-5 w-5" />}
@@ -317,7 +313,7 @@ export default function OwnerSettingsPage() {
                                         type="button"
                                         onClick={handleDeactivate}
                                         disabled={deactivating}
-                                        className="w-full rounded-lg border border-[#e5e7eb] bg-white px-5 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:opacity-50 sm:w-auto"
+                                        className="w-full cursor-pointer rounded-lg border border-[#e5e7eb] bg-white px-5 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:opacity-50 sm:w-auto"
                                     >
                                         {deactivating
                                             ? 'Deactivating…'
@@ -340,7 +336,7 @@ export default function OwnerSettingsPage() {
                                         onClick={() =>
                                             setShowDeleteConfirm(true)
                                         }
-                                        className="w-full rounded-lg bg-[#dc2626] px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#b91c1c] sm:w-auto"
+                                        className="w-full cursor-pointer rounded-lg bg-[#dc2626] px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#b91c1c] sm:w-auto"
                                     >
                                         Delete Account
                                     </button>

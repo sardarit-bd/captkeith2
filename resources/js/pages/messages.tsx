@@ -1,7 +1,7 @@
-import { Head } from '@inertiajs/react';
-import { Circle, Paperclip, Search, SendHorizontal, Menu } from 'lucide-react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Circle, Menu, Paperclip, Search, SendHorizontal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { messages } from '@/routes';
+import { messages, messages as messagesRoute } from '@/routes';
 
 type Conversation = {
     id: string;
@@ -20,208 +20,145 @@ type ChatMessage = {
     time: string;
 };
 
-const initialConversations: Conversation[] = [
-    {
-        id: 'capt-james',
-        name: 'Captain James Morrison',
-        role: 'Captain',
-        preview: 'I can confirm availability for Saturday at 9:00 AM.',
-        time: '2m',
-        unread: 2,
-        online: true,
-    },
-    {
-        id: 'capt-sarah',
-        name: 'Captain Sarah Chen',
-        role: 'Captain',
-        preview: 'Please share the route details and expected duration.',
-        time: '19m',
-        unread: 0,
-        online: false,
-    },
-    {
-        id: 'charter-mark',
-        name: 'Mark Ellison',
-        role: 'Charterer',
-        preview: 'Insurance confirmation is uploaded. Thanks.',
-        time: '1h',
-        unread: 1,
-        online: true,
-    },
-    {
-        id: 'deck-ana',
-        name: 'Ana Rodriguez',
-        role: 'Deckhand',
-        preview: 'I can join as support crew if needed.',
-        time: 'Yesterday',
-        unread: 0,
-        online: false,
-    },
-];
+type SelectedUser = {
+    id: string;
+    name: string;
+    role: string;
+    online: boolean;
+} | null;
 
-const initialMessages: Record<string, ChatMessage[]> = {
-    'capt-james': [
-        {
-            id: 'm1',
-            fromMe: false,
-            body: 'Hello! I reviewed the trip details. Is this for 6 guests?',
-            time: '09:12 AM',
-        },
-        {
-            id: 'm2',
-            fromMe: true,
-            body: 'Yes, 6 guests. Departure from Miami Beach Marina at 9:00 AM.',
-            time: '09:15 AM',
-        },
-        {
-            id: 'm3',
-            fromMe: false,
-            body: 'Perfect. I can confirm availability for Saturday.',
-            time: '09:16 AM',
-        },
-        {
-            id: 'm4',
-            fromMe: true,
-            body: 'Great. I will share the final charter notes and agreement shortly.',
-            time: '09:18 AM',
-        },
-    ],
+type PageProps = {
+    conversations: Conversation[];
+    chatMessages: ChatMessage[];
+    selectedUserId: string | null;
+    selectedUser: SelectedUser;
+    auth: { user: { id: string } };
+};
 
-    'capt-sarah': [
-        {
-            id: 's1',
-            fromMe: false,
-            body: 'Please share the route details and expected duration.',
-            time: '08:10 AM',
-        },
-    ],
-
-    'charter-mark': [
-        {
-            id: 'c1',
-            fromMe: false,
-            body: 'Insurance confirmation is uploaded. Thanks.',
-            time: 'Yesterday',
-        },
-    ],
-
-    'deck-ana': [
-        {
-            id: 'd1',
-            fromMe: false,
-            body: 'I can join as support crew if needed.',
-            time: 'Yesterday',
-        },
-    ],
+type BroadcastPayload = {
+    id: string;
+    sender_id: string;
+    receiver_id: string;
+    body: string;
+    time: string;
 };
 
 export default function MessagesPage() {
-    const [conversations, setConversations] =
-        useState<Conversation[]>(initialConversations);
+    const {
+        conversations,
+        chatMessages: initialMessages,
+        selectedUserId,
+        selectedUser,
+        auth,
+    } = usePage<PageProps>().props;
 
-    const [selectedConversationId, setSelectedConversationId] = useState(
-        initialConversations[0].id,
-    );
-
-    const [messagesMap, setMessagesMap] =
-        useState<Record<string, ChatMessage[]>>(initialMessages);
-
-    const [message, setMessage] = useState('');
+    const [liveMessages, setLiveMessages] =
+        useState<ChatMessage[]>(initialMessages);
     const [search, setSearch] = useState('');
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-    const activeConversation = useMemo(() => {
-        return conversations.find(
-            (conversation) => conversation.id === selectedConversationId,
-        );
-    }, [conversations, selectedConversationId]);
-
-    const chatMessages = useMemo(() => {
-        return messagesMap[selectedConversationId] || [];
-    }, [messagesMap, selectedConversationId]);
-
-    const filteredConversations = useMemo(() => {
-        return conversations.filter((conversation) => {
-            const value = search.toLowerCase();
-
-            return (
-                conversation.name.toLowerCase().includes(value) ||
-                conversation.role.toLowerCase().includes(value)
-            );
-        });
-    }, [conversations, search]);
+    const { data, setData, post, processing, reset } = useForm({
+        receiver_id: selectedUserId ?? '',
+        body: '',
+    });
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({
-            behavior: 'smooth',
-        });
-    }, [chatMessages]);
+        setLiveMessages(initialMessages);
+    }, [initialMessages]);
 
-    const getCurrentTime = () => {
-        return new Date().toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
+    useEffect(() => {
+        setData('receiver_id', selectedUserId ?? '');
+    }, [selectedUserId]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [liveMessages]);
+
+    useEffect(() => {
+        if (!auth?.user?.id) return;
+
+        if (!window.Echo) return;
+
+        const channel = window.Echo.private(`messages.${auth.user.id}`);
+
+        channel.listen('.message.sent', (payload: BroadcastPayload) => {
+            const isRelevant =
+                (payload.sender_id === selectedUserId &&
+                    payload.receiver_id === auth.user.id) ||
+                (payload.sender_id === auth.user.id &&
+                    payload.receiver_id === selectedUserId);
+
+            if (!isRelevant) return;
+
+            setLiveMessages((prev) => {
+                if (prev.some((m) => m.id === payload.id)) return prev;
+
+                return [
+                    ...prev,
+                    {
+                        id: payload.id,
+                        fromMe: payload.sender_id === auth.user.id,
+                        body: payload.body,
+                        time: payload.time,
+                    },
+                ];
+            });
         });
-    };
+
+        return () => {
+            channel.stopListening('.message.sent');
+        };
+    }, [auth?.user?.id, selectedUserId]);
+
+    const filteredConversations = useMemo(() => {
+        const value = search.toLowerCase();
+        return conversations.filter(
+            (c) =>
+                c.name.toLowerCase().includes(value) ||
+                c.role.toLowerCase().includes(value),
+        );
+    }, [conversations, search]);
 
     const handleSelectConversation = (id: string) => {
-        setSelectedConversationId(id);
         setMobileSidebarOpen(false);
-
-        setConversations((prev) =>
-            prev.map((conversation) =>
-                conversation.id === id
-                    ? {
-                          ...conversation,
-                          unread: 0,
-                      }
-                    : conversation,
-            ),
+        router.get(
+            messagesRoute(),
+            { with: id },
+            { preserveState: true, preserveScroll: false },
         );
     };
 
     const handleSendMessage = () => {
-        const trimmedMessage = message.trim();
+        if (!data.body.trim() || !data.receiver_id) return;
 
-        if (!trimmedMessage) {
-            return;
-        }
-
-        const newMessage: ChatMessage = {
+        const optimistic: ChatMessage = {
             id: crypto.randomUUID(),
             fromMe: true,
-            body: trimmedMessage,
-            time: getCurrentTime(),
+            body: data.body.trim(),
+            time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+            }),
         };
 
-        setMessagesMap((prev) => ({
-            ...prev,
-            [selectedConversationId]: [
-                ...(prev[selectedConversationId] || []),
-                newMessage,
-            ],
-        }));
+        setLiveMessages((prev) => [...prev, optimistic]);
 
-        setConversations((prev) =>
-            prev.map((conversation) =>
-                conversation.id === selectedConversationId
-                    ? {
-                          ...conversation,
-                          preview: trimmedMessage,
-                          time: 'Now',
-                      }
-                    : conversation,
-            ),
-        );
-
-        setMessage('');
+        post(messages(), {
+            preserveScroll: true,
+            onSuccess: () => reset('body'),
+            onError: () => {
+                setLiveMessages((prev) =>
+                    prev.filter((m) => m.id !== optimistic.id),
+                );
+            },
+        });
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
             handleSendMessage();
         }
     };
@@ -245,12 +182,10 @@ export default function MessagesPage() {
                                     <p className="text-xs font-semibold tracking-[0.2em] text-[#7b92a7] uppercase">
                                         Inbox
                                     </p>
-
                                     <h2 className="mt-1 text-xl font-semibold text-[#0c304d]">
                                         Conversations
                                     </h2>
                                 </div>
-
                                 <button
                                     type="button"
                                     onClick={() => setMobileSidebarOpen(false)}
@@ -262,7 +197,6 @@ export default function MessagesPage() {
 
                             <div className="relative mt-4">
                                 <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8ea3b5]" />
-
                                 <input
                                     type="text"
                                     value={search}
@@ -276,8 +210,7 @@ export default function MessagesPage() {
                         <div className="flex-1 overflow-y-auto p-3">
                             {filteredConversations.map((conversation) => {
                                 const isActive =
-                                    conversation.id === selectedConversationId;
-
+                                    conversation.id === selectedUserId;
                                 return (
                                     <button
                                         key={conversation.id}
@@ -297,39 +230,35 @@ export default function MessagesPage() {
                                             {conversation.name
                                                 .split(' ')
                                                 .slice(0, 2)
-                                                .map((part) => part[0])
+                                                .map((p) => p[0])
                                                 .join('')}
-
-                                            {conversation.online ? (
+                                            {conversation.online && (
                                                 <Circle className="absolute -right-0.5 -bottom-0.5 h-3.5 w-3.5 fill-[#22c55e] text-white" />
-                                            ) : null}
+                                            )}
                                         </span>
 
-                                        <span className="min-w-0 flex-1 cursor-pointer">
+                                        <span className="min-w-0 flex-1">
                                             <span className="flex items-center justify-between gap-2">
                                                 <span className="truncate text-sm font-semibold text-[#0c304d]">
                                                     {conversation.name}
                                                 </span>
-
                                                 <span className="text-xs text-[#88a0b2]">
                                                     {conversation.time}
                                                 </span>
                                             </span>
-
                                             <span className="mt-0.5 block text-xs font-medium text-[#6e8498]">
                                                 {conversation.role}
                                             </span>
-
                                             <span className="mt-1 block truncate text-sm text-[#4f667a]">
                                                 {conversation.preview}
                                             </span>
                                         </span>
 
-                                        {conversation.unread > 0 ? (
+                                        {conversation.unread > 0 && (
                                             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0d314d] px-1.5 text-[11px] font-semibold text-white">
                                                 {conversation.unread}
                                             </span>
-                                        ) : null}
+                                        )}
                                     </button>
                                 );
                             })}
@@ -342,12 +271,12 @@ export default function MessagesPage() {
                         </div>
                     </aside>
 
-                    {mobileSidebarOpen ? (
+                    {mobileSidebarOpen && (
                         <div
                             className="absolute inset-0 z-20 bg-black/20 md:hidden"
                             onClick={() => setMobileSidebarOpen(false)}
                         />
-                    ) : null}
+                    )}
 
                     <section className="flex min-w-0 flex-1 flex-col">
                         <header className="flex items-center justify-between border-b border-[#e4edf3] px-4 py-4 sm:px-6">
@@ -360,37 +289,45 @@ export default function MessagesPage() {
                                     <Menu className="h-5 w-5" />
                                 </button>
 
-                                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#0d314d] text-sm font-semibold text-white">
-                                    {activeConversation?.name
-                                        .split(' ')
-                                        .slice(0, 2)
-                                        .map((part) => part[0])
-                                        .join('')}
-                                </span>
-
-                                <span>
-                                    <span className="block text-sm font-semibold text-[#0c304d]">
-                                        {activeConversation?.name}
+                                {selectedUser ? (
+                                    <>
+                                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#0d314d] text-sm font-semibold text-white">
+                                            {selectedUser.name
+                                                .split(' ')
+                                                .slice(0, 2)
+                                                .map((p) => p[0])
+                                                .join('')}
+                                        </span>
+                                        <span>
+                                            <span className="block text-sm font-semibold text-[#0c304d]">
+                                                {selectedUser.name}
+                                            </span>
+                                            <span className="block text-xs text-[#6f8599]">
+                                                {selectedUser.online
+                                                    ? 'Active now'
+                                                    : selectedUser.role}
+                                            </span>
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-sm text-[#7890a3]">
+                                        Select a conversation
                                     </span>
-
-                                    <span className="block text-xs text-[#6f8599]">
-                                        {activeConversation?.online
-                                            ? 'Active now'
-                                            : 'Offline'}
-                                    </span>
-                                </span>
+                                )}
                             </div>
                         </header>
 
                         <div className="flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(circle_at_top,#f6fbff_0%,#ffffff_58%)] px-4 py-5 sm:px-6">
-                            {chatMessages.map((chat) => (
+                            {!selectedUser && (
+                                <div className="flex h-full items-center justify-center text-sm text-[#7890a3]">
+                                    Choose a conversation from the sidebar
+                                </div>
+                            )}
+
+                            {liveMessages.map((chat) => (
                                 <div
                                     key={chat.id}
-                                    className={`flex ${
-                                        chat.fromMe
-                                            ? 'justify-end'
-                                            : 'justify-start'
-                                    }`}
+                                    className={`flex ${chat.fromMe ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <article
                                         className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm sm:max-w-[78%] ${
@@ -402,13 +339,8 @@ export default function MessagesPage() {
                                         <p className="text-sm leading-relaxed">
                                             {chat.body}
                                         </p>
-
                                         <p
-                                            className={`mt-1 text-[11px] ${
-                                                chat.fromMe
-                                                    ? 'text-[#c7d8e6]'
-                                                    : 'text-[#7f95a8]'
-                                            }`}
+                                            className={`mt-1 text-[11px] ${chat.fromMe ? 'text-[#c7d8e6]' : 'text-[#7f95a8]'}`}
                                         >
                                             {chat.time}
                                         </p>
@@ -430,20 +362,31 @@ export default function MessagesPage() {
 
                                 <input
                                     type="text"
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
+                                    value={data.body}
+                                    onChange={(e) =>
+                                        setData('body', e.target.value)
+                                    }
                                     onKeyDown={handleKeyDown}
-                                    placeholder="Write a message..."
-                                    className="h-10 flex-1 bg-transparent px-1 text-sm text-[#1f415c] placeholder:text-[#8fa3b3] focus:outline-none"
+                                    placeholder={
+                                        selectedUser
+                                            ? 'Write a message...'
+                                            : 'Select a conversation first'
+                                    }
+                                    disabled={!selectedUser || processing}
+                                    className="h-10 flex-1 bg-transparent px-1 text-sm text-[#1f415c] placeholder:text-[#8fa3b3] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                                 />
 
                                 <button
                                     type="button"
                                     onClick={handleSendMessage}
-                                    disabled={!message.trim()}
+                                    disabled={
+                                        !data.body.trim() ||
+                                        !selectedUser ||
+                                        processing
+                                    }
                                     className="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-[#0d314d] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#123c5e] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    Send
+                                    {processing ? 'Sending…' : 'Send'}
                                     <SendHorizontal className="h-4 w-4" />
                                 </button>
                             </div>
@@ -456,13 +399,7 @@ export default function MessagesPage() {
 }
 
 MessagesPage.layout = {
-    breadcrumbs: [
-        {
-            title: 'Messages',
-            href: messages(),
-        },
-    ],
-
+    breadcrumbs: [{ title: 'Messages', href: messages() }],
     pageHeader: {
         title: 'Messages',
         description:

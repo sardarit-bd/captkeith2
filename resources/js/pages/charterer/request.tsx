@@ -1,8 +1,8 @@
 import { Head } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
+import type { CharterEvent } from '@/components/charterer-request/charterer-request-data';
 import { ChartererRequestPageContent } from '@/components/charterer-request/charterer-request-page-content';
 import { request } from '@/routes/charterer';
-import type { CharterEvent } from '@/components/charterer-request/charterer-request-data';
 
 type Props = {
     charterEvent: CharterEvent;

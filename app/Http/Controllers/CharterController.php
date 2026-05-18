@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CharterEvent;
 use App\Models\ChartererProfile;
 use App\Models\OwnerProfile;
+use App\Models\OwnerCaptainInvitation;
 use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -124,7 +125,6 @@ class CharterController extends Controller
             ->with('success', 'Charter created successfully.');
     }
 
-
     public function join(string $token): RedirectResponse
     {
         $event = CharterEvent::where('invite_token', $token)
@@ -144,7 +144,6 @@ class CharterController extends Controller
         return redirect()->route('charterer.request');
     }
 
-
     public function request(): Response|RedirectResponse
     {
         $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
@@ -152,9 +151,7 @@ class CharterController extends Controller
         $event = CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')
             ->whereNotIn('status', ['completed', 'cancelled'])
-            ->with(['vessel.photos', 'vessel.qualifiedCaptains' => function ($query) {
-                $query->whereNull('deleted_at')->where('status', 'qualified');
-            }])
+            ->with(['vessel.photos'])
             ->latest('created_at')
             ->first();
 
@@ -189,8 +186,96 @@ class CharterController extends Controller
                     ? round($event->duration_minutes / 60, 1) . ' hrs'
                     : '—',
                 'specialNotes'          => $event->special_notes ?? '',
-                'availableCaptainCount' => $vessel->qualifiedCaptains->count(),
+                'availableCaptainCount' => OwnerCaptainInvitation::where('vessel_id', $vessel->id)
+                    ->where('status', 'accepted')
+                    ->count(),
             ],
         ]);
+    }
+
+    public function captainSelect(): Response|RedirectResponse
+    {
+        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->with(['vessel'])
+            ->latest('created_at')
+            ->first();
+
+        if (! $event) {
+            return redirect()->route('dashboard')
+                ->with('error', 'No active charter booking found. Please use your invite link.');
+        }
+
+        // Load accepted captains from owner_captain_invitations for this vessel
+        $invitations = OwnerCaptainInvitation::where('vessel_id', $event->vessel_id)
+            ->where('status', 'accepted')
+            ->with(['captain.user'])
+            ->get();
+
+        $captains = $invitations->map(function (OwnerCaptainInvitation $invitation) {
+            $profile = $invitation->captain;
+            $user    = $profile?->user;
+
+            $licenseLabel = match ($profile?->license_type) {
+                'oupv'    => 'OUPV (Six-Pack)',
+                'masters' => 'Master License',
+                default   => $profile?->license_type ?? '—',
+            };
+
+            $location = implode(', ', array_filter([
+                $profile?->city,
+                $profile?->state,
+            ]));
+
+            $endorsements = is_array($profile?->endorsement)
+                ? $profile->endorsement
+                : (json_decode($profile?->endorsement ?? '[]', true) ?? []);
+
+            return [
+                'id'           => $profile?->id ?? $invitation->id,
+                'name'         => $user?->name ?? '—',
+                'photo'        => $user?->profile_photo_path
+                    ? Storage::url($user->profile_photo_path)
+                    : null,
+                'location'     => $location ?: '—',
+                'license'      => $licenseLabel,
+                'experience'   => $profile?->years_experience
+                    ? $profile->years_experience . ' years experience'
+                    : '—',
+                'rate'         => $profile?->hourly_rate
+                    ? '$' . number_format($profile->hourly_rate, 0) . '/hr'
+                    : '—',
+                'bio'          => $profile?->bio ?? '',
+                'endorsements' => $endorsements,
+                'isVerified'   => (bool) ($profile?->is_verified ?? false),
+            ];
+        })->values();
+
+        return Inertia::render('charterer/captain-select', [
+            'captains' => $captains,
+        ]);
+    }
+
+
+    public function destroy(CharterEvent $charterEvent): RedirectResponse
+    {
+        $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
+
+
+        $vessel = Vessel::where('id', $charterEvent->vessel_id)
+            ->where('owner_id', $owner->id)
+            ->firstOrFail();
+
+
+        abort_if($charterEvent->status !== 'draft', 403, 'Only draft charters can be deleted.');
+
+        $charterEvent->delete();
+
+        return redirect()
+            ->route('charterers')
+            ->with('success', 'Draft charter deleted.');
     }
 }
