@@ -75,7 +75,11 @@ class VesselController extends Controller
 
     public function index(): Response
     {
-        $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
+        $owner = OwnerProfile::where('user_id', auth()->id())->first();
+
+        if (! $owner) {
+            return Inertia::render('my-yachts', ['vessels' => []]);
+        }
 
         $vessels = Vessel::where('owner_id', $owner->id)
             ->whereNull('deleted_at')

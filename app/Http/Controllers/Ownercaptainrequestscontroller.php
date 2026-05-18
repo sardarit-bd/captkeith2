@@ -14,8 +14,11 @@ class OwnerCaptainRequestsController extends Controller
 {
     public function index(Request $request): Response
     {
-        $ownerProfile = OwnerProfile::where('user_id', $request->user()->id)
-            ->firstOrFail();
+        $ownerProfile = OwnerProfile::where('user_id', $request->user()->id)->first();
+
+        if (! $ownerProfile) {
+            return Inertia::render('captain-requests', ['interests' => []]);
+        }
 
         $vesselIds = $ownerProfile->vessels()->pluck('id');
 
@@ -86,7 +89,6 @@ class OwnerCaptainRequestsController extends Controller
             'interests' => $interests,
         ]);
     }
-
 
     public function respond(Request $request, CaptainVesselInterest $interest): RedirectResponse
     {
