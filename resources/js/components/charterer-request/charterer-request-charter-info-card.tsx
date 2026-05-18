@@ -1,8 +1,19 @@
 import { Calendar, Clock3, Timer } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { charterRequestInfo } from './charterer-request-data';
 
-export function ChartererRequestCharterInfoCard() {
+type Props = {
+    date: string;
+    time: string;
+    duration: string;
+    specialNotes: string;
+};
+
+export function ChartererRequestCharterInfoCard({
+    date,
+    time,
+    duration,
+    specialNotes,
+}: Props) {
     return (
         <section className="rounded-2xl border border-[#edf2f7] bg-white p-6 shadow-sm sm:p-8">
             <header className="mb-6 flex items-center gap-2">
@@ -16,28 +27,28 @@ export function ChartererRequestCharterInfoCard() {
                 <InfoItem
                     icon={<Calendar className="h-5 w-5 text-[#9ca3af]" />}
                     label="Date"
-                    value={charterRequestInfo.date}
+                    value={date}
                 />
                 <InfoItem
                     icon={<Clock3 className="h-5 w-5 text-[#9ca3af]" />}
                     label="Time"
-                    value={charterRequestInfo.time}
+                    value={time}
                 />
                 <InfoItem
                     icon={<Timer className="h-5 w-5 text-[#9ca3af]" />}
                     label="Duration"
-                    value={charterRequestInfo.duration}
+                    value={duration}
                 />
             </div>
 
-            <div className="rounded-xl border border-blue-50/50 bg-[#F4F7FB] p-5">
-                <p className="mb-1 text-sm font-semibold text-[#111827]">
-                    Special Notes:
-                </p>
-                <p className="text-sm text-[#4b5563]">
-                    {charterRequestInfo.notes}
-                </p>
-            </div>
+            {specialNotes ? (
+                <div className="rounded-xl border border-blue-50/50 bg-[#F4F7FB] p-5">
+                    <p className="mb-1 text-sm font-semibold text-[#111827]">
+                        Special Notes:
+                    </p>
+                    <p className="text-sm text-[#4b5563]">{specialNotes}</p>
+                </div>
+            ) : null}
         </section>
     );
 }

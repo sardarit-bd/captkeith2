@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CharterEvent;
+use App\Models\ChartererProfile;
 use App\Models\OwnerProfile;
 use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +41,6 @@ class CharterController extends Controller
             ->whereNull('deleted_at')
             ->pluck('id');
 
-
         $drafts = CharterEvent::whereIn('vessel_id', $vesselIds)
             ->whereNull('deleted_at')
             ->where('status', 'draft')
@@ -64,7 +64,6 @@ class CharterController extends Controller
                 'inviteExpires' => $event->invite_token_expires_at?->format('M d, Y') ?? null,
                 'specialNotes'  => $event->special_notes,
             ]);
-
 
         $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
             ->whereNull('deleted_at')
@@ -125,23 +124,72 @@ class CharterController extends Controller
             ->with('success', 'Charter created successfully.');
     }
 
-    public function join(string $token): Response|RedirectResponse
+
+    public function join(string $token): RedirectResponse
     {
         $event = CharterEvent::where('invite_token', $token)
             ->whereNull('deleted_at')
             ->where('invite_token_expires_at', '>', now())
             ->firstOrFail();
 
+        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        if (is_null($event->charterer_id)) {
+            $event->update(['charterer_id' => $charterer->id]);
+        } elseif ($event->charterer_id !== $charterer->id) {
+            return redirect()->route('dashboard')
+                ->with('error', 'This invite link has already been used.');
+        }
+
+        return redirect()->route('charterer.request');
+    }
+
+
+    public function request(): Response|RedirectResponse
+    {
+        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->with(['vessel.photos', 'vessel.qualifiedCaptains' => function ($query) {
+                $query->whereNull('deleted_at')->where('status', 'qualified');
+            }])
+            ->latest('created_at')
+            ->first();
+
+        if (! $event) {
+            return redirect()->route('dashboard')
+                ->with('error', 'No active charter booking found. Please use your invite link.');
+        }
+
+        $vessel = $event->vessel;
+        $photo  = $vessel->photos->first();
+        $marina = implode(', ', array_filter([
+            $vessel->marina_name,
+            $vessel->marina_city,
+            $vessel->marina_state,
+        ]));
+
         return Inertia::render('charterer/request', [
             'charterEvent' => [
-                'id'        => $event->id,
-                'token'     => $token,
-                'yachtName' => $event->vessel->name ?? '—',
-                'date'      => $event->charter_date?->format('M d, Y'),
-                'startTime' => $event->start_time,
-                'duration'  => $event->duration_minutes
+                'id'    => $event->id,
+                'yacht' => [
+                    'name'               => $vessel->name,
+                    'registrationNumber' => $vessel->official_number,
+                    'type'               => ucfirst($vessel->vessel_type ?? ''),
+                    'length'             => $vessel->length_ft ? $vessel->length_ft . ' ft' : '—',
+                    'marina'             => $marina ?: '—',
+                    'operatingArea'      => $vessel->operating_area ?? '—',
+                    'image'              => $photo ? Storage::url($photo->image_path) : null,
+                ],
+                'date'                  => $event->charter_date?->format('M d, Y') ?? '—',
+                'time'                  => $event->start_time ?? '—',
+                'duration'              => $event->duration_minutes
                     ? round($event->duration_minutes / 60, 1) . ' hrs'
                     : '—',
+                'specialNotes'          => $event->special_notes ?? '',
+                'availableCaptainCount' => $vessel->qualifiedCaptains->count(),
             ],
         ]);
     }

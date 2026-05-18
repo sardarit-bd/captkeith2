@@ -100,14 +100,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:charterer')->group(function () {
-        Route::inertia('my-booking', 'my-booking')->name('my-booking');
-        Route::inertia('charterer/request', 'charterer/request')->name('charterer.request');
+        Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
+        Route::get('charterer/request', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
         Route::inertia('charterer/captain-select', 'charterer/captain-select')->name('charterer.captain-select');
         Route::inertia('charterer/information', 'charterer/information')->name('charterer.information');
         Route::inertia('charterer/agreement', 'charterer/agreement')->name('charterer.agreement');
         Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
         Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
         Route::inertia('charterer/settings', 'charterer-settings')->name('charterer-settings');
+        Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])->name('charterer.join');
     });
 });
 

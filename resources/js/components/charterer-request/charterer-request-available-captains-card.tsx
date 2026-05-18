@@ -1,9 +1,14 @@
 import { Link } from '@inertiajs/react';
 import { Users } from 'lucide-react';
 import { captainSelect } from '@/routes/charterer';
-import { availableCaptainCount } from './charterer-request-data';
 
-export function ChartererRequestAvailableCaptainsCard() {
+type Props = {
+    availableCaptainCount: number;
+};
+
+export function ChartererRequestAvailableCaptainsCard({
+    availableCaptainCount,
+}: Props) {
     return (
         <section className="rounded-2xl border border-[#edf2f7] bg-white p-6 shadow-sm sm:p-8">
             <header className="mb-2 flex items-center gap-2">

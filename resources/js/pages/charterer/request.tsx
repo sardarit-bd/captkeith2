@@ -1,12 +1,20 @@
 import { Head } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { ChartererRequestPageContent } from '@/components/charterer-request/charterer-request-page-content';
 import { request } from '@/routes/charterer';
+import type { CharterEvent } from '@/components/charterer-request/charterer-request-data';
+
+type Props = {
+    charterEvent: CharterEvent;
+};
 
 export default function ChartererRequestPage() {
+    const { charterEvent } = usePage<Props>().props;
+
     return (
         <>
             <Head title="Request" />
-            <ChartererRequestPageContent />
+            <ChartererRequestPageContent charterEvent={charterEvent} />
         </>
     );
 }
