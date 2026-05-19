@@ -11,6 +11,7 @@ type Conversation = {
     time: string;
     unread: number;
     online: boolean;
+    photo: string | null;
 };
 
 type ChatMessage = {
@@ -25,6 +26,7 @@ type SelectedUser = {
     name: string;
     role: string;
     online: boolean;
+    photo: string | null;
 } | null;
 
 type PageProps = {
@@ -78,7 +80,6 @@ export default function MessagesPage() {
 
     useEffect(() => {
         if (!auth?.user?.id) return;
-
         if (!window.Echo) return;
 
         const channel = window.Echo.private(`messages.${auth.user.id}`);
@@ -211,6 +212,7 @@ export default function MessagesPage() {
                             {filteredConversations.map((conversation) => {
                                 const isActive =
                                     conversation.id === selectedUserId;
+
                                 return (
                                     <button
                                         key={conversation.id}
@@ -226,12 +228,21 @@ export default function MessagesPage() {
                                                 : 'hover:bg-[#f4f9fc]'
                                         }`}
                                     >
-                                        <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0d314d] text-sm font-semibold text-white">
-                                            {conversation.name
-                                                .split(' ')
-                                                .slice(0, 2)
-                                                .map((p) => p[0])
-                                                .join('')}
+                                        {/* ✅ Use conversation.photo and conversation.name — NOT selectedUser */}
+                                        <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0d314d] text-sm font-semibold text-white">
+                                            {conversation.photo ? (
+                                                <img
+                                                    src={conversation.photo}
+                                                    alt={conversation.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <span>
+                                                    {conversation.name
+                                                        .charAt(0)
+                                                        .toUpperCase()}
+                                                </span>
+                                            )}
                                             {conversation.online && (
                                                 <Circle className="absolute -right-0.5 -bottom-0.5 h-3.5 w-3.5 fill-[#22c55e] text-white" />
                                             )}
@@ -291,12 +302,21 @@ export default function MessagesPage() {
 
                                 {selectedUser ? (
                                     <>
-                                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#0d314d] text-sm font-semibold text-white">
-                                            {selectedUser.name
-                                                .split(' ')
-                                                .slice(0, 2)
-                                                .map((p) => p[0])
-                                                .join('')}
+                                        {/* ✅ Header avatar uses selectedUser.photo correctly */}
+                                        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0d314d] text-sm font-semibold text-white">
+                                            {selectedUser.photo ? (
+                                                <img
+                                                    src={selectedUser.photo}
+                                                    alt={selectedUser.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <span>
+                                                    {selectedUser.name
+                                                        .charAt(0)
+                                                        .toUpperCase()}
+                                                </span>
+                                            )}
                                         </span>
                                         <span>
                                             <span className="block text-sm font-semibold text-[#0c304d]">

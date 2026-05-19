@@ -109,7 +109,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::inertia('charterer/agreement', 'charterer/agreement')->name('charterer.agreement');
         Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
         Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
-        Route::inertia('charterer/settings', 'charterer-settings')->name('charterer-settings');
+        Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');
+        Route::patch('charterer/settings/preferences', [\App\Http\Controllers\ChartererSettingsController::class, 'updatePreferences'])->name('charterer-settings.preferences');
+        Route::patch('charterer/settings/deactivate', [\App\Http\Controllers\ChartererSettingsController::class, 'deactivate'])->name('charterer-settings.deactivate');
+        Route::delete('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'destroy'])->name('charterer-settings.destroy');
         Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])->name('charterer.join');
     });
 });

@@ -25,10 +25,10 @@ class MessageController extends Controller
             ->orWhereHas('receivedMessages', fn($q) => $q->where('sender_id', $authId))
             ->where('id', '!=', $authId)
             ->with([
-                'captainProfile:user_id,first_name,last_name',
-                'deckhandProfile:user_id,first_name,last_name',
-                'chartererProfile:user_id,first_name,last_name',
-                'ownerProfile:user_id,first_name,last_name',
+                'captainProfile:user_id,full_name,photo_path',
+                'deckhandProfile:user_id,full_name,photo_path',
+                'chartererProfile:user_id,full_name,photo_path',
+                'ownerProfile:user_id,full_name,photo_path',
             ])
             ->get()
             ->map(function (User $user) use ($authId) {
@@ -57,6 +57,7 @@ class MessageController extends Controller
                     'time'    => $latest ? $latest->created_at->diffForHumans(short: true) : '',
                     'unread'  => $unread,
                     'online'  => false, // extend with presence later
+                    'photo' => $this->resolvePhoto($user),
                 ];
             })
             ->sortByDesc('time')
@@ -70,10 +71,10 @@ class MessageController extends Controller
         if ($selectedUserId) {
             $selectedUser = User::query()
                 ->with([
-                    'captainProfile:user_id,first_name,last_name',
-                    'deckhandProfile:user_id,first_name,last_name',
-                    'chartererProfile:user_id,first_name,last_name',
-                    'ownerProfile:user_id,first_name,last_name',
+                    'captainProfile:user_id,full_name,photo_path',
+                    'deckhandProfile:user_id,full_name,photo_path',
+                    'chartererProfile:user_id,full_name,photo_path',
+                    'ownerProfile:user_id,full_name,photo_path',
                 ])
                 ->findOrFail($selectedUserId);
 
@@ -106,6 +107,7 @@ class MessageController extends Controller
                 'name'   => $this->resolveName($selectedUser),
                 'role'   => $this->resolveRole($selectedUser),
                 'online' => false,
+                'photo' => $this->resolvePhoto($selectedUser),
             ] : null,
         ]);
     }
@@ -128,7 +130,17 @@ class MessageController extends Controller
         return back();
     }
 
+    private function resolvePhoto(User $user): ?string
+    {
+        $profile = $user->captainProfile
+            ?? $user->deckhandProfile
+            ?? $user->chartererProfile
+            ?? $user->ownerProfile;
 
+        return $profile?->photo_path
+            ? \Illuminate\Support\Facades\Storage::url($profile->photo_path)
+            : null;
+    }
 
     private function resolveName(User $user): string
     {
@@ -137,14 +149,13 @@ class MessageController extends Controller
             ?? $user->chartererProfile
             ?? $user->ownerProfile;
 
-        if ($profile) {
-            return trim($profile->first_name . ' ' . $profile->last_name);
+        if ($profile && !empty($profile->full_name)) {
+            return trim($profile->full_name);
         }
 
         // Fallback: derive from email
         return ucwords(str_replace(['.', '_', '-'], ' ', explode('@', $user->email)[0]));
     }
-
     private function resolveRole(User $user): string
     {
         return ucfirst($user->roles->first()?->name ?? 'User');

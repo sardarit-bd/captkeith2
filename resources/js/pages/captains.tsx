@@ -19,6 +19,7 @@ import { captains } from '@/routes';
 
 interface Captain {
     id: string;
+    user_id: string;
     name: string;
     location: string;
     license: string;
@@ -660,6 +661,11 @@ export default function CaptainsPage() {
                                             />
                                             <button
                                                 type="button"
+                                                onClick={() =>
+                                                    router.get('/messages', {
+                                                        with: captain.user_id,
+                                                    })
+                                                }
                                                 className="cursor-pointer rounded-lg border border-gray-200 bg-white p-2.5 text-gray-500 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900"
                                             >
                                                 <MessageSquare className="h-4 w-4" />

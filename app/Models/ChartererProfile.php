@@ -17,17 +17,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'zip_code',
     'phone',
     'photo_path',
+    'preferences',
 ])]
 class ChartererProfile extends Model
 {
     use HasUuids;
 
+    protected function casts(): array
+    {
+        return [
+            'preferences' => 'array',
+        ];
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-
 
     public function charterEvents(): HasMany
     {

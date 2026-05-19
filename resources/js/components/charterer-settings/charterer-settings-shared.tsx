@@ -1,47 +1,89 @@
+import type { ReactNode } from 'react';
+
+// ── SettingsSection ──────────────────────────────────────────────────────────
+
+interface SettingsSectionProps {
+    title: string;
+    icon?: ReactNode;
+    danger?: boolean;
+    children: ReactNode;
+}
+
 export function SettingsSection({
     title,
     icon,
-    children,
     danger = false,
-}: {
-    title: string;
-    icon: React.ReactNode;
-    children: React.ReactNode;
-    danger?: boolean;
-}) {
+    children,
+}: SettingsSectionProps) {
     return (
         <section
             className={`rounded-2xl border bg-white p-6 shadow-sm sm:p-8 ${
-                danger ? 'border-[#fecaca]' : 'border-[#f1f5f9]'
+                danger ? 'border-[#fee2e2]' : 'border-[#e8eef4]'
             }`}
         >
-            <div className={`mb-6 flex items-center gap-2 ${danger ? 'text-[#dc2626]' : 'text-[#111827]'}`}>
-                {icon}
-                <h3 className="text-[16px] font-bold">{title}</h3>
-            </div>
+            <header className="mb-6 flex items-center gap-3">
+                {icon && (
+                    <span
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                            danger
+                                ? 'bg-[#fef2f2] text-[#dc2626]'
+                                : 'bg-[#eff6ff]'
+                        }`}
+                    >
+                        {icon}
+                    </span>
+                )}
+                <h2
+                    className={`text-[16px] font-bold ${
+                        danger ? 'text-[#dc2626]' : 'text-[#111827]'
+                    }`}
+                >
+                    {title}
+                </h2>
+            </header>
             {children}
         </section>
     );
 }
 
-export function ToggleSwitch({
-    id,
-    defaultChecked,
-}: {
-    id: string;
-    defaultChecked?: boolean;
-}) {
+// ── SecondaryButton ──────────────────────────────────────────────────────────
+
+interface SecondaryButtonProps {
+    children: ReactNode;
+    className?: string;
+    onClick?: () => void;
+    disabled?: boolean;
+    type?: 'button' | 'submit' | 'reset';
+}
+
+export function SecondaryButton({
+    children,
+    className = '',
+    onClick,
+    disabled = false,
+    type = 'button',
+}: SecondaryButtonProps) {
     return (
-        <label htmlFor={id} className="relative inline-flex cursor-pointer items-center">
-            <input
-                id={id}
-                type="checkbox"
-                defaultChecked={defaultChecked}
-                className="peer sr-only"
-            />
-            <div className="h-6 w-11 rounded-full bg-[#e5e7eb] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-[#d1d5db] after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#0A273F] peer-checked:after:translate-x-full peer-checked:after:border-white" />
-        </label>
+        <button
+            type={type}
+            onClick={onClick}
+            disabled={disabled}
+            className={`rounded-lg border border-[#e2e8f0] bg-white px-4 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        >
+            {children}
+        </button>
     );
+}
+
+// ── PreferenceRow ────────────────────────────────────────────────────────────
+
+interface PreferenceRowProps {
+    id: string;
+    title: string;
+    description: string;
+    enabled: boolean;
+    withDivider?: boolean;
+    onChange?: (value: boolean) => void;
 }
 
 export function PreferenceRow({
@@ -49,42 +91,44 @@ export function PreferenceRow({
     title,
     description,
     enabled,
-    withDivider = true,
-}: {
-    id: string;
-    title: string;
-    description: string;
-    enabled: boolean;
-    withDivider?: boolean;
-}) {
+    withDivider = false,
+    onChange,
+}: PreferenceRowProps) {
     return (
         <div
-            className={`flex flex-col justify-between gap-4 sm:flex-row sm:items-center ${withDivider ? 'border-t border-[#f8fafc] pt-4' : ''}`}
+            className={`flex items-center justify-between gap-4 ${
+                withDivider ? 'border-t border-[#f1f5f9] pt-6' : ''
+            }`}
         >
             <div>
-                <h4 className="text-[14px] font-semibold text-[#111827]">{title}</h4>
-                <p className="mt-0.5 text-[13px] text-[#6b7280]">{description}</p>
+                <label
+                    htmlFor={id}
+                    className="cursor-pointer text-[14px] font-semibold text-[#111827]"
+                >
+                    {title}
+                </label>
+                <p className="mt-0.5 text-[13px] text-[#6b7280]">
+                    {description}
+                </p>
             </div>
-            <div className="shrink-0 self-start sm:self-auto">
-                <ToggleSwitch id={id} defaultChecked={enabled} />
-            </div>
-        </div>
-    );
-}
 
-export function SecondaryButton({
-    children,
-    className = '',
-}: {
-    children: React.ReactNode;
-    className?: string;
-}) {
-    return (
-        <button
-            type="button"
-            className={`rounded-lg border border-[#e5e7eb] bg-white px-5 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] ${className}`}
-        >
-            {children}
-        </button>
+            {/* Toggle switch */}
+            <button
+                id={id}
+                type="button"
+                role="switch"
+                aria-checked={enabled}
+                onClick={() => onChange?.(!enabled)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    enabled ? 'bg-[#0A273F]' : 'bg-[#d1d5db]'
+                }`}
+            >
+                <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        enabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                />
+            </button>
+        </div>
     );
 }

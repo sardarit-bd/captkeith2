@@ -27,6 +27,7 @@ class CaptainController extends Controller
         $captains = $query->latest()->get()
             ->map(fn(CaptainProfile $captain) => [
                 'id'           => $captain->id,
+                'user_id'      => $captain->user_id,
                 'name'         => $captain->full_name,
                 'location'     => trim(collect([$captain->city, $captain->state])->filter()->implode(', ')),
                 'license'      => $captain->license_type ?? '—',
