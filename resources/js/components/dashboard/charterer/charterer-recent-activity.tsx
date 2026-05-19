@@ -2,12 +2,16 @@ import { usePage } from '@inertiajs/react';
 import type { ChartererDashboardData } from './charterer-dashboard-types';
 
 const dotColor: Record<string, string> = {
+    draft: 'bg-gray-400',
+    awaiting_responses: 'bg-amber-400',
+    ready_for_charterer: 'bg-blue-400',
+    captain_selected: 'bg-blue-500',
+    agreements_pending: 'bg-yellow-400',
+    agreements_signed: 'bg-green-400',
+    insurance_pending: 'bg-orange-400',
+    insurance_complete: 'bg-green-500',
     completed: 'bg-green-500',
     cancelled: 'bg-red-400',
-    confirmed: 'bg-blue-400',
-    booked: 'bg-blue-400',
-    pending: 'bg-amber-400',
-    draft: 'bg-gray-400',
 };
 
 export function ChartererRecentActivity() {
@@ -17,7 +21,7 @@ export function ChartererRecentActivity() {
 
     return (
         <section className="flex h-full flex-col rounded-[14px] border border-[#f1f5f9] bg-white p-6 shadow-sm sm:p-8">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6">
                 <h3 className="text-[17px] leading-tight font-bold text-[#111827]">
                     Recent Activity
                 </h3>

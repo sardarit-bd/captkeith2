@@ -1,12 +1,16 @@
 import { usePage } from '@inertiajs/react';
-import { Anchor, Calendar, Clock, MapPin } from 'lucide-react';
+import { Anchor, Calendar, Clock, MapPin, User } from 'lucide-react';
 import type { ChartererDashboardData } from './charterer-dashboard-types';
 
 const statusColors: Record<string, string> = {
     draft: 'bg-gray-100 text-gray-600',
-    pending: 'bg-[#fff7ed] text-[#ea580c]',
-    confirmed: 'bg-[#eff6ff] text-[#2563eb]',
-    booked: 'bg-[#f0fdf4] text-[#16a34a]',
+    awaiting_responses: 'bg-[#fff7ed] text-[#ea580c]',
+    ready_for_charterer: 'bg-[#eff6ff] text-[#2563eb]',
+    captain_selected: 'bg-[#f0fdf4] text-[#16a34a]',
+    agreements_pending: 'bg-[#fefce8] text-[#ca8a04]',
+    agreements_signed: 'bg-[#f0fdf4] text-[#16a34a]',
+    insurance_pending: 'bg-[#fff7ed] text-[#ea580c]',
+    insurance_complete: 'bg-[#dcfce7] text-[#15803d]',
     completed: 'bg-[#dcfce7] text-[#15803d]',
     cancelled: 'bg-[#fee2e2] text-[#991b1b]',
 };
@@ -18,7 +22,7 @@ export function ChartererUpcomingBooking() {
 
     return (
         <section className="flex h-full flex-col rounded-[14px] border border-[#f1f5f9] bg-white p-6 shadow-sm sm:p-8">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6">
                 <h3 className="text-[17px] leading-tight font-bold text-[#111827]">
                     Upcoming Booking
                 </h3>
@@ -35,40 +39,48 @@ export function ChartererUpcomingBooking() {
                     </p>
                 </div>
             ) : (
-                <article className="flex flex-1 flex-col rounded-[14px] border border-[#f1f5f9] bg-white p-5 shadow-sm sm:p-6">
-                    <div className="mb-2 flex items-start justify-between">
-                        <div>
-                            <h4 className="text-[16px] font-bold text-[#111827]">
-                                {booking.yachtName}
-                            </h4>
-                            {booking.captainName && (
-                                <p className="mt-1 text-[13px] text-[#6b7280]">
-                                    Captain: {booking.captainName}
-                                </p>
-                            )}
-                        </div>
+                <div className="flex flex-1 flex-col">
+                    {booking.yachtImage && (
+                        <img
+                            src={booking.yachtImage}
+                            alt={booking.yachtName}
+                            className="mb-4 h-40 w-full rounded-[10px] object-cover"
+                        />
+                    )}
+
+                    <div className="mb-3 flex items-start justify-between gap-2">
+                        <h4 className="text-[16px] font-bold text-[#111827]">
+                            {booking.yachtName}
+                        </h4>
                         <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide capitalize ${statusColors[booking.status] ?? 'bg-gray-100 text-gray-600'}`}
+                            className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide ${statusColors[booking.status] ?? 'bg-gray-100 text-gray-600'}`}
                         >
-                            {booking.status}
+                            {booking.statusLabel}
                         </span>
                     </div>
 
-                    <div className="my-6 space-y-3">
+                    <div className="space-y-3">
                         <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
-                            <Calendar className="h-4 w-4 text-[#9ca3af]" />
+                            <Calendar className="h-4 w-4 shrink-0 text-[#9ca3af]" />
                             {booking.date}
                         </p>
                         <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
-                            <Clock className="h-4 w-4 text-[#9ca3af]" />
-                            {booking.startTime} &middot; {booking.duration}
+                            <Clock className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                            {booking.startTime}&nbsp;&middot;&nbsp;
+                            {booking.duration}
                         </p>
                         <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
-                            <MapPin className="h-4 w-4 text-[#9ca3af]" />
+                            <MapPin className="h-4 w-4 shrink-0 text-[#9ca3af]" />
                             {booking.marina}
                         </p>
+                        {booking.captainName && (
+                            <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
+                                <User className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                                Captain: {booking.captainName}
+                            </p>
+                        )}
                     </div>
-                </article>
+                </div>
             )}
         </section>
     );

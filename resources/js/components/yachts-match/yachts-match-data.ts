@@ -13,4 +13,5 @@ export type YachtMatchRecord = {
     qualifications: string[];
     image: string | null;
     interestStatus: InterestStatus | null;
+    ownerUserId: string | null;
 };

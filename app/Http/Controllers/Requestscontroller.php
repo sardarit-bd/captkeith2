@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CharterCrewResponse;
 use App\Models\CaptainProfile;
+use App\Models\CharterCrewResponse;
+use App\Models\DeckhandProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,11 +16,18 @@ class RequestsController extends Controller
 {
     public function index(): Response
     {
-        $captainProfile = CaptainProfile::where('user_id', Auth::id())
-            ->firstOrFail();
+        $user = Auth::user();
 
-        $responses = CharterCrewResponse::where('profile_id', $captainProfile->id)
-            ->where('crew_role', 'captain')
+        if ($user->hasRole('captain')) {
+            $profile  = CaptainProfile::where('user_id', $user->id)->firstOrFail();
+            $crewRole = 'captain';
+        } else {
+            $profile  = DeckhandProfile::where('user_id', $user->id)->firstOrFail();
+            $crewRole = 'deckhand';
+        }
+
+        $responses = CharterCrewResponse::where('profile_id', $profile->id)
+            ->where('crew_role', $crewRole)
             ->with([
                 'charterEvent.vessel.photos' => fn($q) => $q->orderBy('display_order'),
                 'charterEvent.vessel',
@@ -41,20 +49,20 @@ class RequestsController extends Controller
                     : "{$durationHours} hours";
 
                 return [
-                    'id'           => $crewResponse->id,
-                    'yachtName'    => $vessel?->name ?? '—',
-                    'yachtSpec'    => $vessel
+                    'id'             => $crewResponse->id,
+                    'yachtName'      => $vessel?->name ?? '—',
+                    'yachtSpec'      => $vessel
                         ? ucfirst($vessel->vessel_type) . ' • ' . $vessel->length_ft . 'ft'
                         : '—',
-                    'marina'       => $vessel
+                    'marina'         => $vessel
                         ? trim(collect([$vessel->marina_name, $vessel->marina_city])->filter()->implode(', '))
                         : '—',
-                    'image'        => $photo ? Storage::url($photo) : null,
-                    'date'         => $event?->charter_date?->format('M j, Y') ?? '—',
-                    'time'         => $event?->start_time ?? '—',
-                    'duration'     => $durationLabel,
-                    'specialNotes' => $event?->special_notes ?? '',
-                    'status'       => $crewResponse->response,
+                    'image'          => $photo ? Storage::url($photo) : null,
+                    'date'           => $event?->charter_date?->format('M j, Y') ?? '—',
+                    'time'           => $event?->start_time ?? '—',
+                    'duration'       => $durationLabel,
+                    'specialNotes'   => $event?->special_notes ?? '',
+                    'status'         => $crewResponse->response,
                     'charterEventId' => $event?->id,
                 ];
             });
@@ -70,11 +78,18 @@ class RequestsController extends Controller
             'response' => ['required', 'in:available,unavailable'],
         ]);
 
+        $user = Auth::user();
 
-        $captainProfile = CaptainProfile::where('user_id', Auth::id())->firstOrFail();
+        if ($user->hasRole('captain')) {
+            $profile  = CaptainProfile::where('user_id', $user->id)->firstOrFail();
+            $crewRole = 'captain';
+        } else {
+            $profile  = DeckhandProfile::where('user_id', $user->id)->firstOrFail();
+            $crewRole = 'deckhand';
+        }
 
         abort_if(
-            $crewResponse->profile_id !== $captainProfile->id || $crewResponse->crew_role !== 'captain',
+            $crewResponse->profile_id !== $profile->id || $crewResponse->crew_role !== $crewRole,
             403,
         );
 

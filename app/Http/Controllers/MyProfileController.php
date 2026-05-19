@@ -14,7 +14,6 @@ class MyProfileController extends Controller
     {
         $user = $request->user();
 
-
         if ($user->hasRole('owner')) {
             $profile = $user->ownerProfile;
 
@@ -31,7 +30,33 @@ class MyProfileController extends Controller
             ]);
         }
 
+        if ($user->hasRole('deckhand')) {
+            $profile = $user->deckhandProfile;
 
+            return Inertia::render('my-profile', [
+                'profile' => $profile ? [
+                    'full_name'                 => $profile->full_name,
+                    'phone'                     => $profile->phone,
+                    'address'                   => $profile->address,
+                    'city'                      => $profile->city,
+                    'state'                     => $profile->state,
+                    'zip_code'                  => $profile->zip_code,
+                    'travel_radius_miles'       => $profile->travel_radius_miles,
+                    'years_experience'          => $profile->years_experience,
+                    'has_server_experience'     => $profile->has_server_experience,
+                    'has_bartending_experience' => $profile->has_bartending_experience,
+                    'hourly_rate'               => $profile->hourly_rate,
+                    'photo_url'                 => $profile->photo_path
+                        ? Storage::url($profile->photo_path)
+                        : null,
+                    'resume_url'                => $profile->resume_path
+                        ? Storage::url($profile->resume_path)
+                        : null,
+                ] : null,
+            ]);
+        }
+
+        // captain (default)
         $profile = $user->captainProfile;
 
         return Inertia::render('my-profile', [
@@ -70,7 +95,6 @@ class MyProfileController extends Controller
     {
         $user = $request->user();
 
-
         if ($user->hasRole('owner')) {
             $validated = $request->validate([
                 'full_name'    => ['required', 'string', 'max:150'],
@@ -101,7 +125,53 @@ class MyProfileController extends Controller
             return to_route('my-profile');
         }
 
+        if ($user->hasRole('deckhand')) {
+            $validated = $request->validate([
+                'full_name'                 => ['required', 'string', 'max:150'],
+                'phone'                     => ['nullable', 'string', 'max:20'],
+                'address'                   => ['nullable', 'string', 'max:255'],
+                'city'                      => ['nullable', 'string', 'max:100'],
+                'state'                     => ['nullable', 'string', 'max:50'],
+                'zip_code'                  => ['nullable', 'string', 'max:10'],
+                'travel_radius_miles'       => ['nullable', 'integer', 'min:1'],
+                'years_experience'          => ['nullable', 'numeric', 'min:0'],
+                'has_server_experience'     => ['boolean'],
+                'has_bartending_experience' => ['boolean'],
+                'hourly_rate'               => ['nullable', 'numeric', 'min:0'],
+                'photo'                     => ['nullable', 'image', 'max:2048'],
+                'resume'                    => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+            ]);
 
+            $profile = $user->deckhandProfile()->firstOrNew(['user_id' => $user->id]);
+
+            if ($request->hasFile('photo')) {
+                if ($profile->photo_path) {
+                    Storage::disk('public')->delete($profile->photo_path);
+                }
+                $validated['photo_path'] = $request->file('photo')
+                    ->store('deckhand-photos', 'public');
+            }
+
+            if ($request->hasFile('resume')) {
+                if ($profile->resume_path) {
+                    Storage::disk('public')->delete($profile->resume_path);
+                }
+                $validated['resume_path'] = $request->file('resume')
+                    ->store('deckhand-resumes', 'public');
+            }
+
+            unset($validated['photo'], $validated['resume']);
+
+            $profile->fill($validated);
+            $profile->user_id = $user->id;
+            $profile->save();
+
+            session()->flash('toast', ['type' => 'success', 'message' => 'Profile updated successfully.']);
+
+            return to_route('my-profile');
+        }
+
+        // captain (default)
         $validated = $request->validate([
             'full_name'            => ['required', 'string', 'max:150'],
             'phone'                => ['required', 'string', 'max:20'],

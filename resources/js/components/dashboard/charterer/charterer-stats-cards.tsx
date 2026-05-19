@@ -23,7 +23,7 @@ export function ChartererStatsCards() {
             iconColor: '#16a34a',
         },
         {
-            label: 'Pending Requests',
+            label: 'Pending Action',
             value: stats.totalPending,
             icon: Clock,
             iconBg: '#fff7ed',

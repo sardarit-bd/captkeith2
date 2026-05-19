@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CaptainVesselInterest;
+use App\Models\DeckhandVesselInterest;
 use App\Models\User;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
@@ -15,30 +16,57 @@ class YachtsMatchController extends Controller
     public function index(Request $request): Response
     {
         /** @var User $user */
-        $user    = $request->user();
-        $profile = $user->captainProfile ?? $user->deckhandProfile;
+        $user        = $request->user();
+        $isCaptain   = $user->hasRole('captain');
+        $isDeckhand  = $user->hasRole('deckhand');
+        $profile     = $isCaptain ? $user->captainProfile : $user->deckhandProfile;
 
         if (! $profile) {
             return Inertia::render('yachts-match', [
-                'vessels'             => [],
-                'profileMissing'      => true,
-                'interestedVesselIds' => [],
+                'vessels'          => [],
+                'profileMissing'   => true,
+                'interestStatuses' => [],
             ]);
         }
 
-        $vessels = Vessel::query()
-            ->with(['photos' => fn($q) => $q->orderBy('display_order')])
+        $query = Vessel::query()
+            ->with([
+                'photos' => fn($q) => $q->orderBy('display_order'),
+                'owner',  // add this
+            ])
             ->where('is_active', true)
-            ->whereNull('deleted_at')
-            ->where('required_license_type', $profile->license_type)
-            ->where('required_endorsement', $profile->endorsement)
-            ->where('required_tonnage_rating', '<=', $profile->tonnage_rating)
-            ->where('required_years_experience', '<=', $profile->years_experience)
+            ->whereNull('deleted_at');
+
+
+        if ($isCaptain) {
+            if ($profile->license_type !== null) {
+                $query->where('required_license_type', $profile->license_type);
+            }
+
+            if ($profile->endorsement !== null) {
+                $query->where('required_endorsement', $profile->endorsement);
+            }
+
+            if ($profile->tonnage_rating !== null) {
+                $query->where(function ($q) use ($profile) {
+                    $q->whereNull('required_tonnage_rating')
+                        ->orWhere('required_tonnage_rating', '<=', $profile->tonnage_rating);
+                });
+            }
+
+            if ($profile->years_experience !== null) {
+                $query->where(function ($q) use ($profile) {
+                    $q->whereNull('required_years_experience')
+                        ->orWhere('required_years_experience', '<=', $profile->years_experience);
+                });
+            }
+        }
+
+        $vessels = $query
             ->latest()
             ->get()
             ->map(function (Vessel $vessel) {
-                $photo = $vessel->photos->first();
-
+                $photo          = $vessel->photos->first();
                 $qualifications = [];
 
                 $licenseLabels = [
@@ -72,8 +100,8 @@ class YachtsMatchController extends Controller
                     'id'             => $vessel->id,
                     'name'           => $vessel->name,
                     'registrationNo' => $vessel->official_number,
-                    'type'           => ucfirst($vessel->vessel_type),
-                    'length'         => $vessel->length_ft . ' ft',
+                    'type'           => ucfirst($vessel->vessel_type ?? ''),
+                    'length'         => $vessel->length_ft ? $vessel->length_ft . ' ft' : null,
                     'marina'         => $vessel->marina_name,
                     'city'           => $vessel->marina_city,
                     'state'          => $vessel->marina_state,
@@ -82,12 +110,19 @@ class YachtsMatchController extends Controller
                     'image'          => $photo?->image_path
                         ? Storage::url($photo->image_path)
                         : null,
+                    'ownerUserId'    => $vessel->owner?->user_id, // add this
                 ];
             });
 
+
         $interestStatuses = [];
-        if ($user->captainProfile) {
+
+        if ($isCaptain && $user->captainProfile) {
             $interestStatuses = CaptainVesselInterest::where('captain_id', $user->captainProfile->id)
+                ->pluck('status', 'vessel_id')
+                ->toArray();
+        } elseif ($isDeckhand && $user->deckhandProfile) {
+            $interestStatuses = DeckhandVesselInterest::where('deckhand_id', $user->deckhandProfile->id)
                 ->pluck('status', 'vessel_id')
                 ->toArray();
         }

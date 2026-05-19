@@ -17,12 +17,8 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
     const [isLoading, setIsLoading] = useState(false);
 
     function handleSendInterest() {
-        if (isLoading) {
-            return;
-        }
-
+        if (isLoading) return;
         setIsLoading(true);
-
         router.post(
             `/vessels/${yacht.id}/interest`,
             {},
@@ -36,18 +32,19 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
     }
 
     function handleCancelInterest() {
-        if (isLoading) {
-            return;
-        }
-
+        if (isLoading) return;
         setIsLoading(true);
-
         router.delete(`/vessels/${yacht.id}/interest`, {
             preserveScroll: true,
             onSuccess: () => setStatus(null),
             onError: () => setStatus('pending'),
             onFinish: () => setIsLoading(false),
         });
+    }
+
+    function handleMessage() {
+        if (!yacht.ownerUserId) return;
+        router.visit(`/messages?with=${yacht.ownerUserId}`);
     }
 
     function renderButton() {
@@ -192,7 +189,9 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                     {renderButton()}
                     <button
                         type="button"
-                        className="cursor-pointer rounded-lg border border-[#e5e7eb] p-3 text-[#4b5563] shadow-sm transition-colors hover:bg-[#f9fafb] hover:text-[#111827]"
+                        onClick={handleMessage}
+                        disabled={!yacht.ownerUserId}
+                        className="cursor-pointer rounded-lg border border-[#e5e7eb] p-3 text-[#4b5563] shadow-sm transition-colors hover:bg-[#f9fafb] hover:text-[#111827] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         <MessageSquare className="h-5 w-5" />
                     </button>

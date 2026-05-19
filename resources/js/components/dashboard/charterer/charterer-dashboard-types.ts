@@ -10,6 +10,7 @@ export interface ChartererUpcomingBookingData {
     yachtName: string;
     yachtImage: string | null;
     status: string;
+    statusLabel: string;
     date: string;
     startTime: string;
     duration: string;

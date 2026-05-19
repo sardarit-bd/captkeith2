@@ -40,16 +40,18 @@ export function ChartererCompletedCharters() {
                             <p className="mt-1 mb-4 text-[12px] text-[#9ca3af]">
                                 {item.date}
                             </p>
-                            <div className="flex items-center gap-1">
-                                {Array.from({ length: item.rating }).map(
-                                    (_, i) => (
-                                        <Star
-                                            key={i}
-                                            className="h-4 w-4 fill-[#fb923c] text-[#fb923c]"
-                                        />
-                                    ),
-                                )}
-                            </div>
+                            {item.rating > 0 && (
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: item.rating }).map(
+                                        (_, i) => (
+                                            <Star
+                                                key={i}
+                                                className="h-4 w-4 fill-[#fb923c] text-[#fb923c]"
+                                            />
+                                        ),
+                                    )}
+                                </div>
+                            )}
                         </article>
                     ))}
                 </div>

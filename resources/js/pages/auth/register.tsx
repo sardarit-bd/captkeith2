@@ -13,7 +13,7 @@ import type { FormEventHandler, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import { home, login } from '@/routes';
+import { home, login, register } from '@/routes';
 
 function RoleOption({
     id,
@@ -126,7 +126,7 @@ export default function Register({
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('register'), {
+        post(register.url(), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
