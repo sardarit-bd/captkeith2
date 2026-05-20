@@ -26,7 +26,7 @@ class RequestsController extends Controller
             $crewRole = 'deckhand';
         }
 
-        // Existing charter job requests
+
         $responses = CharterCrewResponse::where('profile_id', $profile->id)
             ->where('crew_role', $crewRole)
             ->with([
@@ -59,7 +59,7 @@ class RequestsController extends Controller
                 ];
             });
 
-        // Owner invitations (captain only)
+
         $invitations = collect();
         if ($user->hasRole('captain')) {
             $invitations = \App\Models\OwnerCaptainInvitation::where('captain_id', $profile->id)

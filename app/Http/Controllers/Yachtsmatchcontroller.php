@@ -32,7 +32,7 @@ class YachtsMatchController extends Controller
         $query = Vessel::query()
             ->with([
                 'photos' => fn($q) => $q->orderBy('display_order'),
-                'owner',  // add this
+                'owner',
             ])
             ->where('is_active', true)
             ->whereNull('deleted_at');
