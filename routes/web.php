@@ -57,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         )->name('captain-requests.respond');
         Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])
             ->name('charterer.join');
+        Route::delete(
+            'captains/{captain}/revoke-acceptance',
+            [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'revokeAcceptance']
+        )->name('captains.revoke-acceptance');
     });
 
     Route::middleware('role:admin')->group(function () {
@@ -105,6 +109,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'invitations/{invitation}/respond',
             [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'respond']
         )->name('invitations.respond');
+        Route::get('invitations', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'index'])->name('invitations');
     });
 
     Route::middleware('role:charterer')->group(function () {

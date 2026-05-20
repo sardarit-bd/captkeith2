@@ -114,4 +114,20 @@ class OwnerCaptainRequestsController extends Controller
 
         return back()->with('success', $message);
     }
+
+
+    public function revokeAcceptance(Request $request, \App\Models\CaptainProfile $captain): RedirectResponse
+    {
+        $ownerProfile = OwnerProfile::where('user_id', $request->user()->id)->firstOrFail();
+
+        \App\Models\CaptainVesselInterest::whereIn(
+            'vessel_id',
+            $ownerProfile->vessels()->pluck('id')
+        )
+            ->where('captain_id', $captain->id)
+            ->where('status', 'accepted')
+            ->delete();
+
+        return back()->with('success', 'Acceptance revoked.');
+    }
 }

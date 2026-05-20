@@ -132,7 +132,12 @@ class CharterController extends Controller
             ->where('invite_token_expires_at', '>', now())
             ->firstOrFail();
 
-        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+        $charterer = ChartererProfile::where('user_id', auth()->id())->first();
+
+        if (! $charterer) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Please complete your charterer profile first.');
+        }
 
         if (is_null($event->charterer_id)) {
             $event->update(['charterer_id' => $charterer->id]);
@@ -146,7 +151,12 @@ class CharterController extends Controller
 
     public function request(): Response|RedirectResponse
     {
-        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+        $charterer = ChartererProfile::where('user_id', auth()->id())->first();
+
+        if (! $charterer) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Please complete your charterer profile first.');
+        }
 
         $event = CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')
@@ -195,7 +205,12 @@ class CharterController extends Controller
 
     public function captainSelect(): Response|RedirectResponse
     {
-        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+        $charterer = ChartererProfile::where('user_id', auth()->id())->first();
+
+        if (! $charterer) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Please complete your charterer profile first.');
+        }
 
         $event = CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')

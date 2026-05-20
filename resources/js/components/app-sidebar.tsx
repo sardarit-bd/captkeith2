@@ -125,6 +125,11 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 href: requests(),
                 icon: ClipboardList,
             },
+            {
+                title: 'Invitations',
+                href: '/invitations',
+                icon: Bell,
+            },
             sharedItems[1],
         ];
     }

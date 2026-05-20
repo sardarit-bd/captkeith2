@@ -7,6 +7,9 @@ use App\Models\OwnerCaptainInvitation;
 use App\Models\OwnerProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OwnerCaptainInvitationController extends Controller
 {
@@ -47,7 +50,6 @@ class OwnerCaptainInvitationController extends Controller
         OwnerCaptainInvitation::where('owner_id', $owner->id)
             ->where('captain_id', $captain->id)
             ->where('vessel_id', $validated['vessel_id'])
-            ->where('status', 'pending')
             ->delete();
 
         return back()->with('success', 'Invitation cancelled.');
@@ -66,5 +68,60 @@ class OwnerCaptainInvitationController extends Controller
         $invitation->update(['status' => $validated['status']]);
 
         return back()->with('success', 'Response submitted.');
+    }
+
+    public function index(Request $request): Response
+    {
+        $captainProfile = $request->user()->captainProfile;
+
+        if (! $captainProfile) {
+            return Inertia::render('invitations', ['invitations' => []]);
+        }
+
+        $invitations = OwnerCaptainInvitation::where('captain_id', $captainProfile->id)
+            ->with([
+                'owner.user',
+                'owner.vessels.photos' => fn($q) => $q->orderBy('display_order'),
+                'vessel.photos'        => fn($q) => $q->orderBy('display_order'),
+            ])
+            ->latest()
+            ->get()
+            ->map(function (OwnerCaptainInvitation $invitation) {
+                $owner  = $invitation->owner;
+                $vessel = $invitation->vessel;
+                $photo  = $vessel?->photos->first();
+
+                return [
+                    'id'          => $invitation->id,
+                    'ownerId'     => $owner?->id,
+                    'ownerUserId' => $owner?->user_id,
+                    'ownerName'   => $owner?->full_name ?? '—',
+                    'ownerPhoto'  => $owner?->photo_path
+                        ? Storage::url($owner->photo_path)
+                        : null,
+                    'location'    => trim(
+                        collect([$owner?->city, $owner?->state])
+                            ->filter()
+                            ->implode(', ')
+                    ) ?: '—',
+                    'vesselId'    => $vessel?->id,
+                    'vesselName'  => $vessel?->name ?? '—',
+                    'vesselSpec'  => $vessel
+                        ? ucfirst($vessel->vessel_type) . ' • ' . $vessel->length_ft . 'ft'
+                        : '—',
+                    'vesselImage' => $photo?->image_path
+                        ? Storage::url($photo->image_path)
+                        : null,
+                    'marina'      => $vessel
+                        ? trim(collect([$vessel->marina_name, $vessel->marina_city])->filter()->implode(', '))
+                        : '—',
+                    'invitedAt'   => $invitation->created_at->format('M j, Y'),
+                    'status'      => $invitation->status ?? 'pending',
+                ];
+            });
+
+        return Inertia::render('invitations', [
+            'invitations' => $invitations,
+        ]);
     }
 }

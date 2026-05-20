@@ -43,44 +43,43 @@ class CaptainController extends Controller
 
         $owner = \App\Models\OwnerProfile::where('user_id', $request->user()->id)->first();
 
-        $vessels = $owner
+        $vesselIds = $owner
             ? \App\Models\Vessel::where('owner_id', $owner->id)
             ->whereNull('deleted_at')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get()
-            ->map(fn($v) => ['value' => $v->id, 'label' => $v->name])
-            : [];
+            ->pluck('id')
+            : collect();
 
 
         $invitations = $owner
             ? \App\Models\OwnerCaptainInvitation::where('owner_id', $owner->id)
             ->get()
             ->groupBy('captain_id')
-            ->map(fn($group) => $group->pluck('status', 'vessel_id'))
-            : collect();
+            ->map(fn($group) => $group->pluck('status', 'vessel_id')->toArray())
+            ->toArray()
+            : [];
 
-        $acceptedCaptainIds = $owner
-            ? \App\Models\CaptainVesselInterest::whereIn(
-                'vessel_id',
-                \App\Models\Vessel::where('owner_id', $owner->id)
-                    ->whereNull('deleted_at')
-                    ->pluck('id')
-            )
+        $acceptedViaInvitationIds = $owner
+            ? \App\Models\OwnerCaptainInvitation::where('owner_id', $owner->id)
             ->where('status', 'accepted')
             ->pluck('captain_id')
             ->unique()
             ->values()
             ->toArray()
             : [];
+        $acceptedViaInterestIds = $owner
+            ? \App\Models\CaptainVesselInterest::whereIn('vessel_id', $vesselIds)
+            ->where('status', 'accepted')
+            ->pluck('captain_id')
+            ->unique()
+            ->values()
+            ->toArray()
+            : [];
+        $acceptedCaptainIds = array_values(array_unique(
+            array_merge($acceptedViaInvitationIds, $acceptedViaInterestIds)
+        ));
 
         $interestedCaptainIds = $owner
-            ? \App\Models\CaptainVesselInterest::whereIn(
-                'vessel_id',
-                \App\Models\Vessel::where('owner_id', $owner->id)
-                    ->whereNull('deleted_at')
-                    ->pluck('id')
-            )
+            ? \App\Models\CaptainVesselInterest::whereIn('vessel_id', $vesselIds)
             ->whereIn('status', ['pending', 'accepted'])
             ->pluck('captain_id')
             ->unique()
@@ -90,12 +89,20 @@ class CaptainController extends Controller
 
 
         return Inertia::render('captains', [
-            'captains'           => $captains,
-            'filters'            => $request->only(['license_type', 'min_experience']),
-            'vessels'            => $vessels,
-            'invitations'        => $invitations,
-            'acceptedCaptainIds' => $acceptedCaptainIds,
-            'interestedCaptainIds' => $interestedCaptainIds,
+            'captains'                  => $captains,
+            'filters'                   => $request->only(['license_type', 'min_experience']),
+            'vessels'                   => $owner
+                ? \App\Models\Vessel::where('owner_id', $owner->id)
+                ->whereNull('deleted_at')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn($v) => ['value' => $v->id, 'label' => $v->name])
+                : [],
+            'invitations'               => $invitations,
+            'acceptedCaptainIds'        => $acceptedCaptainIds,
+            'acceptedViaInterestIds'    => $acceptedViaInterestIds,
+            'interestedCaptainIds'      => $interestedCaptainIds,
         ]);
     }
 

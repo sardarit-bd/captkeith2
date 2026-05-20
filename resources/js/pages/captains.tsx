@@ -48,6 +48,7 @@ interface PageProps {
     vessels: VesselOption[];
     invitations: Record<string, Record<string, string>>;
     acceptedCaptainIds: string[];
+    acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
 }
 
@@ -98,10 +99,9 @@ function InviteModal({
             { vessel_id: selectedVessel },
             {
                 preserveScroll: true,
-                preserveState: false,
                 onSuccess: () => {
-                    router.reload({
-                        only: ['invitations', 'acceptedCaptainIds'],
+                    router.visit('/captains', {
+                        preserveScroll: true,
                         onFinish: onClose,
                     });
                 },
@@ -109,7 +109,6 @@ function InviteModal({
             },
         );
     }
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
@@ -217,10 +216,9 @@ function CancelConfirmModal({
         router.delete(`/captains/${captain.id}/invite`, {
             data: vesselId ? { vessel_id: vesselId } : {},
             preserveScroll: true,
-            preserveState: false,
             onSuccess: () => {
-                router.reload({
-                    only: ['invitations', 'acceptedCaptainIds'],
+                router.visit('/captains', {
+                    preserveScroll: true,
                     onFinish: onClose,
                 });
             },
@@ -282,34 +280,31 @@ function InviteButton({
     captain,
     invitations,
     acceptedCaptainIds,
+    acceptedViaInterestIds,
     interestedCaptainIds,
     onOpenInvite,
     onOpenCancel,
+    onOpenRevokeAcceptance,
 }: {
     captain: Captain;
     invitations: Record<string, Record<string, string>>;
     acceptedCaptainIds: string[];
+    acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
     onOpenInvite: () => void;
     onOpenCancel: () => void;
+    onOpenRevokeAcceptance: () => void;
 }) {
     const captainInvites = invitations[captain.id] ?? {};
     const statuses = Object.values(captainInvites);
 
-    const isAccepted =
-        acceptedCaptainIds.includes(captain.id) ||
-        statuses.includes('accepted');
-
-    const hasPendingInterest = interestedCaptainIds.includes(captain.id);
-
-    if (hasPendingInterest && !isAccepted && !statuses.includes('pending')) {
-        return (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
-                <Check className="h-3.5 w-3.5" />
-                Requested You
-            </span>
-        );
-    }
+    const isAcceptedViaInterest = acceptedViaInterestIds.includes(captain.id);
+    const isAcceptedViaInvitation =
+        statuses.includes('accepted') ||
+        (acceptedCaptainIds.includes(captain.id) && !isAcceptedViaInterest);
+    const isAccepted = acceptedCaptainIds.includes(captain.id);
+    const hasPendingInterest =
+        interestedCaptainIds.includes(captain.id) && !isAccepted;
 
     if (isAccepted) {
         return (
@@ -320,7 +315,11 @@ function InviteButton({
                 </span>
                 <button
                     type="button"
-                    onClick={onOpenCancel}
+                    onClick={
+                        isAcceptedViaInterest
+                            ? onOpenRevokeAcceptance
+                            : onOpenCancel
+                    }
                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
                 >
                     <X className="h-3.5 w-3.5" />
@@ -340,6 +339,15 @@ function InviteButton({
                 <X className="h-3.5 w-3.5" />
                 Cancel Invitation
             </button>
+        );
+    }
+
+    if (hasPendingInterest) {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                <Check className="h-3.5 w-3.5" />
+                Requested You
+            </span>
         );
     }
 
@@ -363,6 +371,7 @@ export default function CaptainsPage() {
         vessels,
         invitations,
         acceptedCaptainIds,
+        acceptedViaInterestIds,
         interestedCaptainIds,
     } = page.props;
 
@@ -375,6 +384,8 @@ export default function CaptainsPage() {
     const [inviteModalCaptain, setInviteModalCaptain] =
         useState<Captain | null>(null);
     const [cancelModalCaptain, setCancelModalCaptain] =
+        useState<Captain | null>(null);
+    const [revokeModalCaptain, setRevokeModalCaptain] =
         useState<Captain | null>(null);
 
     const cancelVesselId = cancelModalCaptain
@@ -429,7 +440,12 @@ export default function CaptainsPage() {
                     onClose={() => setCancelModalCaptain(null)}
                 />
             )}
-
+            {revokeModalCaptain && (
+                <RevokeAcceptanceModal
+                    captain={revokeModalCaptain}
+                    onClose={() => setRevokeModalCaptain(null)}
+                />
+            )}
             <div className="flex h-full flex-1 flex-col overflow-x-auto bg-[#F6FDFF] px-4 py-5 sm:px-6 lg:px-8">
                 <div className="mx-auto w-full max-w-7xl space-y-8">
                     <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -677,6 +693,9 @@ export default function CaptainsPage() {
                                                 acceptedCaptainIds={
                                                     acceptedCaptainIds
                                                 }
+                                                acceptedViaInterestIds={
+                                                    acceptedViaInterestIds
+                                                }
                                                 interestedCaptainIds={
                                                     interestedCaptainIds
                                                 }
@@ -687,6 +706,11 @@ export default function CaptainsPage() {
                                                 }
                                                 onOpenCancel={() =>
                                                     setCancelModalCaptain(
+                                                        captain,
+                                                    )
+                                                }
+                                                onOpenRevokeAcceptance={() =>
+                                                    setRevokeModalCaptain(
                                                         captain,
                                                     )
                                                 }
@@ -713,7 +737,80 @@ export default function CaptainsPage() {
         </>
     );
 }
+function RevokeAcceptanceModal({
+    captain,
+    onClose,
+}: {
+    captain: Captain;
+    onClose: () => void;
+}) {
+    const [isLoading, setIsLoading] = useState(false);
 
+    function handleRevoke() {
+        if (isLoading) {
+            return;
+        }
+
+        setIsLoading(true);
+        router.delete(`/captains/${captain.id}/revoke-acceptance`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.visit('/captains', {
+                    preserveScroll: true,
+                    onFinish: onClose,
+                });
+            },
+            onFinish: () => setIsLoading(false),
+        });
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                <div className="mb-4 flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div>
+                        <h3 className="text-base font-semibold text-gray-900">
+                            Cancel Acceptance
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Are you sure you want to cancel the acceptance for{' '}
+                            <span className="font-medium text-gray-700">
+                                {captain.name}
+                            </span>
+                            ? Both sides can send requests again after this.
+                        </p>
+                    </div>
+                </div>
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isLoading}
+                        className="flex-1 cursor-pointer rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Keep It
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleRevoke}
+                        disabled={isLoading}
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <X className="h-4 w-4" />
+                        )}
+                        Yes, Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 CaptainsPage.layout = {
     breadcrumbs: [{ title: 'Captains', href: captains() }],
     pageHeader: {
