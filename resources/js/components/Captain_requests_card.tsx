@@ -69,7 +69,12 @@ export function CaptainRequestCard({
                     )}
 
                     <div>
-                        <h3 className="text-[15px] font-bold text-[#111827]">
+                        <h3
+                            className="cursor-pointer text-[15px] font-bold text-[#111827] hover:text-[#0A273F] hover:underline"
+                            onClick={() =>
+                                router.get(`/captains/${interest.captainId}`)
+                            }
+                        >
                             {interest.captainName}
                         </h3>
                         <p className="mt-0.5 flex items-center gap-1 text-[13px] text-[#6b7280]">

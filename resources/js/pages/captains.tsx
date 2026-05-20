@@ -593,7 +593,14 @@ export default function CaptainsPage() {
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="text-xl leading-tight font-bold text-gray-900">
+                                                <h3
+                                                    className="cursor-pointer text-xl leading-tight font-bold text-gray-900 hover:text-[#0A273F] hover:underline"
+                                                    onClick={() =>
+                                                        router.get(
+                                                            `/captains/${captain.id}`,
+                                                        )
+                                                    }
+                                                >
                                                     {captain.name}
                                                 </h3>
                                                 <div className="mt-2 space-y-1">

@@ -19,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
     Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
         Route::inertia('notifications', 'notifications')->name('notifications');
+        Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
     });
 
     Route::middleware('role:owner')->group(function () {
