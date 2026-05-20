@@ -59,7 +59,7 @@ class OwnerDashboardStrategy implements DashboardStrategy
             ->where('status', 'confirmed')
             ->count();
 
-        $pendingRequests = CharterEvent::whereIn('vessel_id', $vesselIds)
+        $pendingRequests = \App\Models\CaptainVesselInterest::whereIn('vessel_id', $vesselIds)
             ->where('status', 'pending')
             ->count();
 

@@ -48,6 +48,7 @@ class OwnerCaptainRequestsController extends Controller
                 return [
                     'id'              => $interest->id,
                     'captainId'       => $captain?->id,
+                    'captainUserId'   => $captain?->user_id,
                     'captainName'     => $captain?->full_name ?? '—',
                     'captainPhoto'    => $captain?->photo_path
                         ? Storage::url($captain->photo_path)

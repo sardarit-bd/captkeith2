@@ -52,4 +52,19 @@ class OwnerCaptainInvitationController extends Controller
 
         return back()->with('success', 'Invitation cancelled.');
     }
+
+    public function respond(Request $request, OwnerCaptainInvitation $invitation): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:accepted,declined'],
+        ]);
+
+        $captain = CaptainProfile::where('user_id', $request->user()->id)->firstOrFail();
+        abort_if($invitation->captain_id !== $captain->id, 403);
+        abort_if($invitation->status !== 'pending', 422);
+
+        $invitation->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Response submitted.');
+    }
 }

@@ -74,6 +74,20 @@ class CaptainController extends Controller
             ->toArray()
             : [];
 
+        $interestedCaptainIds = $owner
+            ? \App\Models\CaptainVesselInterest::whereIn(
+                'vessel_id',
+                \App\Models\Vessel::where('owner_id', $owner->id)
+                    ->whereNull('deleted_at')
+                    ->pluck('id')
+            )
+            ->whereIn('status', ['pending', 'accepted'])
+            ->pluck('captain_id')
+            ->unique()
+            ->values()
+            ->toArray()
+            : [];
+
 
         return Inertia::render('captains', [
             'captains'           => $captains,
@@ -81,6 +95,7 @@ class CaptainController extends Controller
             'vessels'            => $vessels,
             'invitations'        => $invitations,
             'acceptedCaptainIds' => $acceptedCaptainIds,
+            'interestedCaptainIds' => $interestedCaptainIds,
         ]);
     }
 }

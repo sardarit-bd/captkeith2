@@ -1,6 +1,7 @@
 export type CaptainInterestRecord = {
     id: string;
     captainId: string;
+    captainUserId: string;
     captainName: string;
     captainPhoto: string | null;
     licenseType: string;

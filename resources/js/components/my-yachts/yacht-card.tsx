@@ -54,9 +54,15 @@ function DetailsPanel({ yacht }: { yacht: YachtRecord }) {
 function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
     const raw = yacht.captainRequirementsRaw;
     const params = new URLSearchParams();
-    if (raw.license_type) params.set('license_type', raw.license_type);
-    if (raw.min_experience)
+
+    if (raw.license_type) {
+        params.set('license_type', raw.license_type);
+    }
+
+    if (raw.min_experience) {
         params.set('min_experience', String(raw.min_experience));
+    }
+
     const captainsUrl = `/captains?${params.toString()}`;
 
     return (
@@ -167,9 +173,14 @@ function YachtCardBody({
     yacht: YachtRecord;
     activeTab: YachtTab;
 }) {
-    if (activeTab === 'captain')
+    if (activeTab === 'captain') {
         return <CaptainRequirementsPanel yacht={yacht} />;
-    if (activeTab === 'charters') return <ChartersPanel yacht={yacht} />;
+    }
+
+    if (activeTab === 'charters') {
+        return <ChartersPanel yacht={yacht} />;
+    }
+
     return <DetailsPanel yacht={yacht} />;
 }
 

@@ -38,7 +38,7 @@ export function ChartererRecentActivity() {
                     {items.map((item) => (
                         <article
                             key={item.id}
-                            className="flex gap-4 rounded-[12px] border border-[#f1f5f9] bg-[#fafafa] p-4"
+                            className="flex gap-4 rounded-xl border border-[#f1f5f9] bg-[#fafafa] p-4"
                         >
                             <span
                                 className={`mt-2 inline-flex h-2 w-2 shrink-0 self-start rounded-full ${dotColor[item.status] ?? 'bg-gray-400'}`}

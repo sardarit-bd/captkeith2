@@ -44,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
         Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
         Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
-        Route::match(['PUT', 'PATCH'], 'my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.update');
+        Route::match(['PUT', 'PATCH'], 'my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'update'])->name('my-yachts.update');
         Route::get(
             'captain-requests',
             [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'index']
@@ -99,6 +99,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'vessels/{vessel}/interest',
             [\App\Http\Controllers\VesselInterestController::class, 'destroy']
         )->name('vessels.interest.destroy');
+
+        Route::patch(
+            'invitations/{invitation}/respond',
+            [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'respond']
+        )->name('invitations.respond');
     });
 
     Route::middleware('role:charterer')->group(function () {

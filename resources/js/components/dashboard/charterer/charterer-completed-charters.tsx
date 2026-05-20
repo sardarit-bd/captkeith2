@@ -24,7 +24,7 @@ export function ChartererCompletedCharters() {
                     {charters.map((item) => (
                         <article
                             key={item.id}
-                            className="rounded-[12px] border border-[#f1f5f9] bg-white p-5 transition-colors hover:border-[#e5e7eb]"
+                            className="rounded-xl border border-[#f1f5f9] bg-white p-5 transition-colors hover:border-[#e5e7eb]"
                         >
                             <div className="mb-2 flex items-start justify-between">
                                 <h4 className="text-[15px] font-bold text-[#111827]">

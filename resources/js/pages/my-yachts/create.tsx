@@ -240,7 +240,7 @@ export default function CreateYachtPage() {
             newPhotos.forEach((p) => formData.append('photos[]', p.file));
             documents.forEach((d) => formData.append('documents[]', d.file));
 
-            router.post(myYachtsUpdate({ vessel: vessel.id }).url, formData, {
+            router.post(`/my-yachts/${vessel.id}?_method=PUT`, formData, {
                 onSuccess: () => {
                     setNewPhotos([]);
                     setDocuments([]);
@@ -331,7 +331,7 @@ export default function CreateYachtPage() {
                             <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div>
                                     <label className="mb-2 block text-sm font-semibold text-gray-900">
-                                        Make{' '}
+                                        Make
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <input

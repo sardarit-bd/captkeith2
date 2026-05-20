@@ -48,6 +48,7 @@ interface PageProps {
     vessels: VesselOption[];
     invitations: Record<string, Record<string, string>>;
     acceptedCaptainIds: string[];
+    interestedCaptainIds: string[];
 }
 
 const LICENSE_OPTIONS = [
@@ -87,7 +88,9 @@ function InviteModal({
         : undefined;
 
     function handleSend() {
-        if (!selectedVessel || isLoading) return;
+        if (!selectedVessel || isLoading) {
+            return;
+        }
 
         setIsLoading(true);
         router.post(
@@ -206,7 +209,9 @@ function CancelConfirmModal({
     const [isLoading, setIsLoading] = useState(false);
 
     function handleConfirmCancel() {
-        if (isLoading) return;
+        if (isLoading) {
+            return;
+        }
 
         setIsLoading(true);
         router.delete(`/captains/${captain.id}/invite`, {
@@ -277,12 +282,14 @@ function InviteButton({
     captain,
     invitations,
     acceptedCaptainIds,
+    interestedCaptainIds,
     onOpenInvite,
     onOpenCancel,
 }: {
     captain: Captain;
     invitations: Record<string, Record<string, string>>;
     acceptedCaptainIds: string[];
+    interestedCaptainIds: string[];
     onOpenInvite: () => void;
     onOpenCancel: () => void;
 }) {
@@ -292,6 +299,17 @@ function InviteButton({
     const isAccepted =
         acceptedCaptainIds.includes(captain.id) ||
         statuses.includes('accepted');
+
+    const hasPendingInterest = interestedCaptainIds.includes(captain.id);
+
+    if (hasPendingInterest && !isAccepted && !statuses.includes('pending')) {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                <Check className="h-3.5 w-3.5" />
+                Requested You
+            </span>
+        );
+    }
 
     if (isAccepted) {
         return (
@@ -339,10 +357,14 @@ function InviteButton({
 
 export default function CaptainsPage() {
     const page = usePage<PageProps>();
-    const { captains: initialCaptains, filters, vessels } = page.props;
-
-    const invitations = page.props.invitations;
-    const acceptedCaptainIds = page.props.acceptedCaptainIds;
+    const {
+        captains: initialCaptains,
+        filters,
+        vessels,
+        invitations,
+        acceptedCaptainIds,
+        interestedCaptainIds,
+    } = page.props;
 
     const [licenseType, setLicenseType] = useState(filters.license_type ?? '');
     const [minExperience, setMinExperience] = useState(
@@ -647,6 +669,9 @@ export default function CaptainsPage() {
                                                 invitations={invitations}
                                                 acceptedCaptainIds={
                                                     acceptedCaptainIds
+                                                }
+                                                interestedCaptainIds={
+                                                    interestedCaptainIds
                                                 }
                                                 onOpenInvite={() =>
                                                     setInviteModalCaptain(

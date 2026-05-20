@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
 
 class VesselController extends Controller
 {
@@ -183,5 +184,52 @@ class VesselController extends Controller
         });
 
         return redirect()->route('my-yachts')->with('success', 'Vessel deleted successfully.');
+    }
+
+
+
+    public function update(Request $request, Vessel $vessel): RedirectResponse
+    {
+        $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
+        abort_if($vessel->owner_id !== $owner->id, 403);
+
+        DB::transaction(function () use ($request, $vessel) {
+            $vessel->update([
+                'name'                      => $request->input('name'),
+                'official_number'           => $request->input('official_number'),
+                'make'                      => $request->input('make'),
+                'model'                     => $request->input('model'),
+                'vessel_type'               => $request->input('vessel_type'),
+                'length_ft'                 => $request->input('length_ft'),
+                'beam_ft'                   => $request->input('beam_ft'),
+                'draft_ft'                  => $request->input('draft_ft'),
+                'marina_name'               => $request->input('marina_name'),
+                'marina_address'            => $request->input('marina_address'),
+                'marina_city'               => $request->input('marina_city'),
+                'marina_state'              => $request->input('marina_state'),
+                'marina_zip'                => $request->input('marina_zip'),
+                'operating_area'            => $request->input('operating_area'),
+                'required_license_type'     => $request->input('required_license_type'),
+                'required_endorsement'      => $request->input('required_endorsement'),
+                'required_tonnage_rating'   => $request->input('required_tonnage_rating'),
+                'required_years_experience' => $request->input('required_years_experience'),
+                'requires_deckhand'         => $request->boolean('requires_deckhand'),
+            ]);
+
+            foreach ($request->file('photos', []) as $order => $photo) {
+                $path = $photo->store("vessels/{$vessel->id}/photos", 'public');
+                VesselPhoto::create([
+                    'vessel_id'     => $vessel->id,
+                    'image_path'    => $path,
+                    'display_order' => $vessel->photos()->max('display_order') + $order + 1,
+                ]);
+            }
+
+            foreach ($request->file('documents', []) as $document) {
+                $document->store("vessels/{$vessel->id}/documents", 'local');
+            }
+        });
+
+        return redirect()->route('my-yachts')->with('success', 'Vessel updated successfully.');
     }
 }
