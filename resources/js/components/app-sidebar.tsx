@@ -12,6 +12,7 @@ import {
     User,
     Users,
 } from 'lucide-react';
+
 import { NavMain } from '@/components/nav-main';
 import {
     Sidebar,
@@ -24,21 +25,23 @@ import {
     SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { dashboard } from '@/routes';
-import { messages } from '@/routes';
-import { myBooking } from '@/routes';
-import { myYachts } from '@/routes';
-import { myProfile } from '@/routes';
-import { adminUsers } from '@/routes';
-import { notifications } from '@/routes';
-import { logout } from '@/routes';
-import { captains } from '@/routes';
-import { requests } from '@/routes';
-import { yachtsMatch } from '@/routes';
-import { charterers } from '@/routes';
-import { vesselInventory } from '@/routes';
-import { complianceLog } from '@/routes';
-import { platformSettings } from '@/routes';
+import {
+    adminUsers,
+    captains,
+    charterers,
+    complianceLog,
+    dashboard,
+    logout,
+    messages,
+    myBooking,
+    myProfile,
+    myYachts,
+    notifications,
+    platformSettings,
+    requests,
+    vesselInventory,
+    yachtsMatch,
+} from '@/routes';
 import { request as chartererRequest } from '@/routes/charterer';
 import type { NavItem } from '@/types';
 
@@ -96,6 +99,11 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 icon: User,
             },
             {
+                title: 'Captain Requests',
+                href: '/captain-requests',
+                icon: ClipboardList,
+            },
+            {
                 title: 'Charterers',
                 href: charterers(),
                 icon: Users,
@@ -113,9 +121,14 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 icon: Ship,
             },
             {
-                title: 'Requests',
+                title: 'Charterer Requests',
                 href: requests(),
                 icon: ClipboardList,
+            },
+            {
+                title: 'Owner Invitations',
+                href: '/invitations',
+                icon: Bell,
             },
             sharedItems[1],
         ];
@@ -189,7 +202,7 @@ export function AppSidebar() {
                     <img
                         src="/images/logo1.svg"
                         alt="CAPTMATCH"
-                        className="h-auto w-[220px] object-contain"
+                        className="h-auto w-55 object-contain"
                     />
                 </Link>
             </SidebarHeader>

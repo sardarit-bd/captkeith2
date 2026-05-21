@@ -1,22 +1,48 @@
-import { Award } from 'lucide-react';
+import { endorsementOptions, licenseTypes } from './my-profile-data';
 import {
-    additionalQualifications,
-    endorsementOptions,
-    licenseTypes,
-    ratingOptions,
-} from './my-profile-data';
-import {
+    FieldError,
     FieldLabel,
     RequiredAsterisk,
     RatingSelectInput,
     SectionHeader,
     SelectInput,
     TextInput,
-    ToggleField,
     UploadBox,
 } from './profile-form-elements';
 
-export function ProfileLicenseSection() {
+interface LicenseSectionProps {
+    data: {
+        license_type: string;
+        endorsement: string;
+        tonnage_rating: string | number;
+        years_experience: string | number;
+    };
+    errors: Partial<Record<string, string>>;
+    licenseDocUrl: string | null;
+    licenseDocFile: File | null;
+    resumeUrl: string | null;
+    resumeFile: File | null;
+    onLicenseDocSelect: (file: File | null) => void;
+    onResumeSelect: (file: File | null) => void;
+    onChange: (field: string, value: string) => void;
+}
+
+const tonnageOptions = [25, 50, 100, 200, 500, 1600].map((t) => ({
+    value: String(t),
+    label: `${t} Ton`,
+}));
+
+export function ProfileLicenseSection({
+    data,
+    errors,
+    licenseDocUrl,
+    licenseDocFile,
+    resumeUrl,
+    resumeFile,
+    onLicenseDocSelect,
+    onResumeSelect,
+    onChange,
+}: LicenseSectionProps) {
     return (
         <section className="rounded-2xl border border-[#f1f5f9] bg-white p-6 shadow-sm sm:p-8">
             <SectionHeader
@@ -29,13 +55,23 @@ export function ProfileLicenseSection() {
                     <FieldLabel>
                         License Type <RequiredAsterisk />
                     </FieldLabel>
-                    <SelectInput defaultValue="200ton" options={licenseTypes} />
+                    <SelectInput
+                        value={data.license_type}
+                        onChange={(v) => onChange('license_type', v)}
+                        options={licenseTypes}
+                    />
+                    <FieldError message={errors.license_type} />
                 </div>
                 <div>
                     <FieldLabel>
-                        License Number <RequiredAsterisk />
+                        Endorsement <RequiredAsterisk />
                     </FieldLabel>
-                    <TextInput type="text" defaultValue="123456" />
+                    <SelectInput
+                        value={data.endorsement}
+                        onChange={(v) => onChange('endorsement', v)}
+                        options={endorsementOptions}
+                    />
+                    <FieldError message={errors.endorsement} />
                 </div>
             </div>
 
@@ -43,61 +79,44 @@ export function ProfileLicenseSection() {
                 <FieldLabel>License Document</FieldLabel>
                 <UploadBox
                     title="Upload license scan or photo"
-                    buttonLabel="Upload Document"
+                    subtitle="PDF, JPG, PNG (Max 5MB)"
+                    buttonLabel={
+                        licenseDocFile ? 'Change Document' : 'Upload Document'
+                    }
+                    existingUrl={licenseDocUrl}
+                    existingName={licenseDocFile?.name ?? null}
+                    onFileSelect={onLicenseDocSelect}
+                    accept="application/pdf,image/jpeg,image/png"
                 />
-            </div>
-
-            <div className="mb-8">
-                <FieldLabel>Endorsements</FieldLabel>
-                <div className="space-y-3">
-                    {endorsementOptions.map((option) => (
-                        <ToggleField
-                            key={option.id}
-                            id={option.id}
-                            label={option.label}
-                            defaultChecked={option.checked}
-                        />
-                    ))}
-                </div>
+                <FieldError message={errors.license_doc} />
             </div>
 
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                     <FieldLabel>
-                        Rating <RequiredAsterisk />
+                        Tonnage Rating <RequiredAsterisk />
                     </FieldLabel>
                     <RatingSelectInput
-                        defaultValue="master"
-                        options={ratingOptions}
+                        value={String(data.tonnage_rating)}
+                        onChange={(v) => onChange('tonnage_rating', v)}
+                        options={tonnageOptions}
                     />
+                    <FieldError message={errors.tonnage_rating} />
                 </div>
                 <div>
                     <FieldLabel>
                         Years of Experience <RequiredAsterisk />
                     </FieldLabel>
-                    <TextInput type="number" defaultValue={12} />
+                    <TextInput
+                        type="number"
+                        min={0}
+                        value={data.years_experience}
+                        onChange={(e) =>
+                            onChange('years_experience', e.target.value)
+                        }
+                    />
+                    <FieldError message={errors.years_experience} />
                 </div>
-            </div>
-
-            <div className="mb-8">
-                <FieldLabel>Additional Qualifications</FieldLabel>
-                <div className="mb-3 flex flex-wrap gap-2">
-                    {additionalQualifications.map((qualification) => (
-                        <span
-                            key={qualification}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-[#e5e7eb] bg-[#f3f4f6] px-3 py-1.5 text-[12px] font-medium text-[#374151] shadow-sm"
-                        >
-                            <Award className="h-3.5 w-3.5 text-[#6b7280]" />
-                            {qualification}
-                        </span>
-                    ))}
-                </div>
-                <button
-                    type="button"
-                    className="text-sm font-semibold text-[#111827] transition-colors hover:text-[#0a273f]"
-                >
-                    + Add Qualification
-                </button>
             </div>
 
             <div>
@@ -105,8 +124,13 @@ export function ProfileLicenseSection() {
                 <UploadBox
                     title="Upload your resume or CV"
                     subtitle="PDF, DOC, DOCX (Max 5MB)"
-                    buttonLabel="Choose File"
+                    buttonLabel={resumeFile ? 'Change File' : 'Choose File'}
+                    existingUrl={resumeUrl}
+                    existingName={resumeFile?.name ?? null}
+                    onFileSelect={onResumeSelect}
+                    accept="application/pdf,.doc,.docx"
                 />
+                <FieldError message={errors.resume} />
             </div>
         </section>
     );

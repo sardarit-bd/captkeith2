@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { ownerQuickActions } from './owner-dashboard-data';
 
 export function OwnerQuickActions() {
@@ -7,9 +8,10 @@ export function OwnerQuickActions() {
 
             <div className="mt-4 grid gap-3 lg:grid-cols-3">
                 {ownerQuickActions.map((item) => (
-                    <button
+                    <Link
                         key={item.title}
-                        type="button"
+                        // type="button"
+                        href={item.href}
                         className="flex items-center gap-4 rounded-xl border border-[#d4dbe3] bg-white p-5 text-left transition-colors hover:bg-[#f8fbfd]"
                     >
                         <span
@@ -29,7 +31,7 @@ export function OwnerQuickActions() {
                                 {item.description}
                             </span>
                         </span>
-                    </button>
+                    </Link>
                 ))}
             </div>
         </section>

@@ -38,65 +38,49 @@ class Vessel extends Model
 {
     use HasUuids, SoftDeletes;
 
-    /**
-     * Get the owner profile that owns the vessel.
-     */
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(OwnerProfile::class, 'owner_id');
     }
 
-    /**
-     * Get the photos associated with the vessel.
-     */
+
     public function photos(): HasMany
     {
         return $this->hasMany(VesselPhoto::class)->orderBy('display_order');
     }
 
-    /**
-     * Get captain qualification records for this vessel.
-     */
+
     public function qualifiedCaptains(): HasMany
     {
         return $this->hasMany(VesselQualifiedCaptain::class);
     }
 
-    /**
-     * Get deckhand qualification records for this vessel.
-     */
+
     public function qualifiedDeckhands(): HasMany
     {
         return $this->hasMany(VesselQualifiedDeckhand::class);
     }
 
-    /**
-     * Get all cached matches for this vessel.
-     */
+
     public function matches(): HasMany
     {
         return $this->hasMany(VesselMatch::class, 'vessel_id');
     }
 
-    /**
-     * Get captain interest records for this vessel.
-     */
+
     public function captainInterests(): HasMany
     {
         return $this->hasMany(CaptainVesselInterest::class);
     }
 
-    /**
-     * Get deckhand interest records for this vessel.
-     */
+
     public function deckhandInterests(): HasMany
     {
         return $this->hasMany(DeckhandVesselInterest::class);
     }
 
-    /**
-     * Get charter events scheduled for this vessel.
-     */
+
     public function charterEvents(): HasMany
     {
         return $this->hasMany(CharterEvent::class);

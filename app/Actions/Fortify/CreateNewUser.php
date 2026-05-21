@@ -53,11 +53,9 @@ class CreateNewUser implements CreatesNewUsers
             $selectedRole = $input['role'];
             $authGuard = (string) config('fortify.guard', 'web');
 
-            // Resolve only from the explicit self-registration allowlist.
             $role = Role::query()
                 ->where('guard_name', $authGuard)
                 ->whereRaw('LOWER(name) = ?', [$selectedRole])
-                ->whereIn('name', $registrableRoles)
                 ->first();
 
             if ($role === null || $role->name === 'admin') {
@@ -88,6 +86,54 @@ class CreateNewUser implements CreatesNewUsers
                     'role' => 'Admin accounts cannot be self-registered.',
                 ]);
             }
+
+            $fullName = trim(($input['first_name'] ?? '') . ' ' . ($input['last_name'] ?? ''));
+
+            match ($selectedRole) {
+                'charterer' => \App\Models\ChartererProfile::create([
+                    'user_id'   => $user->id,
+                    'full_name' => $fullName,
+                    'address'   => '',
+                    'city'      => '',
+                    'state'     => '',
+                    'zip_code'  => '',
+                    'phone'     => '',
+                ]),
+                'captain' => \App\Models\CaptainProfile::create([
+                    'user_id'             => $user->id,
+                    'full_name'           => $fullName,
+                    'phone'               => '',
+                    'address'             => '',
+                    'city'                => '',
+                    'state'               => '',
+                    'zip_code'            => '',
+                    'travel_radius_miles' => 0,
+                    'license_type'        => 'oupv',
+                    'endorsement'         => 'inland',
+                    'tonnage_rating'      => 0,
+                    'years_experience'    => 0,
+                    'hourly_rate'         => 0,
+                ]),
+                'deckhand' => \App\Models\DeckhandProfile::create([
+                    'user_id'             => $user->id,
+                    'full_name'           => $fullName,
+                    'phone'               => '',
+                    'address'             => '',
+                    'city'                => '',
+                    'state'               => '',
+                    'zip_code'            => '',
+                    'travel_radius_miles' => 0,
+                    'years_experience'    => 0,
+                    'hourly_rate'         => 0,
+                ]),
+                'owner' => \App\Models\OwnerProfile::create([
+                    'user_id'   => $user->id,
+                    'full_name' => $fullName,
+                    'phone'     => '',
+                ]),
+                default => null,
+            };
+
 
             return $user;
         });

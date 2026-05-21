@@ -26,93 +26,89 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'resume_path',
     'photo_path',
     'hourly_rate',
+    'preferences',
 ])]
 class DeckhandProfile extends Model
 {
     use HasUuids, SoftDeletes;
 
-    /**
-     * Get the user that owns this deckhand profile.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get vessel qualification rows for this deckhand.
-     */
     public function vesselQualifications(): HasMany
     {
         return $this->hasMany(VesselQualifiedDeckhand::class, 'deckhand_id');
     }
 
-    /**
-     * Get cached match rows for this deckhand profile.
-     */
     public function matches(): HasMany
     {
         return $this->hasMany(VesselMatch::class, 'profile_id')
             ->where('profile_type', 'deckhand');
     }
 
-    /**
-     * Get vessel interest rows for this deckhand.
-     */
     public function vesselInterests(): HasMany
     {
         return $this->hasMany(DeckhandVesselInterest::class, 'deckhand_id');
     }
 
-    /**
-     * Get charter events where this deckhand was selected.
-     */
     public function selectedCharterEvents(): HasMany
     {
         return $this->hasMany(CharterEvent::class, 'selected_deckhand_id');
     }
 
-    /**
-     * Get deckhand hire agreements linked to this deckhand.
-     */
     public function hireAgreements(): HasMany
     {
         return $this->hasMany(CharterHireAgreement::class, 'deckhand_profile_id');
     }
 
-    /**
-     * Get payments made to this deckhand.
-     */
     public function payments(): HasMany
     {
         return $this->hasMany(CharterPayment::class, 'deckhand_profile_id');
     }
 
-    /**
-     * Get crew response rows for this deckhand profile.
-     */
     public function crewResponses(): HasMany
     {
         return $this->hasMany(CharterCrewResponse::class, 'profile_id')
             ->where('crew_role', 'deckhand');
     }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public static function defaultPreferences(): array
+    {
+        return [
+            'is_available'          => true,
+            'weekday_availability'  => true,
+            'weekend_availability'  => true,
+            'last_minute_charters'  => false,
+            'multi_day_charters'    => true,
+            'charter_notifications' => true,
+            'owner_notification'    => true,
+            'email_notifications'   => true,
+            'sms_notifications'     => false,
+            'profile_visibility'    => true,
+            'show_rating'           => true,
+            'unavailable_dates'     => [],
+        ];
+    }
+
+    public function resolvedPreferences(): array
+    {
+        return array_merge(self::defaultPreferences(), $this->preferences ?? []);
+    }
+
     protected function casts(): array
     {
         return [
-            'latitude' => 'decimal:7',
-            'longitude' => 'decimal:7',
-            'travel_radius_miles' => 'integer',
-            'years_experience' => 'integer',
-            'has_server_experience' => 'boolean',
+            'latitude'                  => 'decimal:7',
+            'longitude'                 => 'decimal:7',
+            'travel_radius_miles'       => 'integer',
+            'years_experience'          => 'integer',
+            'has_server_experience'     => 'boolean',
             'has_bartending_experience' => 'boolean',
-            'hourly_rate' => 'decimal:2',
-            'deleted_at' => 'datetime',
+            'hourly_rate'               => 'decimal:2',
+            'preferences'               => 'array',
+            'deleted_at'                => 'datetime',
         ];
     }
 }

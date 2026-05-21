@@ -20,44 +20,34 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+
     use HasFactory, HasRoles, HasUuids, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 
-    /**
-     * Get the owner profile associated with the user.
-     */
-    public function ownerProfile(): HasOne
+
+    public function ownerProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(OwnerProfile::class);
     }
 
-    /**
-     * Get the captain profile associated with the user.
-     */
+
     public function captainProfile(): HasOne
     {
         return $this->hasOne(CaptainProfile::class);
     }
 
-    /**
-     * Get the deckhand profile associated with the user.
-     */
+
     public function deckhandProfile(): HasOne
     {
         return $this->hasOne(DeckhandProfile::class);
     }
 
-    /**
-     * Get the charterer profile associated with the user.
-     */
+
     public function chartererProfile(): HasOne
     {
         return $this->hasOne(ChartererProfile::class);
     }
 
-    /**
-     * Get all vessels owned by the user through their owner profile.
-     */
+
     public function vessels(): HasManyThrough
     {
         return $this->hasManyThrough(
@@ -69,6 +59,25 @@ class User extends Authenticatable
             'id',
         );
     }
+
+
+    public function sentMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+
+
+
+
+
+
+
 
     /**
      * Get the attributes that should be cast.

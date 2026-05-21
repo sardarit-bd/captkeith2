@@ -20,7 +20,7 @@ export function AdminProfileSecurityCard() {
                     <input
                         type="password"
                         placeholder="••••••••"
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus:border-[#35ADD5] focus:outline-none focus:ring-2 focus:ring-[#35ADD5]/20"
+                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus:border-[#35ADD5] focus:ring-2 focus:ring-[#35ADD5]/20 focus:outline-none"
                     />
                 </label>
 
@@ -32,7 +32,7 @@ export function AdminProfileSecurityCard() {
                         <input
                             type="password"
                             placeholder="Enter new password"
-                            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus:border-[#35ADD5] focus:outline-none focus:ring-2 focus:ring-[#35ADD5]/20"
+                            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus:border-[#35ADD5] focus:ring-2 focus:ring-[#35ADD5]/20 focus:outline-none"
                         />
                     </label>
 
@@ -43,13 +43,13 @@ export function AdminProfileSecurityCard() {
                         <input
                             type="password"
                             placeholder="Confirm new password"
-                            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus:border-[#35ADD5] focus:outline-none focus:ring-2 focus:ring-[#35ADD5]/20"
+                            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus:border-[#35ADD5] focus:ring-2 focus:ring-[#35ADD5]/20 focus:outline-none"
                         />
                     </label>
                 </div>
 
                 <div className="flex items-start space-x-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
-                    <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#35ADD5]" />
+                    <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#35ADD5]" />
                     <div>
                         <h5 className="text-sm font-medium text-[#11395d]">
                             Password Requirements

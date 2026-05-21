@@ -20,11 +20,16 @@ import { adminMyProfile } from '@/routes';
 import { chartererSettings } from '@/routes';
 import { myProfile } from '@/routes';
 import { notifications } from '@/routes';
-import { ownerSettings } from '@/routes';
 import { platformSettings } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
 
-type Role = 'owner' | 'captain' | 'deckhand' | 'charterer' | 'admin' | 'unknown';
+type Role =
+    | 'owner'
+    | 'captain'
+    | 'deckhand'
+    | 'charterer'
+    | 'admin'
+    | 'unknown';
 
 type UserDropdownItem = {
     title: string;
@@ -41,7 +46,12 @@ const menuByRole: Record<Role, UserDropdownItem[]> = {
             href: accountPreferences(),
             icon: CircleUserRound,
         },
-        { title: 'Settings', href: editProfile(), icon: Settings, dividerBefore: true },
+        {
+            title: 'Settings',
+            href: editProfile(),
+            icon: Settings,
+            dividerBefore: true,
+        },
     ],
     deckhand: [
         { title: 'My Profile', href: myProfile(), icon: User },
@@ -50,11 +60,21 @@ const menuByRole: Record<Role, UserDropdownItem[]> = {
             href: accountPreferences(),
             icon: CircleUserRound,
         },
-        { title: 'Settings', href: editProfile(), icon: Settings, dividerBefore: true },
+        {
+            title: 'Settings',
+            href: editProfile(),
+            icon: Settings,
+            dividerBefore: true,
+        },
     ],
     owner: [
         { title: 'My Profile', href: myProfile(), icon: User },
-        { title: 'Settings', href: ownerSettings(), icon: Settings, dividerBefore: true },
+        {
+            title: 'Settings',
+            href: '/owner/settings',
+            icon: Settings,
+            dividerBefore: true,
+        },
     ],
     admin: [
         { title: 'My Profile', href: adminMyProfile(), icon: User },
@@ -112,7 +132,7 @@ export function AppUserDropdown({
                 aria-label="Notifications"
             >
                 <Bell className="h-5 w-5" />
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#ef4444]" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#ef4444]" />
             </Link>
 
             <div className="hidden h-10 w-px bg-[#e5e7eb] sm:block" />
@@ -144,7 +164,7 @@ export function AppUserDropdown({
                     side="bottom"
                     sideOffset={14}
                     collisionPadding={8}
-                    className="w-[min(220px,calc(100vw-1rem))] rounded-xl border-[#e5e7eb] bg-white p-1.5 shadow-lg sm:w-[220px]"
+                    className="w-[min(220px,calc(100vw-1rem))] rounded-xl border-[#e5e7eb] bg-white p-1.5 shadow-lg sm:w-55"
                 >
                     {menuItems.map((item) => (
                         <div key={item.title}>

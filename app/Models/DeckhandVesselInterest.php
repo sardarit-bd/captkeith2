@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'deckhand_id',
     'vessel_id',
+    'status', // add this
 ])]
 class DeckhandVesselInterest extends Model
 {
     use HasUuids;
+
+    protected $table = 'deckhand_vessel_interests'; // add this
 
     public const UPDATED_AT = null;
 

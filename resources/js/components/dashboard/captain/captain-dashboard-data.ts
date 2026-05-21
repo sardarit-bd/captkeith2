@@ -1,36 +1,23 @@
-import {
-    AlertCircle,
-    CalendarDays,
-    Ship,
-    User,
-    UserCheck,
-} from 'lucide-react';
+import { AlertCircle, CalendarDays, Ship, UserCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-export type CaptainStatCard = {
-    label: string;
-    value: string;
-    icon: LucideIcon;
-    iconColor: string;
-    iconBg: string;
-};
-
-export type CaptainQuickAction = {
-    title: string;
-    description: string;
-    icon: LucideIcon;
-    iconColor: string;
-    iconBg: string;
+export type CaptainStats = {
+    matchedYachts: number;
+    pendingRequests: number;
+    plannedCharters: number;
+    totalEarnings: string;
 };
 
 export type CaptainYacht = {
+    id: string;
     name: string;
     spec: string;
     marina: string;
-    image: string;
+    image: string | null;
 };
 
 export type CaptainRequest = {
+    id: string;
     yachtName: string;
     yachtSpec: string;
     date: string;
@@ -38,44 +25,69 @@ export type CaptainRequest = {
     status: string;
 };
 
-export const captainStatCards: CaptainStatCard[] = [
+export type CaptainDashboardProps = {
+    role: 'captain';
+    stats: CaptainStats;
+    matchedYachts: CaptainYacht[];
+    charterRequests: CaptainRequest[];
+};
+
+export type StatCardConfig = {
+    key: keyof CaptainStats;
+    label: string;
+    icon: LucideIcon;
+    iconColor: string;
+    iconBg: string;
+};
+
+export const statCardConfigs: StatCardConfig[] = [
     {
+        key: 'matchedYachts',
         label: 'Yacht Matches',
-        value: '2',
         icon: Ship,
         iconColor: '#2563eb',
         iconBg: '#EFF6FF',
     },
     {
+        key: 'pendingRequests',
         label: 'Pending Requests',
-        value: '3',
         icon: AlertCircle,
         iconColor: '#ea580c',
         iconBg: '#FFF7ED',
     },
     {
-        label: 'Planned Charterers',
-        value: '8',
+        key: 'plannedCharters',
+        label: 'Planned Charters',
         icon: CalendarDays,
         iconColor: '#7c3aed',
         iconBg: '#F5F3FF',
     },
     {
+        key: 'totalEarnings',
         label: 'Total Earnings',
-        value: '$12,567',
         icon: UserCheck,
         iconColor: '#16a34a',
         iconBg: '#F0FDF4',
     },
 ];
 
+export type CaptainQuickAction = {
+    title: string;
+    description: string;
+    icon: LucideIcon;
+    iconColor: string;
+    iconBg: string;
+    href: string;
+};
+
 export const captainQuickActions: CaptainQuickAction[] = [
     {
         title: 'Update Profile',
         description: 'Edit your professional information',
-        icon: User,
+        icon: Ship,
         iconColor: '#2563eb',
         iconBg: '#EFF6FF',
+        href: '/my-profile',
     },
     {
         title: 'Browse Yachts',
@@ -83,6 +95,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: Ship,
         iconColor: '#0D314D',
         iconBg: '#F1F5F9',
+        href: '/yachts-match',
     },
     {
         title: 'Manage Availability',
@@ -90,49 +103,6 @@ export const captainQuickActions: CaptainQuickAction[] = [
         icon: CalendarDays,
         iconColor: '#16a34a',
         iconBg: '#F0FDF4',
-    },
-];
-
-export const captainYachts: CaptainYacht[] = [
-    {
-        name: 'Sea Dream',
-        spec: 'Power • 65ft',
-        marina: 'Miami Beach Marina',
-        image: '/images/home/about3.jpg',
-    },
-    {
-        name: 'Ocean Spirit',
-        spec: 'Sail • 52ft',
-        marina: 'Fort Lauderdale Marina',
-        image: '/images/home/about2.jpg',
-    },
-    {
-        name: 'Harbor Light',
-        spec: 'Motor • 58ft',
-        marina: 'Biscayne Bay Marina',
-        image: '/images/home/about.jpg',
-    },
-    {
-        name: 'Blue Current',
-        spec: 'Sail • 54ft',
-        marina: 'Palm Beach Harbor',
-        image: '/images/home/testimonial.jpg',
-    },
-];
-
-export const captainRequests: CaptainRequest[] = [
-    {
-        yachtName: 'Sea Dream',
-        yachtSpec: 'Power • 65ft',
-        date: 'Apr 20, 2026',
-        duration: '09:00 • 6 hours',
-        status: 'pending',
-    },
-    {
-        yachtName: 'Ocean Star',
-        yachtSpec: 'Power • 62ft',
-        date: 'Apr 22, 2026',
-        duration: '11:30 • 4 hours',
-        status: 'pending',
+        href: '/account-preferences',
     },
 ];

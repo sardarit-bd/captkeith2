@@ -5,14 +5,17 @@ export type CharterRequestYacht = {
     length: string;
     marina: string;
     operatingArea: string;
-    image: string;
+    image: string | null;
 };
 
-export type CharterRequestInfo = {
+export type CharterEvent = {
+    id: string;
+    yacht: CharterRequestYacht;
     date: string;
     time: string;
     duration: string;
-    notes: string;
+    specialNotes: string;
+    availableCaptainCount: number;
 };
 
 export type RequestStep = {
@@ -21,25 +24,6 @@ export type RequestStep = {
     description: string;
     active?: boolean;
 };
-
-export const charterRequestYacht: CharterRequestYacht = {
-    name: 'Sea Dream',
-    registrationNumber: 'US-1234567',
-    type: 'Power',
-    length: '65 ft',
-    marina: 'Miami Beach Marina',
-    operatingArea: 'South Florida Waters',
-    image: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&h=500&fit=crop',
-};
-
-export const charterRequestInfo: CharterRequestInfo = {
-    date: '4/20/2026',
-    time: '09:00',
-    duration: '6 hours',
-    notes: 'Client wants to visit Bimini',
-};
-
-export const availableCaptainCount = 2;
 
 export const requestSteps: RequestStep[] = [
     {

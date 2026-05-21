@@ -34,71 +34,48 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'deckhand_hourly_rate',
     'photo_path',
     'is_verified',
+    'preferences',
 ])]
 class CaptainProfile extends Model
 {
     use HasUuids, SoftDeletes;
 
-    /**
-     * Get the user that owns this captain profile.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get vessel qualification rows for this captain.
-     */
     public function vesselQualifications(): HasMany
     {
         return $this->hasMany(VesselQualifiedCaptain::class, 'captain_id');
     }
 
-    /**
-     * Get cached match rows for this captain profile.
-     */
     public function matches(): HasMany
     {
         return $this->hasMany(VesselMatch::class, 'profile_id')
             ->where('profile_type', 'captain');
     }
 
-    /**
-     * Get vessel interest rows for this captain.
-     */
     public function vesselInterests(): HasMany
     {
         return $this->hasMany(CaptainVesselInterest::class, 'captain_id');
     }
 
-    /**
-     * Get charter events where this captain was selected.
-     */
     public function selectedCharterEvents(): HasMany
     {
         return $this->hasMany(CharterEvent::class, 'selected_captain_id');
     }
 
-    /**
-     * Get captain hire agreements linked to this captain.
-     */
     public function hireAgreements(): HasMany
     {
         return $this->hasMany(CharterHireAgreement::class, 'captain_profile_id');
     }
 
-    /**
-     * Get payments made to this captain.
-     */
     public function payments(): HasMany
     {
         return $this->hasMany(CharterPayment::class, 'captain_profile_id');
     }
 
-    /**
-     * Get crew response rows for this captain profile.
-     */
     public function crewResponses(): HasMany
     {
         return $this->hasMany(CharterCrewResponse::class, 'profile_id')
@@ -106,23 +83,55 @@ class CaptainProfile extends Model
     }
 
     /**
-     * Get the attributes that should be cast.
+     * Default preference values — used when no preferences have been saved yet.
      *
+     * @return array<string, mixed>
+     */
+    public static function defaultPreferences(): array
+    {
+        return [
+            'is_available'          => true,
+            'weekday_availability'  => true,
+            'weekend_availability'  => true,
+            'last_minute_charters'  => false,
+            'multi_day_charters'    => true,
+            'charter_notifications' => true,
+            'owner_notification'    => true,
+            'email_notifications'   => true,
+            'sms_notifications'     => false,
+            'profile_visibility'    => true,
+            'show_rating'           => true,
+            'unavailable_dates'     => [],
+        ];
+    }
+
+    /**
+     * Return preferences merged with defaults so missing keys are always present.
+     *
+     * @return array<string, mixed>
+     */
+    public function resolvedPreferences(): array
+    {
+        return array_merge(self::defaultPreferences(), $this->preferences ?? []);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'latitude' => 'decimal:7',
-            'longitude' => 'decimal:7',
-            'travel_radius_miles' => 'integer',
-            'tonnage_rating' => 'integer',
-            'years_experience' => 'integer',
-            'hourly_rate' => 'decimal:2',
+            'latitude'             => 'decimal:7',
+            'longitude'            => 'decimal:7',
+            'travel_radius_miles'  => 'integer',
+            'tonnage_rating'       => 'integer',
+            'years_experience'     => 'integer',
+            'hourly_rate'          => 'decimal:2',
             'can_provide_deckhand' => 'boolean',
             'deckhand_hourly_rate' => 'decimal:2',
-            'is_verified' => 'boolean',
-            'deleted_at' => 'datetime',
+            'is_verified'          => 'boolean',
+            'preferences'          => 'array',
+            'deleted_at'           => 'datetime',
         ];
     }
 }
