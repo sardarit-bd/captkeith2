@@ -93,6 +93,11 @@ class CreateNewUser implements CreatesNewUsers
                 'charterer' => \App\Models\ChartererProfile::create([
                     'user_id'   => $user->id,
                     'full_name' => $fullName,
+                    'address'   => '',
+                    'city'      => '',
+                    'state'     => '',
+                    'zip_code'  => '',
+                    'phone'     => '',
                 ]),
                 'captain' => \App\Models\CaptainProfile::create([
                     'user_id'             => $user->id,

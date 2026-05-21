@@ -68,8 +68,30 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
-    const userLabel = auth.user?.email?.split('@')[0] ?? '';
+    const userLabel =
+        (auth.user as any)?.ownerProfile?.full_name ??
+        auth.user?.email?.split('@')[0] ??
+        '';
+    const { auth } = page.props;
+    const role = (auth as any).role;
+    const user = auth.user as any;
 
+    const profile =
+        role === 'owner'
+            ? user?.ownerProfile
+            : role === 'captain'
+              ? user?.captainProfile
+              : role === 'deckhand'
+                ? user?.deckhandProfile
+                : role === 'charterer'
+                  ? user?.chartererProfile
+                  : null;
+
+    const userLabel =
+        profile?.full_name ?? auth.user?.email?.split('@')[0] ?? '';
+    const avatarPath = profile?.avatar_path
+        ? `/storage/${profile.avatar_path}`
+        : undefined;
     return (
         <>
             <div className="border-b border-sidebar-border/80">
@@ -219,7 +241,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage
-                                            src={auth.user?.avatar}
+                                            src={avatarPath}
                                             alt={userLabel}
                                         />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">

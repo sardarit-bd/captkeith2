@@ -20,10 +20,10 @@ export function ChartererRequestYachtCard({ yacht }: Props) {
                     <img
                         src={yacht.image}
                         alt={yacht.name}
-                        className="h-48 w-full shrink-0 rounded-xl object-cover md:h-[220px] md:w-[380px]"
+                        className="h-48 w-full shrink-0 rounded-xl object-cover md:h-55 md:w-95"
                     />
                 ) : (
-                    <div className="flex h-48 w-full shrink-0 items-center justify-center rounded-xl bg-[#f3f4f6] md:h-[220px] md:w-[380px]">
+                    <div className="flex h-48 w-full shrink-0 items-center justify-center rounded-xl bg-[#f3f4f6] md:h-55 md:w-95">
                         <Ship className="h-12 w-12 text-[#d1d5db]" />
                     </div>
                 )}

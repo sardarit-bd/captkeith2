@@ -19,8 +19,11 @@ export function Navbar({
     return (
         <nav className="sticky top-0 z-50 w-full bg-white py-4 shadow-sm">
             <div className="mx-auto flex w-full max-w-8xl items-center justify-between px-6">
-                <img src="/images/logo1.svg" alt="CaptMatch" className="h-auto w-32 md:w-40" />
-
+                <img
+                    src="/images/logo1.svg"
+                    alt="CaptMatch"
+                    className="h-auto w-32 md:w-40"
+                />
                 <div className="hidden items-center space-x-8 lg:flex">
                     {navLinks.map((link) => (
                         <Link
@@ -40,7 +43,10 @@ export function Navbar({
                     style={{ backgroundColor: homeTheme.primary }}
                 >
                     <span className="whitespace-nowrap">{authLabel}</span>
-                    <HomeIcon name="arrow-right" className="h-4 w-4 md:h-5 md:w-5" />
+                    <HomeIcon
+                        name="arrow-right"
+                        className="h-4 w-4 md:h-5 md:w-5"
+                    />
                 </Link>
             </div>
         </nav>
