@@ -18,7 +18,7 @@ export interface Captain {
     canProvideDeckhand: boolean;
     isVerified: boolean;
 }
-
+// ff
 interface PageProps {
     captains: Captain[];
 }
