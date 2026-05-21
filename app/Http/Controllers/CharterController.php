@@ -127,6 +127,8 @@ class CharterController extends Controller
 
     public function join(string $token): RedirectResponse
     {
+        dd(auth()->id(), auth()->user()?->getRoleNames(), $token);
+
         $event = CharterEvent::where('invite_token', $token)
             ->whereNull('deleted_at')
             ->where('invite_token_expires_at', '>', now())

@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { Users } from 'lucide-react';
-import { captainSelect } from '@/routes/charterer';
 
 type Props = {
     availableCaptainCount: number;
@@ -27,7 +26,7 @@ export function ChartererRequestAvailableCaptainsCard({
             </p>
 
             <Link
-                href={captainSelect()}
+                href="/charterer/captain-select"
                 className="w-full rounded-lg bg-[#0A273F] px-6 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] sm:w-auto"
             >
                 Choose Your Captain

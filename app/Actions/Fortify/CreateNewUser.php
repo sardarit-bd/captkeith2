@@ -87,6 +87,49 @@ class CreateNewUser implements CreatesNewUsers
                 ]);
             }
 
+            $fullName = trim(($input['first_name'] ?? '') . ' ' . ($input['last_name'] ?? ''));
+
+            match ($selectedRole) {
+                'charterer' => \App\Models\ChartererProfile::create([
+                    'user_id'   => $user->id,
+                    'full_name' => $fullName,
+                ]),
+                'captain' => \App\Models\CaptainProfile::create([
+                    'user_id'             => $user->id,
+                    'full_name'           => $fullName,
+                    'phone'               => '',
+                    'address'             => '',
+                    'city'                => '',
+                    'state'               => '',
+                    'zip_code'            => '',
+                    'travel_radius_miles' => 0,
+                    'license_type'        => 'oupv',
+                    'endorsement'         => 'inland',
+                    'tonnage_rating'      => 0,
+                    'years_experience'    => 0,
+                    'hourly_rate'         => 0,
+                ]),
+                'deckhand' => \App\Models\DeckhandProfile::create([
+                    'user_id'             => $user->id,
+                    'full_name'           => $fullName,
+                    'phone'               => '',
+                    'address'             => '',
+                    'city'                => '',
+                    'state'               => '',
+                    'zip_code'            => '',
+                    'travel_radius_miles' => 0,
+                    'years_experience'    => 0,
+                    'hourly_rate'         => 0,
+                ]),
+                'owner' => \App\Models\OwnerProfile::create([
+                    'user_id'   => $user->id,
+                    'full_name' => $fullName,
+                    'phone'     => '',
+                ]),
+                default => null,
+            };
+
+
             return $user;
         });
     }

@@ -2,7 +2,7 @@ import { Head } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import type { CharterEvent } from '@/components/charterer-request/charterer-request-data';
 import { ChartererRequestPageContent } from '@/components/charterer-request/charterer-request-page-content';
-import { request } from '@/routes/charterer';
+import * as route from '@/wayfinder';
 
 type Props = {
     charterEvent: CharterEvent;
@@ -23,7 +23,7 @@ ChartererRequestPage.layout = {
     breadcrumbs: [
         {
             title: 'Request',
-            href: request(),
+            href: '/charterer/request',
         },
     ],
     pageHeader: {

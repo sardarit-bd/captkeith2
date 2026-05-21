@@ -18,6 +18,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
 
     function handleSendInterest() {
         if (isLoading) return;
+
         setIsLoading(true);
         router.post(
             `/vessels/${yacht.id}/interest`,
@@ -33,6 +34,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
 
     function handleCancelInterest() {
         if (isLoading) return;
+
         setIsLoading(true);
         router.delete(`/vessels/${yacht.id}/interest`, {
             preserveScroll: true,
@@ -44,6 +46,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
 
     function handleMessage() {
         if (!yacht.ownerUserId) return;
+
         router.visit(`/messages?with=${yacht.ownerUserId}`);
     }
 
@@ -65,11 +68,16 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
             return (
                 <button
                     type="button"
-                    disabled
-                    className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] py-3 text-[14px] font-medium text-[#9ca3af] shadow-sm"
+                    disabled={isLoading}
+                    onClick={handleSendInterest}
+                    className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] py-3 text-[14px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#0D314D] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    <XCircle className="h-4 w-4" />
-                    Request Declined
+                    {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <Heart className="h-4 w-4" fill="none" />
+                    )}
+                    Send Interest Again
                 </button>
             );
         }

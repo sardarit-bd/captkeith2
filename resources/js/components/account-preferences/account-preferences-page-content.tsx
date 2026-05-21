@@ -8,7 +8,7 @@ import type { CaptainPreferences } from './account-preferences-data';
 import { AccountPreferencesManageAvailability } from './account-preferences-manage-availability';
 import { AccountPreferencesNotifications } from './account-preferences-notifications';
 import { AccountPreferencesPrivacy } from './account-preferences-privacy';
-
+import { AccountPreferencesPaymentMethods } from './account-preferences-payment-methods';
 type PageProps = {
     preferences: CaptainPreferences;
 };
@@ -69,6 +69,7 @@ export function AccountPreferencesPageContent() {
                         prefs={prefs}
                         onToggle={handleToggle}
                     />
+                    <AccountPreferencesPaymentMethods />
                     <div className="h-8" />
                 </div>
             </div>

@@ -121,12 +121,12 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 icon: Ship,
             },
             {
-                title: 'Requests',
+                title: 'Charterer Requests',
                 href: requests(),
                 icon: ClipboardList,
             },
             {
-                title: 'Invitations',
+                title: 'Owner Invitations',
                 href: '/invitations',
                 icon: Bell,
             },
