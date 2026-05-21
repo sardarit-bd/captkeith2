@@ -226,7 +226,6 @@ class CharterController extends Controller
                 ->with('error', 'No active charter booking found. Please use your invite link.');
         }
 
-        // Load accepted captains from owner_captain_invitations for this vessel
         $invitations = OwnerCaptainInvitation::where('vessel_id', $event->vessel_id)
             ->where('status', 'accepted')
             ->with(['captain.user'])
@@ -252,22 +251,28 @@ class CharterController extends Controller
                 : (json_decode($profile?->endorsement ?? '[]', true) ?? []);
 
             return [
-                'id'           => $profile?->id ?? $invitation->id,
-                'name'         => $user?->name ?? '—',
-                'photo'        => $user?->profile_photo_path
-                    ? Storage::url($user->profile_photo_path)
+                'id'                 => $profile?->id ?? $invitation->id,
+                'name'               => $profile?->full_name ?? $user?->email ?? '—',
+                'photo'              => $profile?->photo_path
+                    ? Storage::url($profile->photo_path)
                     : null,
-                'location'     => $location ?: '—',
-                'license'      => $licenseLabel,
-                'experience'   => $profile?->years_experience
+                'location'           => $location ?: '—',
+                'license'            => $licenseLabel,
+                'tonnage'            => $profile?->tonnage_rating
+                    ? $profile->tonnage_rating . 'T'
+                    : '—',
+                'experience'         => $profile?->years_experience
                     ? $profile->years_experience . ' years experience'
                     : '—',
-                'rate'         => $profile?->hourly_rate
+                'rate'               => $profile?->hourly_rate
                     ? '$' . number_format($profile->hourly_rate, 0) . '/hr'
                     : '—',
-                'bio'          => $profile?->bio ?? '',
-                'endorsements' => $endorsements,
-                'isVerified'   => (bool) ($profile?->is_verified ?? false),
+                'bio'                => $profile?->bio ?? '',
+                'endorsements'       => $endorsements,
+                'geographicArea'     => $profile?->geographic_area ?? null,
+                'bodiesOfWater'      => $profile?->bodies_of_water ?? null,
+                'canProvidedeckhand' => (bool) ($profile?->can_provide_deckhand ?? false),
+                'isVerified'         => (bool) ($profile?->is_verified ?? false),
             ];
         })->values();
 

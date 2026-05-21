@@ -8,10 +8,14 @@ export interface Captain {
     photo: string | null;
     location: string;
     license: string;
+    tonnage: string;
     experience: string;
     rate: string;
     bio: string;
     endorsements: string[];
+    geographicArea: string | null;
+    bodiesOfWater: string | null;
+    canProvideDeckhand: boolean;
     isVerified: boolean;
 }
 

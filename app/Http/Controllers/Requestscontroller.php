@@ -26,7 +26,6 @@ class RequestsController extends Controller
             $crewRole = 'deckhand';
         }
 
-
         $responses = CharterCrewResponse::where('profile_id', $profile->id)
             ->where('crew_role', $crewRole)
             ->with([
@@ -36,9 +35,9 @@ class RequestsController extends Controller
             ->latest()
             ->get()
             ->map(function (CharterCrewResponse $crewResponse) {
-                $event  = $crewResponse->charterEvent;
-                $vessel = $event?->vessel;
-                $photo  = $vessel?->photos->first()?->image_path;
+                $event         = $crewResponse->charterEvent;
+                $vessel        = $event?->vessel;
+                $photo         = $vessel?->photos->first()?->image_path;
                 $durationHours = $event ? round($event->duration_minutes / 60, 1) : 0;
                 $durationLabel = $durationHours == 1 ? '1 hour' : "{$durationHours} hours";
 
@@ -59,40 +58,8 @@ class RequestsController extends Controller
                 ];
             });
 
-
-        $invitations = collect();
-        if ($user->hasRole('captain')) {
-            $invitations = \App\Models\OwnerCaptainInvitation::where('captain_id', $profile->id)
-                ->with([
-                    'vessel.photos' => fn($q) => $q->orderBy('display_order'),
-                    'owner',
-                ])
-                ->latest()
-                ->get()
-                ->map(function (\App\Models\OwnerCaptainInvitation $invitation) {
-                    $vessel = $invitation->vessel;
-                    $photo  = $vessel?->photos->first()?->image_path;
-
-                    return [
-                        'id'           => $invitation->id,
-                        'type'         => 'owner_invitation',
-                        'yachtName'    => $vessel?->name ?? '—',
-                        'yachtSpec'    => $vessel ? ucfirst($vessel->vessel_type) . ' • ' . $vessel->length_ft . 'ft' : '—',
-                        'marina'       => $vessel ? trim(collect([$vessel->marina_name, $vessel->marina_city])->filter()->implode(', ')) : '—',
-                        'image'        => $photo ? Storage::url($photo) : null,
-                        'date'         => '—',
-                        'time'         => '—',
-                        'duration'     => '—',
-                        'specialNotes' => '',
-                        'status'       => $invitation->status,
-                        'charterEventId' => null,
-                        'ownerUserId'  => $invitation->owner?->user_id,
-                    ];
-                });
-        }
-
         return Inertia::render('requests', [
-            'requests' => $responses->concat($invitations)->sortByDesc('id')->values(),
+            'requests' => $responses->values(),
         ]);
     }
 
