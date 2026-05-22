@@ -30,6 +30,21 @@ class ChartererProfile extends Model
         ];
     }
 
+    public static function defaultPreferences(): array
+    {
+        return [
+            'email_notifications' => true,
+            'sms_notifications'   => false,
+            'profile_visibility'  => true,
+            'is_active'           => true,
+        ];
+    }
+
+    public function resolvedPreferences(): array
+    {
+        return array_merge(self::defaultPreferences(), $this->preferences ?? []);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

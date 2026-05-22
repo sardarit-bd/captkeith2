@@ -99,7 +99,7 @@ jobs:
           npm ci
 
       - name: Prepare environment and build assets
-      - run: |
+        run: |
           cp .env.example .env
           php artisan key:generate --force
           echo "REVERB_APP_ID=local" >> .env
