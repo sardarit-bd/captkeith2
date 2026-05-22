@@ -46,6 +46,7 @@ import { request as chartererRequest } from '@/routes/charterer';
 import type { NavItem } from '@/types';
 
 function resolveNavItems(role: string | null | undefined): NavItem[] {
+    console.log(chartererRequest().url);
     const sharedItems: NavItem[] = [
         {
             title: 'Dashboard',
@@ -166,7 +167,7 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
             },
             {
                 title: 'Request',
-                href: chartererRequest(),
+                href: chartererRequest().url,
                 icon: ClipboardList,
             },
             {

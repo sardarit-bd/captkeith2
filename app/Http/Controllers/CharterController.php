@@ -127,8 +127,6 @@ class CharterController extends Controller
 
     public function join(string $token): RedirectResponse
     {
-        // dd(auth()->id(), auth()->user()?->getRoleNames(), $token);
-
         $event = CharterEvent::where('invite_token', $token)
             ->whereNull('deleted_at')
             ->where('invite_token_expires_at', '>', now())
@@ -151,13 +149,14 @@ class CharterController extends Controller
         return redirect()->route('charterer.request');
     }
 
-    public function request(): Response|RedirectResponse
+    public function request(): Response
     {
         $charterer = ChartererProfile::where('user_id', auth()->id())->first();
 
         if (! $charterer) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Please complete your charterer profile first.');
+            return Inertia::render('charterer/request', [
+                'charterEvent' => null,
+            ]);
         }
 
         $event = CharterEvent::where('charterer_id', $charterer->id)
@@ -168,8 +167,9 @@ class CharterController extends Controller
             ->first();
 
         if (! $event) {
-            return redirect()->route('dashboard')
-                ->with('error', 'No active charter booking found. Please use your invite link.');
+            return Inertia::render('charterer/request', [
+                'charterEvent' => null,
+            ]);
         }
 
         $vessel = $event->vessel;
@@ -281,16 +281,13 @@ class CharterController extends Controller
         ]);
     }
 
-
     public function destroy(CharterEvent $charterEvent): RedirectResponse
     {
         $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
 
-
         $vessel = Vessel::where('id', $charterEvent->vessel_id)
             ->where('owner_id', $owner->id)
             ->firstOrFail();
-
 
         abort_if($charterEvent->status !== 'draft', 403, 'Only draft charters can be deleted.');
 
