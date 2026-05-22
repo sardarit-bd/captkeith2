@@ -56,9 +56,17 @@ jobs:
 
           php artisan key:generate --force
 
-
       - name: Build Frontend Assets
         run: npm run build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            public/build
+            vendor
+          retention-days: 1
 
   deploy:
     name: Deploy to VPS
@@ -66,7 +74,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy Application
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Sync Files to VPS
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: >-
+            -avzr
+            --delete
+            --exclude='.git'
+            --exclude='.env'
+            --exclude='node_modules'
+            --exclude='storage/app'
+            --exclude='storage/logs'
+            --exclude='storage/framework/sessions'
+          path: .
+          remote_path: /var/www/capt.sardarit.cloud
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+
+      - name: Run Post-Deploy Commands
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -76,18 +110,6 @@ jobs:
             set -e
 
             cd /var/www/capt.sardarit.cloud
-
-            echo "Pulling latest changes..."
-            git pull origin main
-
-            echo "Installing composer dependencies..."
-            composer install --no-dev --optimize-autoloader --no-interaction
-
-            echo "Installing node dependencies..."
-            npm ci
-
-            echo "Building frontend assets..."
-            npm run build
 
             echo "Running migrations..."
             php artisan migrate --force
