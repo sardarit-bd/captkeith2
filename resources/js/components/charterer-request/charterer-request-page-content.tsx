@@ -26,12 +26,11 @@ export function ChartererRequestPageContent({ charterEvent }: Props) {
             </div>
         );
     }
-  git config --global user.email "shahinsamiur@yahoo.com"
-  git config --global user.name "shahinsamiur"
+
     return (
         <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] font-poppins">
             <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
-                <div className="max-w-250] mx-auto mt-2 w-full space-y-6">
+                <div className="mx-auto mt-2 w-full max-w-250 space-y-6">
                     <ChartererRequestYachtCard yacht={charterEvent.yacht} />
                     <ChartererRequestCharterInfoCard
                         date={charterEvent.date}
