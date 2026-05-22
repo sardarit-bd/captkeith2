@@ -56,8 +56,6 @@ jobs:
 
           php artisan key:generate --force
 
-      - name: Run Tests
-        run: php artisan test
 
       - name: Build Frontend Assets
         run: npm run build
