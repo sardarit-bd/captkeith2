@@ -75,7 +75,7 @@ jobs:
           script: |
             set -e
 
-            cd /var/www/captkeith2
+            cd /var/www/capt.sardarit.cloud
 
             echo "Pulling latest changes..."
             git pull origin main
