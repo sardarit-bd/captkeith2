@@ -1,205 +1,133 @@
-name: CI/CD VPS Deploy
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
-      - master
-      - develop
-  pull_request:
-    branches:
-      - main
-      - master
-      - develop
-  workflow_dispatch:
-
-permissions:
-  contents: read
 
 concurrency:
-  group: ci-cd-${{ github.ref }}
+  group: production-deploy
   cancel-in-progress: true
-
-env:
-  APP_PATH: /var/www/capt.sardarit.cloud
-  PHP_VERSION: '8.4'
-  NODE_VERSION: '22'
 
 jobs:
   ci:
-    name: CI Build
+    name: Run CI Checks
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
-          tools: composer:v2
+          php-version: 8.3
+          extensions: mbstring, bcmath, pdo, mysql
           coverage: none
-          extensions: mbstring, bcmath, pdo_mysql
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: |
-          composer install --no-interaction --prefer-dist --optimize-autoloader
-          npm ci
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Prepare application environment
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Prepare Environment
         run: |
           cp .env.example .env
+
+          cat <<EOF >> .env
+
+          APP_ENV=production
+          APP_DEBUG=false
+
+          REVERB_APP_ID=local
+          REVERB_APP_KEY=local
+          REVERB_APP_SECRET=local
+          REVERB_HOST=localhost
+          REVERB_PORT=8080
+          REVERB_SCHEME=http
+          EOF
+
           php artisan key:generate --force
 
-      - name: Build assets and cache
-        run: |
-          cp .env.example .env
-          php artisan key:generate --force
-          echo "REVERB_APP_ID=local" >> .env
-          echo "REVERB_APP_KEY=local" >> .env
-          echo "REVERB_HOST=localhost" >> .env
-          echo "REVERB_PORT=8080" >> .env
-          echo "REVERB_SCHEME=http" >> .env
+      - name: Build Frontend Assets
+        run: npm run build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            public/build
+            vendor
+          retention-days: 1
 
   deploy:
     name: Deploy to VPS
-    runs-on: ubuntu-latest
     needs: ci
-    if: github.ref_name == 'main'
-    environment: production
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
         with:
-          php-version: ${{ env.PHP_VERSION }}
-          tools: composer:v2
-          coverage: none
-          extensions: mbstring, bcmath, pdo_mysql
+          name: build-artifacts
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Sync Files to VPS
+        uses: burnett01/rsync-deployments@7.0.1
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          switches: >-
+            -avzr
+            --delete
+            --exclude='.git'
+            --exclude='.env'
+            --exclude='node_modules'
+            --exclude='storage/app'
+            --exclude='storage/logs'
+            --exclude='storage/framework/sessions'
+          path: .
+          remote_path: /var/www/capt.sardarit.cloud
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
 
-      - name: Install dependencies
-        run: |
-          composer install --no-interaction --prefer-dist --optimize-autoloader
-          npm ci
-
-      - name: Prepare environment and build assets
-        run: |
-          cp .env.example .env
-          php artisan key:generate --force
-          echo "REVERB_APP_ID=local" >> .env
-          echo "REVERB_APP_KEY=local" >> .env
-          echo "REVERB_APP_SECRET=local" >> .env
-          echo "REVERB_HOST=localhost" >> .env
-          echo "REVERB_PORT=8080" >> .env
-          echo "REVERB_SCHEME=http" >> .env
-          npm run build
-
-      - name: Create deployment archive
-        run: |
-          tar --exclude='.git' \
-              --exclude='node_modules' \
-              --exclude='.env' \
-              --exclude='storage/logs' \
-              --exclude='storage/framework/cache' \
-              --exclude='storage/framework/sessions' \
-              --exclude='storage/framework/views' \
-              -czf /tmp/deploy.tar.gz \
-              app bootstrap config database public resources routes storage vendor \
-              artisan composer.json composer.lock package.json package-lock.json .env.example
-
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Stream archive to VPS via SSH pipe
-        run: |
-          cat /tmp/deploy.tar.gz | ssh \
-            -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=no \
-            -o IdentitiesOnly=yes \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "cat > /tmp/deploy.tar.gz"
-
-      - name: Deploy over SSH
+      - name: Run Post-Deploy Commands
         uses: appleboy/ssh-action@v1.2.0
-        env:
-          APP_PATH: ${{ env.APP_PATH }}
-          APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
-          WEB_USER: ${{ secrets.WEB_USER }}
-          WEB_GROUP: ${{ secrets.WEB_GROUP }}
-          PHP_FPM_SERVICE: ${{ secrets.PHP_FPM_SERVICE }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          envs: APP_PATH,APP_ENV_FILE,WEB_USER,WEB_GROUP,PHP_FPM_SERVICE
-          script_stop: true
           script: |
-            set -euo pipefail
+            set -e
 
-            WEB_USER="${WEB_USER:-nginx}"
-            WEB_GROUP="${WEB_GROUP:-nginx}"
+            cd /var/www/capt.sardarit.cloud
 
-            sudo mkdir -p "$APP_PATH"
-            sudo chown -R "$USER":"$USER" "$APP_PATH"
-
-            tar -xzf /tmp/deploy.tar.gz -C "$APP_PATH"
-            rm -f /tmp/deploy.tar.gz
-
-            cd "$APP_PATH"
-
-            if [ ! -f .env ] && [ -n "${APP_ENV_FILE:-}" ]; then
-              printf '%s' "$APP_ENV_FILE" > .env
-            fi
-
-            if [ ! -f .env ]; then
-              cp .env.example .env
-            fi
-
-            if ! grep -q '^APP_KEY=base64:' .env; then
-              php artisan key:generate --force
-            fi
-
-            php artisan storage:link || true
+            echo "Running migrations..."
             php artisan migrate --force
 
+            echo "Clearing old caches..."
             php artisan optimize:clear
+
+            echo "Caching configuration..."
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            php artisan event:cache || true
 
-            sudo chgrp -R "$WEB_GROUP" storage bootstrap/cache
-            sudo chmod -R ug+rwx storage bootstrap/cache
-            sudo find storage bootstrap/cache -type d -exec chmod 775 {} \;
-            sudo find storage bootstrap/cache -type f -exec chmod 664 {} \;
+            echo "Restarting queues and reverb..."
+            php artisan queue:restart || true
+            php artisan reverb:restart || true
 
-            if command -v setfacl >/dev/null 2>&1; then
-              sudo setfacl -R -m u:"$WEB_USER":rwx -m u:"$USER":rwx storage bootstrap/cache
-              sudo setfacl -dR -m u:"$WEB_USER":rwx -m u:"$USER":rwx storage bootstrap/cache
-            fi
+            echo "Fixing permissions..."
+            sudo chown -R nginx:nginx storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
 
-            if [ -n "${PHP_FPM_SERVICE:-}" ]; then
-              sudo systemctl reload "$PHP_FPM_SERVICE"
-            fi
-
-            sudo systemctl reload nginx
+            echo "Deployment completed successfully."
