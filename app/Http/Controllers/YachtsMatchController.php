@@ -39,26 +39,35 @@ class YachtsMatchController extends Controller
 
 
         if ($isCaptain) {
+
+            $qualifyingLicenses = match ($profile->license_type) {
+                'masters' => ['masters', 'oupv'],
+                'oupv'    => ['oupv'],
+                default   => [$profile->license_type],
+            };
+
+
+            $qualifyingEndorsements = match ($profile->endorsement) {
+                'unlimited'    => ['unlimited', 'near_coastal', 'inland'],
+                'near_coastal' => ['near_coastal', 'inland'],
+                'inland'       => ['inland'],
+                default        => [$profile->endorsement],
+            };
+
             if ($profile->license_type !== null) {
-                $query->where('required_license_type', $profile->license_type);
+                $query->whereIn('required_license_type', $qualifyingLicenses);
             }
 
             if ($profile->endorsement !== null) {
-                $query->where('required_endorsement', $profile->endorsement);
+                $query->whereIn('required_endorsement', $qualifyingEndorsements);
             }
 
             if ($profile->tonnage_rating !== null) {
-                $query->where(function ($q) use ($profile) {
-                    $q->whereNull('required_tonnage_rating')
-                        ->orWhere('required_tonnage_rating', '<=', $profile->tonnage_rating);
-                });
+                $query->where('required_tonnage_rating', '<=', $profile->tonnage_rating);
             }
 
             if ($profile->years_experience !== null) {
-                $query->where(function ($q) use ($profile) {
-                    $q->whereNull('required_years_experience')
-                        ->orWhere('required_years_experience', '<=', $profile->years_experience);
-                });
+                $query->where('required_years_experience', '<=', $profile->years_experience);
             }
         }
 

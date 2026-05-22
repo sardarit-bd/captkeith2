@@ -43,10 +43,10 @@ export function ChartererCaptainSelectCard({
                         <img
                             src={captain.photo}
                             alt={captain.name}
-                            className="h-[72px] w-[72px] rounded-full border border-[#e5e7eb] object-cover"
+                            className="h-18 w-18 rounded-full border border-[#e5e7eb] object-cover"
                         />
                     ) : (
-                        <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-[#e5e7eb] bg-gray-100">
+                        <div className="`w-18 flex h-18 items-center justify-center rounded-full border border-[#e5e7eb] bg-gray-100">
                             <User className="h-7 w-7 text-gray-400" />
                         </div>
                     )}
