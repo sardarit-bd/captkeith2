@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'crew_role',
     'response',
     'responded_at',
+    'expires_at',
 ])]
 class CharterCrewResponse extends Model
 {
@@ -25,23 +26,19 @@ class CharterCrewResponse extends Model
 
     public function captainProfile(): BelongsTo
     {
-        return $this->belongsTo(CaptainProfile::class, 'profile_id')
-            ->where('crew_role', 'captain');
+        return $this->belongsTo(CaptainProfile::class, 'profile_id');
     }
 
     public function deckhandProfile(): BelongsTo
     {
-        return $this->belongsTo(DeckhandProfile::class, 'profile_id')
-            ->where('crew_role', 'deckhand');
+        return $this->belongsTo(DeckhandProfile::class, 'profile_id');
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'responded_at' => 'datetime',
+            'expires_at'   => 'datetime',
         ];
     }
 }

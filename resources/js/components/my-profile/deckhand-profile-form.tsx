@@ -45,7 +45,7 @@ type PageProps = {
 export function DeckhandProfileForm() {
     const { profile } = usePage<PageProps>().props;
 
-    const { data, setData, post, processing, errors, reset } =
+    const { data, setData, post, processing, errors, reset, transform } =
         useForm<DeckhandProfileFormData>({
             full_name: profile?.full_name ?? '',
             phone: profile?.phone ?? '',
@@ -73,6 +73,23 @@ export function DeckhandProfileForm() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        transform((d) => ({
+            full_name: d.full_name,
+            phone: d.phone,
+            address: d.address,
+            city: d.city,
+            state: d.state,
+            zip_code: d.zip_code,
+            travel_radius_miles: d.travel_radius_miles,
+            years_experience: d.years_experience,
+            has_server_experience: d.has_server_experience,
+            has_bartending_experience: d.has_bartending_experience,
+            hourly_rate: d.hourly_rate,
+            photo: d.photo,
+            resume: d.resume,
+        }));
+
         post(myProfile.url(), {
             forceFormData: true,
         });

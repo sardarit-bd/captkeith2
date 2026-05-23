@@ -1,6 +1,6 @@
+import { Link } from '@inertiajs/react';
 import {
     Anchor,
-    Award,
     Briefcase,
     MapPin,
     ShieldCheck,
@@ -46,7 +46,7 @@ export function ChartererCaptainSelectCard({
                             className="h-18 w-18 rounded-full border border-[#e5e7eb] object-cover"
                         />
                     ) : (
-                        <div className="`w-18 flex h-18 items-center justify-center rounded-full border border-[#e5e7eb] bg-gray-100">
+                        <div className="flex h-18 w-18 items-center justify-center rounded-full border border-[#e5e7eb] bg-gray-100">
                             <User className="h-7 w-7 text-gray-400" />
                         </div>
                     )}
@@ -60,9 +60,14 @@ export function ChartererCaptainSelectCard({
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                            <p className="text-[15px] leading-tight font-semibold text-[#111827]">
+                            {/* Clickable name → captain profile. stopPropagation so it doesn't toggle selection */}
+                            <Link
+                                href={`/captains/${captain.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[15px] leading-tight font-semibold text-[#111827] hover:text-[#0A273F] hover:underline"
+                            >
                                 {captain.name}
-                            </p>
+                            </Link>
                             {captain.license && captain.license !== '—' && (
                                 <p className="mt-0.5 text-[12px] text-[#6b7280]">
                                     {captain.license}
