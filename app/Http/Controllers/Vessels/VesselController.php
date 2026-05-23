@@ -133,6 +133,48 @@ class VesselController extends Controller
     }
 
 
+
+
+    public function show(Vessel $vessel): Response
+    {
+        $vessel->load(['photos' => fn($q) => $q->orderBy('display_order')]);
+
+        return Inertia::render('yacht/details', [
+            'vessel' => [
+                'id'               => $vessel->id,
+                'name'             => $vessel->name,
+                'registrationNo'   => $vessel->official_number,
+                'image'            => $vessel->photos->first()
+                    ? Storage::url($vessel->photos->first()->image_path)
+                    : null,
+                'allImages'        => $vessel->photos->map(fn($p) => Storage::url($p->image_path))->values(),
+                'type'             => ucfirst($vessel->vessel_type ?? ''),
+                'lengthFt'         => $vessel->length_ft ? $vessel->length_ft . ' ft' : '—',
+                'beamFt'           => $vessel->beam_ft ? $vessel->beam_ft . ' ft' : '—',
+                'draftFt'          => $vessel->draft_ft ? $vessel->draft_ft . ' ft' : '—',
+                'year'             => $vessel->year ?? '—',
+                'make'             => $vessel->make ?? '—',
+                'model'            => $vessel->model ?? '—',
+                'capacity'         => $vessel->passenger_capacity ? $vessel->passenger_capacity . ' people' : '—',
+                'mooringLocation'  => trim(collect([
+                    $vessel->marina_name,
+                    $vessel->marina_city,
+                    $vessel->marina_state,
+                ])->filter()->implode(', ')) ?: '—',
+                'operatingArea'    => $vessel->operating_area ?? '—',
+                'deckhandRequired' => $vessel->requires_deckhand ? 'Yes' : 'No',
+                'requiredLicense'  => $vessel->required_license_type ?? '—',
+                'requiredEndorsement' => $vessel->required_endorsement ?? '—',
+                'requiredTonnage'  => $vessel->required_tonnage_rating ?? '—',
+                'requiredExperience' => $vessel->required_years_experience
+                    ? $vessel->required_years_experience . ' years'
+                    : '—',
+            ],
+        ]);
+    }
+
+
+
     public function edit(Vessel $vessel): Response
     {
         $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();

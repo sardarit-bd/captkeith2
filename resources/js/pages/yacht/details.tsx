@@ -1,25 +1,42 @@
 import { Head } from '@inertiajs/react';
 import { YachtDetailsPageContent } from '@/components/yacht-details/yacht-details-page-content';
-import { yachtDetails } from '@/routes';
+
+export type VesselDetail = {
+    id: string | number;
+    name: string;
+    registrationNo: string;
+    image: string | null;
+    allImages: string[];
+    type: string;
+    lengthFt: string;
+    beamFt: string;
+    draftFt: string;
+    year: string;
+    make: string;
+    model: string;
+    capacity: string;
+    mooringLocation: string;
+    operatingArea: string;
+    deckhandRequired: string;
+    requiredLicense: string;
+    requiredEndorsement: string;
+    requiredTonnage: string;
+    requiredExperience: string;
+};
 
 export default function YachtDetailsPage() {
     return (
         <>
-            <Head title="Yacht Details" />
+            <Head title="Vessel Details" />
             <YachtDetailsPageContent />
         </>
     );
 }
 
 YachtDetailsPage.layout = {
-    breadcrumbs: [
-        {
-            title: 'Yacht Details',
-            href: yachtDetails(),
-        },
-    ],
+    breadcrumbs: [{ title: 'Vessel Details', href: '#' }],
     pageHeader: {
-        title: 'Charter Request Details',
-        description: 'Review charter information and requirements before accepting.',
+        title: 'Vessel Details',
+        description: 'Full specifications and requirements for this vessel.',
     },
 };

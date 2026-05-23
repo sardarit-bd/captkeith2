@@ -1,11 +1,12 @@
 import { Link, router } from '@inertiajs/react';
 import { AlertTriangle, Edit2, Ship, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import type { YachtRecord, YachtTab } from './my-yachts-data';
 import {
     edit as editVessel,
     destroy as destroyVessel,
+    show as showVessel,
 } from '@/routes/my-yachts';
-import type { YachtRecord, YachtTab } from './my-yachts-data';
 
 const tabLabels: Record<YachtTab, string> = {
     details: 'Vessel Details',
@@ -286,9 +287,12 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
             <article className="overflow-hidden rounded-2xl border border-[#edf0f7] bg-white shadow-sm transition-shadow hover:shadow-md">
                 <div className="flex items-center justify-between border-b border-[#f1f5f9] bg-linear-to-r from-[#f8faff] to-white px-5 py-4 sm:px-6">
                     <div>
-                        <h3 className="text-[20px] font-bold text-[#0D314D]">
+                        <Link
+                            href={showVessel.url(yacht.id)}
+                            className="text-[20px] font-bold text-[#0D314D] transition-colors hover:text-[#3DB3DE]"
+                        >
                             {yacht.name}
-                        </h3>
+                        </Link>
                         <p className="mt-0.5 text-[12px] text-[#9ca3af]">
                             {yacht.registrationNo}
                         </p>

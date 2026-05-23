@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
         Route::inertia('notifications', 'notifications')->name('notifications');
         Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
+        Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
     });
 
     Route::middleware('role:owner')->group(function () {
