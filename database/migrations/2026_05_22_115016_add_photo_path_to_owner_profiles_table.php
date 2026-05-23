@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('owner_profiles', function (Blueprint $table) {
-            $table->string('photo_path')->nullable()->after('zip_code');
+            $table->string('photo_path')->nullable();
         });
     }
 
