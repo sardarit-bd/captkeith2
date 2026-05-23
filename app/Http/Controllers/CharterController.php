@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\CaptainProfile;
+use App\Models\CharterCrewResponse;
 
 class CharterController extends Controller
 {
@@ -276,8 +278,15 @@ class CharterController extends Controller
             ];
         })->values();
 
+        $acceptedCount = CharterCrewResponse::where('charter_event_id', $event->id)
+            ->where('crew_role', 'captain')
+            ->where('response', 'available')
+            ->count();
+
         return Inertia::render('charterer/captain-select', [
-            'captains' => $captains,
+            'captains'     => $captains,
+            'acceptedCount' => $acceptedCount,
+            'slotsNeeded'  => max(0, 2 - $acceptedCount),
         ]);
     }
 
@@ -296,5 +305,132 @@ class CharterController extends Controller
         return redirect()
             ->route('charterers')
             ->with('success', 'Draft charter deleted.');
+    }
+
+    public function sendCaptainRequests(Request $request): RedirectResponse
+    {
+        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->latest('created_at')
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'captain_ids'   => ['required', 'array', 'min:1'],
+            'captain_ids.*' => ['required', 'uuid', 'exists:captain_profiles,id'],
+        ]);
+
+
+        $acceptedCount = CharterCrewResponse::where('charter_event_id', $event->id)
+            ->where('crew_role', 'captain')
+            ->where('response', 'available')
+            ->count();
+
+        $slotsNeeded = max(0, 2 - $acceptedCount);
+
+        if ($slotsNeeded === 0) {
+            return back()->with('error', 'You already have 2 captains accepted. You can proceed.');
+        }
+
+
+        $captainIds = array_slice($validated['captain_ids'], 0, $slotsNeeded);
+
+
+        $qualifiedIds = OwnerCaptainInvitation::where('vessel_id', $event->vessel_id)
+            ->where('status', 'accepted')
+            ->whereIn('captain_id', $captainIds)
+            ->pluck('captain_id')
+            ->toArray();
+
+        foreach ($qualifiedIds as $captainId) {
+
+            $existing = CharterCrewResponse::where('charter_event_id', $event->id)
+                ->where('profile_id', $captainId)
+                ->where('crew_role', 'captain')
+                ->first();
+
+            if ($existing) {
+
+                if (
+                    $existing->response === 'unavailable' ||
+                    ($existing->expires_at && $existing->expires_at->isPast())
+                ) {
+                    $existing->update([
+                        'response'     => 'pending',
+                        'responded_at' => null,
+                        'expires_at'   => now()->addHours(24),
+                    ]);
+                }
+                continue;
+            }
+
+            CharterCrewResponse::create([
+                'charter_event_id' => $event->id,
+                'profile_id'       => $captainId,
+                'crew_role'        => 'captain',
+                'response'         => 'pending',
+                'expires_at'       => now()->addHours(24),
+            ]);
+        }
+
+
+        if ($event->status === 'draft') {
+            $event->update(['status' => 'awaiting_responses']);
+        }
+
+        return redirect()->route('charterer.captain-request-status')
+            ->with('success', 'Captain requests sent successfully.');
+    }
+
+    public function captainRequestStatus(): Response
+    {
+        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->with(['vessel'])
+            ->latest('created_at')
+            ->firstOrFail();
+
+
+        CharterCrewResponse::where('charter_event_id', $event->id)
+            ->where('crew_role', 'captain')
+            ->where('response', 'pending')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->update(['response' => 'unavailable']);
+
+        $responses = CharterCrewResponse::where('charter_event_id', $event->id)
+            ->where('crew_role', 'captain')
+            ->with(['captainProfile.user'])
+            ->latest()
+            ->get();
+
+        $acceptedCount = $responses->where('response', 'available')->count();
+        $canProceed    = $acceptedCount >= 2;
+
+        $captainStatuses = $responses->map(function (CharterCrewResponse $r) {
+            $profile = $r->captainProfile;
+            return [
+                'responseId' => $r->id,
+                'captainId'  => $profile?->id,
+                'name'       => $profile?->full_name ?? '—',
+                'photo'      => $profile?->photo_path ? Storage::url($profile->photo_path) : null,
+                'status'     => $r->response, // pending | available | unavailable
+                'expiresAt'  => $r->expires_at?->toIso8601String(),
+                'respondedAt' => $r->responded_at?->format('M d, Y H:i'),
+            ];
+        })->values();
+
+        return Inertia::render('charterer/captain-request-status', [
+            'captainStatuses' => $captainStatuses,
+            'acceptedCount'   => $acceptedCount,
+            'canProceed'      => $canProceed,
+            'slotsNeeded'     => max(0, 2 - $acceptedCount),
+            'charterEventId'  => $event->id,
+        ]);
     }
 }

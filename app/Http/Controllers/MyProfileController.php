@@ -98,7 +98,7 @@ class MyProfileController extends Controller
         if ($user->hasRole('owner')) {
             $validated = $request->validate([
                 'full_name'    => ['required', 'string', 'max:150'],
-                'phone'        => ['nullable', 'string', 'max:20'],
+                'phone' => ['required', 'string', 'max:20'],
                 'company_name' => ['nullable', 'string', 'max:150'],
                 'bio'          => ['nullable', 'string', 'max:1000'],
                 'photo'        => ['nullable', 'image', 'max:5120'],
@@ -128,16 +128,16 @@ class MyProfileController extends Controller
         if ($user->hasRole('deckhand')) {
             $validated = $request->validate([
                 'full_name'                 => ['required', 'string', 'max:150'],
-                'phone'                     => ['nullable', 'string', 'max:20'],
-                'address'                   => ['nullable', 'string', 'max:255'],
-                'city'                      => ['nullable', 'string', 'max:100'],
-                'state'                     => ['nullable', 'string', 'max:50'],
-                'zip_code'                  => ['nullable', 'string', 'max:10'],
-                'travel_radius_miles'       => ['nullable', 'integer', 'min:1'],
-                'years_experience'          => ['nullable', 'numeric', 'min:0'],
+                'phone'                     => ['required', 'string', 'max:20'],  // was nullable
+                'address'                   => ['required', 'string', 'max:255'], // was nullable
+                'city'                      => ['required', 'string', 'max:100'], // was nullable
+                'state'                     => ['required', 'string', 'max:50'],  // was nullable
+                'zip_code'                  => ['required', 'string', 'max:10'],  // was nullable
+                'travel_radius_miles'       => ['required', 'integer', 'min:1'],  // was nullable
+                'years_experience'          => ['required', 'numeric', 'min:0'],  // was nullable
                 'has_server_experience'     => ['boolean'],
                 'has_bartending_experience' => ['boolean'],
-                'hourly_rate'               => ['nullable', 'numeric', 'min:0'],
+                'hourly_rate'               => ['required', 'numeric', 'min:0'],  // was nullable
                 'photo'                     => ['nullable', 'image', 'max:2048'],
                 'resume'                    => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
             ]);

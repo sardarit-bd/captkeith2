@@ -18,18 +18,24 @@ export interface Captain {
     canProvideDeckhand: boolean;
     isVerified: boolean;
 }
-// ff
+
 interface PageProps {
     captains: Captain[];
+    acceptedCount: number;
+    slotsNeeded: number;
 }
 
 export default function ChartererCaptainSelectPage() {
-    const { captains } = usePage<PageProps>().props;
+    const { captains, acceptedCount, slotsNeeded } = usePage<PageProps>().props;
 
     return (
         <>
             <Head title="Select Your Captain" />
-            <ChartererCaptainSelectPageContent captains={captains} />
+            <ChartererCaptainSelectPageContent
+                captains={captains}
+                acceptedCount={acceptedCount}
+                slotsNeeded={slotsNeeded}
+            />
         </>
     );
 }
