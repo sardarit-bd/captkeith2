@@ -22,7 +22,7 @@ class InterestSeeder extends Seeder
             ]
         );
 
-        DB::table('deckhand_vessel_interest')->updateOrInsert(
+        DB::table('deckhand_vessel_interests')->updateOrInsert(
             [
                 'deckhand_id' => SeedIds::DECKHAND_PROFILE_1,
                 'vessel_id' => SeedIds::VESSEL_1,
