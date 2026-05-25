@@ -117,6 +117,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
         Route::get('charterer/request', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
         Route::get('/charterer/captain-select', [\App\Http\Controllers\CharterController::class, 'captainSelect'])->name('charterer.captain-select');
+        Route::post('/charterer/captain-requests/{responseId}/cancel', [\App\Http\Controllers\CharterController::class, 'cancelCaptainRequest'])
+            ->name('charterer.captain-request.cancel');
         Route::post('/charterer/captain-requests', [\App\Http\Controllers\CharterController::class, 'sendCaptainRequests'])->name('charterer.captain-requests.send');
         Route::get('/charterer/captain-request-status', [\App\Http\Controllers\CharterController::class, 'captainRequestStatus'])->name('charterer.captain-request-status');
         Route::inertia('charterer/information', 'charterer/information')->name('charterer.information');

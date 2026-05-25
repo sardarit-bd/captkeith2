@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Services\VesselMatchingService;
 
 class MyProfileController extends Controller
 {
@@ -128,16 +129,16 @@ class MyProfileController extends Controller
         if ($user->hasRole('deckhand')) {
             $validated = $request->validate([
                 'full_name'                 => ['required', 'string', 'max:150'],
-                'phone'                     => ['required', 'string', 'max:20'],  // was nullable
-                'address'                   => ['required', 'string', 'max:255'], // was nullable
-                'city'                      => ['required', 'string', 'max:100'], // was nullable
-                'state'                     => ['required', 'string', 'max:50'],  // was nullable
-                'zip_code'                  => ['required', 'string', 'max:10'],  // was nullable
-                'travel_radius_miles'       => ['required', 'integer', 'min:1'],  // was nullable
-                'years_experience'          => ['required', 'numeric', 'min:0'],  // was nullable
+                'phone'                     => ['required', 'string', 'max:20'],
+                'address'                   => ['required', 'string', 'max:255'],
+                'city'                      => ['required', 'string', 'max:100'],
+                'state'                     => ['required', 'string', 'max:50'],
+                'zip_code'                  => ['required', 'string', 'max:10'],
+                'travel_radius_miles'       => ['required', 'integer', 'min:1'],
+                'years_experience'          => ['required', 'numeric', 'min:0'],
                 'has_server_experience'     => ['boolean'],
                 'has_bartending_experience' => ['boolean'],
-                'hourly_rate'               => ['required', 'numeric', 'min:0'],  // was nullable
+                'hourly_rate'               => ['required', 'numeric', 'min:0'],
                 'photo'                     => ['nullable', 'image', 'max:2048'],
                 'resume'                    => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
             ]);
@@ -171,7 +172,6 @@ class MyProfileController extends Controller
             return to_route('my-profile');
         }
 
-        // captain (default)
         $validated = $request->validate([
             'full_name'            => ['required', 'string', 'max:150'],
             'phone'                => ['required', 'string', 'max:20'],
@@ -226,7 +226,7 @@ class MyProfileController extends Controller
         $profile->fill($validated);
         $profile->user_id = $user->id;
         $profile->save();
-
+        (new VesselMatchingService())->matchForCaptain($profile);
         session()->flash('toast', ['type' => 'success', 'message' => 'Profile updated successfully.']);
 
         return to_route('my-profile');

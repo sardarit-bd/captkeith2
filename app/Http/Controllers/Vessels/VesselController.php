@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
+use App\Services\VesselMatchingService;
 
 class VesselController extends Controller
 {
@@ -20,8 +21,8 @@ class VesselController extends Controller
     {
         $owner = OwnerProfile::where('user_id', $request->user()->id)->firstOrFail();
 
-
-        DB::transaction(function () use ($request, $owner) {
+        $vessel = null;
+        DB::transaction(function () use ($request, $owner, &$vessel) {
             /** @var Vessel $vessel */
 
             $vessel = Vessel::create([
@@ -52,7 +53,7 @@ class VesselController extends Controller
                 'requires_deckhand' => $request->boolean('requires_deckhand'),
                 'is_active' => true,
             ]);
-
+            (new VesselMatchingService())->matchForVessel($vessel);
             foreach ($request->file('photos', []) as $order => $photo) {
                 $path = $photo->store("vessels/{$vessel->id}/photos", 'public');
 
@@ -64,11 +65,12 @@ class VesselController extends Controller
             }
 
 
+
             foreach ($request->file('documents', []) as $document) {
                 $document->store("vessels/{$vessel->id}/documents", 'local');
             }
         });
-
+        (new VesselMatchingService())->matchForVessel($vessel);
         return redirect()
             ->route('my-yachts')
             ->with('success', 'Vessel added successfully.');
@@ -271,7 +273,7 @@ class VesselController extends Controller
                 $document->store("vessels/{$vessel->id}/documents", 'local');
             }
         });
-
+        (new VesselMatchingService())->matchForVessel($vessel->fresh());
         return redirect()->route('my-yachts')->with('success', 'Vessel updated successfully.');
     }
 }

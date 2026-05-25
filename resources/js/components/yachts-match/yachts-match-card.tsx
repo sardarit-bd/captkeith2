@@ -1,11 +1,11 @@
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import {
+    Bell,
     CheckCircle,
     Heart,
     Loader2,
     MessageSquare,
     Ship,
-    XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { InterestStatus, YachtMatchRecord } from './yachts-match-data';
@@ -51,6 +51,19 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
     }
 
     function renderButton() {
+        if (yacht.ownerInvitationStatus === 'pending') {
+            return (
+                <Link
+                    href="/invitations"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-amber-500 py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-amber-600"
+                >
+                    <Bell className="h-4 w-4" />
+                    {yacht.ownerInvitationStatus === 'pending' &&
+                        'Review Invitation'}
+                </Link>
+            );
+        }
+
         if (status === 'accepted') {
             return (
                 <button
@@ -136,9 +149,14 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
             <div className="flex flex-1 flex-col p-6">
                 <div className="mb-5 flex items-start justify-between gap-4">
                     <div>
-                        <h3 className="text-lg leading-tight font-bold text-[#111827]">
-                            {yacht.name}
-                        </h3>
+                        <Link
+                            href={`/vessels/${yacht.id}`}
+                            className="hover:underline"
+                        >
+                            <h3 className="text-lg leading-tight font-bold text-[#111827]">
+                                {yacht.name}
+                            </h3>
+                        </Link>
                         <p className="mt-0.5 text-[13px] text-[#6b7280]">
                             {yacht.registrationNo}
                         </p>

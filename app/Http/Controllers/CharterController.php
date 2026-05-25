@@ -229,14 +229,19 @@ class CharterController extends Controller
                 ->with('error', 'No active charter booking found. Please use your invite link.');
         }
 
-        $invitations = OwnerCaptainInvitation::where('vessel_id', $event->vessel_id)
+
+        $interests = OwnerCaptainInvitation::where('vessel_id', $event->vessel_id)
             ->where('status', 'accepted')
             ->with(['captain.user'])
             ->get();
 
-        $captains = $invitations->map(function (OwnerCaptainInvitation $invitation) {
-            $profile = $invitation->captain;
+        $captains = $interests->map(function (OwnerCaptainInvitation $interest) use ($event) {
+            $profile = $interest->captain;
             $user    = $profile?->user;
+            $response = CharterCrewResponse::where('charter_event_id', $event->id)
+                ->where('profile_id', $profile?->id)
+                ->where('crew_role', 'captain')
+                ->first();
 
             $licenseLabel = match ($profile?->license_type) {
                 'oupv'    => 'OUPV (Six-Pack)',
@@ -254,7 +259,7 @@ class CharterController extends Controller
                 : (json_decode($profile?->endorsement ?? '[]', true) ?? []);
 
             return [
-                'id'                 => $profile?->id ?? $invitation->id,
+                'id'                 => $profile?->id ?? $interest->id,
                 'name'               => $profile?->full_name ?? $user?->email ?? '—',
                 'photo'              => $profile?->photo_path
                     ? Storage::url($profile->photo_path)
@@ -276,6 +281,8 @@ class CharterController extends Controller
                 'bodiesOfWater'      => $profile?->bodies_of_water ?? null,
                 'canProvidedeckhand' => (bool) ($profile?->can_provide_deckhand ?? false),
                 'isVerified'         => (bool) ($profile?->is_verified ?? false),
+                'requestStatus' => $response?->response ?? null,
+                'responseId'    => $response?->id ?? null,
             ];
         })->values();
 
@@ -285,9 +292,9 @@ class CharterController extends Controller
             ->count();
 
         return Inertia::render('charterer/captain-select', [
-            'captains'     => $captains,
+            'captains'      => $captains,
             'acceptedCount' => $acceptedCount,
-            'slotsNeeded'  => max(0, 2 - $acceptedCount),
+            'slotsNeeded'   => max(0, 2 - $acceptedCount),
         ]);
     }
 
@@ -338,14 +345,8 @@ class CharterController extends Controller
 
         $captainIds = array_slice($validated['captain_ids'], 0, $slotsNeeded);
 
+        foreach ($captainIds as $captainId) {
 
-        $qualifiedIds = OwnerCaptainInvitation::where('vessel_id', $event->vessel_id)
-            ->where('status', 'accepted')
-            ->whereIn('captain_id', $captainIds)
-            ->pluck('captain_id')
-            ->toArray();
-
-        foreach ($qualifiedIds as $captainId) {
 
             $existing = CharterCrewResponse::where('charter_event_id', $event->id)
                 ->where('profile_id', $captainId)
@@ -420,7 +421,7 @@ class CharterController extends Controller
                 'captainId'  => $profile?->id,
                 'name'       => $profile?->full_name ?? '—',
                 'photo'      => $profile?->photo_path ? Storage::url($profile->photo_path) : null,
-                'status'     => $r->response, // pending | available | unavailable
+                'status'     => $r->response,
                 'expiresAt'  => $r->expires_at?->toIso8601String(),
                 'respondedAt' => $r->responded_at?->format('M d, Y H:i'),
             ];
@@ -433,5 +434,32 @@ class CharterController extends Controller
             'slotsNeeded'     => max(0, 2 - $acceptedCount),
             'charterEventId'  => $event->id,
         ]);
+    }
+
+
+    public function cancelCaptainRequest(string $responseId): RedirectResponse
+    {
+        $charterer = ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->latest('created_at')
+            ->firstOrFail();
+
+        $response = CharterCrewResponse::where('id', $responseId)
+            ->where('charter_event_id', $event->id)
+            ->where('crew_role', 'captain')
+            ->firstOrFail();
+
+        // Cannot cancel an accepted captain
+        abort_if($response->response === 'available', 403, 'Cannot cancel an accepted captain.');
+
+        $response->update([
+            'response'   => 'unavailable',
+            'expires_at' => null,
+        ]);
+
+        return back()->with('success', 'Captain request cancelled.');
     }
 }

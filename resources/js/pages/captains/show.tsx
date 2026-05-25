@@ -16,6 +16,7 @@ import {
     Navigation,
 } from 'lucide-react';
 import { useState } from 'react';
+
 import { captains } from '@/routes';
 
 interface VesselOption {
@@ -196,6 +197,7 @@ function InfoRow({
 export default function CaptainShowPage() {
     const { captain, vessels, invitations, isAccepted, hasInterest } =
         usePage<PageProps>().props;
+
     const [showInviteModal, setShowInviteModal] = useState(false);
 
     const inviteStatuses = Object.values(invitations);
