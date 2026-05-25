@@ -5,6 +5,7 @@ export type CharterYachtOption = {
 
 export type DraftCharter = {
     id: string;
+    vesselId: string;
     yachtName: string;
     yachtType: string;
     yachtLength: string;

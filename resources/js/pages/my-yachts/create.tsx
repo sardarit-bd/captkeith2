@@ -115,7 +115,7 @@ export default function CreateYachtPage() {
     const [existingPhotos, setExistingPhotos] = useState<ExistingPhoto[]>(
         vessel?.existing_photos ?? [],
     );
-
+    const [photoError, setPhotoError] = useState<string | null>(null);
     const [newPhotos, setNewPhotos] = useState<PreviewPhoto[]>([]);
     const [documents, setDocuments] = useState<PreviewDocument[]>([]);
 
@@ -197,11 +197,20 @@ export default function CreateYachtPage() {
     const totalPhotoCount = existingPhotos.length + newPhotos.length;
     const missingSlots = Math.max(0, MIN_PHOTOS - totalPhotoCount);
 
-    const canSubmit =
-        (isEditing || totalPhotoCount >= MIN_PHOTOS) && !processing;
+    const canSubmit = !processing;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!isEditing && totalPhotoCount < MIN_PHOTOS) {
+            setPhotoError(
+                `Please upload at least ${MIN_PHOTOS} photos before submitting.`,
+            );
+
+            return;
+        }
+
+        setPhotoError(null);
 
         if (isEditing) {
             const formData = new FormData();
@@ -739,11 +748,17 @@ export default function CreateYachtPage() {
                                 </div>
                             )}
 
-                            {(errors.photos ||
+                            {(photoError ||
+                                errors.photos ||
                                 Object.keys(errors).some((k) =>
                                     k.startsWith('photos.'),
                                 )) && (
                                 <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                                    {photoError && (
+                                        <p className="text-xs text-red-600">
+                                            {photoError}
+                                        </p>
+                                    )}
                                     {errors.photos && (
                                         <p className="text-xs text-red-600">
                                             {errors.photos}
@@ -982,7 +997,7 @@ export default function CreateYachtPage() {
 
                                 <div>
                                     <label className="mb-2 block text-sm font-semibold text-gray-900">
-                                        Minimum Experience (years){' '}
+                                        Minimum Experience (years)
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -1031,13 +1046,13 @@ export default function CreateYachtPage() {
                         <div className="flex flex-col gap-4 border-t border-gray-100 pt-6 sm:flex-row">
                             <button
                                 type="submit"
-                                disabled={!canSubmit}
+                                disabled={processing}
                                 title={
                                     !isEditing && totalPhotoCount < MIN_PHOTOS
                                         ? `Please upload at least ${MIN_PHOTOS} photos`
                                         : undefined
                                 }
-                                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing ? (
                                     <>
@@ -1075,18 +1090,11 @@ export default function CreateYachtPage() {
 
                             <Link
                                 href={myYachts.url()}
-                                className="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+                                className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
                             >
                                 Cancel
                             </Link>
                         </div>
-
-                        {!isEditing && totalPhotoCount < MIN_PHOTOS && (
-                            <p className="text-xs text-amber-600">
-                                ⚠ Please upload at least {MIN_PHOTOS} photos
-                                before submitting.
-                            </p>
-                        )}
                     </form>
                 </div>
             </div>

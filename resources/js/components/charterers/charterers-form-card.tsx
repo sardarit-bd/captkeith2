@@ -62,9 +62,9 @@ export function CharterersFormCard({ vessels }: Props) {
     };
 
     const inputCls =
-        'w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-[#0A273F] focus:ring-2 focus:ring-[#0A273F]/15';
+        'w-full cursor-pointer rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-[#0A273F] focus:ring-2 focus:ring-[#0A273F]/15';
     const inputErrCls =
-        'w-full rounded-lg border border-red-300 bg-red-50 px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/15';
+        'w-full cursor-pointer rounded-lg border border-red-300 bg-red-50 px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/15';
 
     return (
         <section className="rounded-2xl border border-[#e8eef4] bg-white p-6 shadow-sm sm:p-8 lg:p-10">

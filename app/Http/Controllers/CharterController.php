@@ -53,6 +53,7 @@ class CharterController extends Controller
             ->map(fn(CharterEvent $event) => [
                 'id'            => $event->id,
                 'yachtName'     => $event->vessel->name,
+                'vesselId'      => $event->vessel_id,
                 'yachtType'     => ucfirst($event->vessel->vessel_type ?? ''),
                 'yachtLength'   => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
                 'date'          => $event->charter_date?->format('M d, Y') ?? '—',

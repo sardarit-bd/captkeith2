@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import {
     AlertTriangle,
     CalendarDays,
@@ -14,11 +14,14 @@ import { useState } from 'react';
 
 import type { DraftCharter } from './charterers-data';
 
+import { show as showVessel } from '@/routes/vessels';
 interface Props {
     drafts: DraftCharter[];
 }
 
 export function DraftChartersSection({ drafts }: Props) {
+    console.log('Draft charters:', drafts);
+
     return (
         <section>
             <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -141,9 +144,15 @@ function DraftCharterCard({ draft }: { draft: DraftCharter }) {
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <div className="flex items-start justify-between gap-2">
                             <div>
-                                <p className="font-semibold text-[#111827]">
+                                <Link
+                                    className="hover:text-underline! text-xl leading-tight font-bold text-[#111827] transition-colors hover:underline"
+                                    href={
+                                        showVessel({ vessel: draft?.vesselId })
+                                            .url
+                                    }
+                                >
                                     {draft.yachtName}
-                                </p>
+                                </Link>
                                 <p className="text-xs text-[#6b7280]">
                                     {draft.yachtType}
                                     {draft.yachtLength !== '—'

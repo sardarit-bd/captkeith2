@@ -5,8 +5,8 @@ import type { YachtRecord, YachtTab } from './my-yachts-data';
 import {
     edit as editVessel,
     destroy as destroyVessel,
-    show as showVessel,
 } from '@/routes/my-yachts';
+import { show as showVessel } from '@/routes/vessels';
 
 const tabLabels: Record<YachtTab, string> = {
     details: 'Vessel Details',

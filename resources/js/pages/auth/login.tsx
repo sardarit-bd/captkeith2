@@ -63,7 +63,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <Head title="Login - CaptMatch" />
 
             <div className="captmatch-home flex h-screen overflow-hidden bg-white text-gray-800">
-                {/* Left Panel */}
                 <div className="relative hidden flex-col justify-between bg-[#0D314D] p-10 md:flex md:w-5/12 lg:w-1/2 lg:p-14">
                     <img
                         src="/images/home/cta.jpg"
@@ -87,7 +86,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <h1 className="mb-6 text-[42px] leading-tight font-bold text-white lg:text-[52px]">
                             Welcome Back to
                             <span className="captmatch-playfair font-bold text-[#3DB3DE] italic">
-                                {' '}
                                 CaptMatch
                             </span>
                         </h1>
@@ -99,7 +97,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                     <div className="relative z-20">
                         <p className="text-sm text-[#F9FCFF99]">
-                            Don't have an account?{' '}
+                            Don't have an account?
                             <Link
                                 href="/register"
                                 className="font-semibold text-[#3DB3DE] underline-offset-2 hover:underline"
@@ -249,7 +247,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-[#3DB3DE] px-4 py-3.5 font-semibold text-white shadow-lg shadow-[#3DB3DE33] transition-colors hover:bg-[#2A9BCA] disabled:cursor-not-allowed disabled:opacity-70"
+                                className="group mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#3DB3DE] px-4 py-3.5 font-semibold text-white shadow-lg shadow-[#3DB3DE33] transition-colors hover:bg-[#2A9BCA] disabled:cursor-not-allowed disabled:opacity-70"
                                 data-test="login-button"
                             >
                                 {processing && <Spinner />}
