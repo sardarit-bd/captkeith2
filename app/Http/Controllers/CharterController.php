@@ -462,4 +462,76 @@ class CharterController extends Controller
 
         return back()->with('success', 'Captain request cancelled.');
     }
+
+
+    public function information(): Response
+    {
+        $profile = ChartererProfile::where('user_id', auth()->id())->first();
+
+        $firstName = '';
+        $lastName  = '';
+
+        if ($profile?->full_name) {
+            $parts     = explode(' ', $profile->full_name, 2);
+            $firstName = $parts[0] ?? '';
+            $lastName  = $parts[1] ?? '';
+        }
+
+        return Inertia::render('charterer/information', [
+            'profile' => [
+                'first_name' => $firstName,
+                'last_name'  => $lastName,
+                'phone'      => $profile?->phone ?? '',
+                'address'    => $profile?->address ?? '',
+                'city'       => $profile?->city ?? '',
+                'state'      => $profile?->state ?? '',
+                'zip_code'   => $profile?->zip_code ?? '',
+                'photo_path' => $profile?->photo_path
+                    ? Storage::url($profile->photo_path)
+                    : null,
+            ],
+        ]);
+    }
+
+    public function saveInformation(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:75'],
+            'last_name'  => ['required', 'string', 'max:75'],
+            'phone'      => ['required', 'string', 'max:20'],
+            'address'    => ['required', 'string', 'max:255'],
+            'city'       => ['required', 'string', 'max:100'],
+            'state'      => ['required', 'string', 'max:50'],
+            'zip_code'   => ['required', 'string', 'max:10'],
+            'photo'      => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        $full_name = trim($validated['first_name'] . ' ' . $validated['last_name']);
+
+        $profile = ChartererProfile::where('user_id', auth()->id())->first();
+
+        $photoPath = $profile?->photo_path;
+
+        if ($request->hasFile('photo')) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+            $photoPath = $request->file('photo')->store('charterer-photos', 'public');
+        }
+
+        ChartererProfile::updateOrCreate(
+            ['user_id' => auth()->id()],
+            [
+                'full_name'  => $full_name,
+                'phone'      => $validated['phone'],
+                'address'    => $validated['address'],
+                'city'       => $validated['city'],
+                'state'      => $validated['state'],
+                'zip_code'   => $validated['zip_code'],
+                'photo_path' => $photoPath,
+            ]
+        );
+
+        return redirect()->route('charterer.agreement');
+    }
 }
