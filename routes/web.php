@@ -123,7 +123,8 @@
             Route::get('/charterer/captain-request-status', [\App\Http\Controllers\CharterController::class, 'captainRequestStatus'])->name('charterer.captain-request-status');
             Route::get('charterer/information', [\App\Http\Controllers\CharterController::class, 'information'])->name('charterer.information');
             Route::post('charterer/information', [\App\Http\Controllers\CharterController::class, 'saveInformation'])->name('charterer.information.save');
-            Route::inertia('charterer/agreement', 'charterer/agreement')->name('charterer.agreement');
+            Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
+            Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
             Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
             Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
             Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');

@@ -20,6 +20,7 @@ ChartererAgreementPage.layout = {
     ],
     pageHeader: {
         title: 'Sign Agreements',
-        description: 'Review and e-sign the required charter documents.',
+        description:
+            'Review and sign all required charter documents before proceeding.',
     },
 };

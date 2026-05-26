@@ -8,8 +8,8 @@ import {
     User,
 } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
-
-import { captainSelect } from '@/routes/charterer';
+import { save } from '@/routes/charterer/information';
+import charterer from '@/routes/charterer/index';
 
 interface Profile {
     first_name: string;
@@ -63,7 +63,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        post(route('charterer.information.save'), {
+        post(save.url(), {
             forceFormData: true,
         });
     }
@@ -249,7 +249,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
 
             <footer className="flex flex-col-reverse items-center justify-between gap-4 border-t border-[#f3f4f6] bg-gray-50/50 px-6 py-5 sm:flex-row sm:px-8">
                 <a
-                    href={captainSelect()}
+                    href="/charterer/captain-select"
                     className="flex w-full justify-center rounded-xl border border-[#e5e7eb] bg-white px-6 py-3 text-sm font-semibold text-[#4b5563] shadow-sm transition-all duration-200 hover:border-[#d1d5db] hover:bg-[#f3f4f6] sm:w-auto"
                 >
                     Back
@@ -258,10 +258,39 @@ export function ChartererInformationFormCard({ profile }: Props) {
                 <button
                     type="submit"
                     form="charterer-information-form"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0A273F] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md sm:w-auto"
+                    disabled={processing}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0A273F] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                    {processing ? 'Saving...' : 'Continue to Agreements'}
-                    {!processing && <ArrowRight className="h-4 w-4" />}
+                    {processing ? (
+                        <>
+                            <svg
+                                className="h-4 w-4 animate-spin"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                />
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                />
+                            </svg>
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            Continue to Agreements
+                            <ArrowRight className="h-4 w-4" />
+                        </>
+                    )}
                 </button>
             </footer>
         </section>
