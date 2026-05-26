@@ -143,7 +143,7 @@ export function MyProfileForm() {
                 <button
                     type="submit"
                     disabled={processing}
-                    className="rounded-lg bg-[#0a273f] px-6 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="cursor-pointer rounded-lg bg-[#0a273f] px-6 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {processing ? 'Saving…' : 'Save Changes'}
                 </button>
@@ -151,7 +151,7 @@ export function MyProfileForm() {
                     type="button"
                     onClick={handleCancel}
                     disabled={processing}
-                    className="rounded-lg border border-[#e5e7eb] bg-white px-6 py-2.5 text-[14px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:opacity-60"
+                    className="cursor-pointer rounded-lg border border-[#e5e7eb] bg-white px-6 py-2.5 text-[14px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:opacity-60"
                 >
                     Cancel
                 </button>

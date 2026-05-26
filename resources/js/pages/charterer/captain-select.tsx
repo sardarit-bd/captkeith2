@@ -17,6 +17,8 @@ export interface Captain {
     bodiesOfWater: string | null;
     canProvideDeckhand: boolean;
     isVerified: boolean;
+    requestStatus: 'pending' | 'available' | 'unavailable' | null;
+    responseId: string | null;
 }
 
 interface PageProps {

@@ -69,9 +69,9 @@ class Vessel extends Model
     }
 
 
-    public function captainInterests(): HasMany
+    public function captainInvitations(): HasMany
     {
-        return $this->hasMany(CaptainVesselInterest::class);
+        return $this->hasMany(OwnerCaptainInvitation::class);
     }
 
 

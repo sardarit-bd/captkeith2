@@ -1,4 +1,4 @@
-export type InterestStatus = 'pending' | 'accepted' | 'declined';
+export type InvitationStatus = 'pending' | 'accepted' | 'declined' | null;
 
 export type YachtMatchRecord = {
     id: string;
@@ -12,6 +12,7 @@ export type YachtMatchRecord = {
     operatingArea: string;
     qualifications: string[];
     image: string | null;
-    interestStatus: InterestStatus | null;
+    invitationStatus: InvitationStatus | null;
     ownerUserId: string | null;
+    ownerInvitationStatus: InvitationStatus;
 };

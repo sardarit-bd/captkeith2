@@ -1,18 +1,24 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Ship } from 'lucide-react';
-import { myProfile } from '@/routes';
+
 import { YachtsMatchCard } from './yachts-match-card';
-import type { YachtMatchRecord } from './yachts-match-data';
+import type { InvitationStatus, YachtMatchRecord } from './yachts-match-data';
+import { myProfile } from '@/routes';
 
 type YachtsMatchPageProps = {
     vessels: Omit<YachtMatchRecord, 'interestStatus'>[];
     profileMissing: boolean;
     interestStatuses: Record<string, InterestStatus>;
+    ownerInvitationStatuses: Record<string, InvitationStatus>;
 };
 
 export function YachtsMatchGrid() {
-    const { vessels, profileMissing, interestStatuses } =
-        usePage<YachtsMatchPageProps>().props;
+    const {
+        vessels,
+        profileMissing,
+        interestStatuses,
+        ownerInvitationStatuses,
+    } = usePage<YachtsMatchPageProps>().props;
 
     if (profileMissing) {
         return (
@@ -56,9 +62,12 @@ export function YachtsMatchGrid() {
         );
     }
 
-    const enrichedVessels: YachtMatchRecord[] = vessels.map((vessel) => ({
-        ...vessel,
-        interestStatus: interestStatuses[vessel.id] ?? null,
+    const yachts: YachtMatchRecord[] = vessels.map((v) => ({
+        ...v,
+        interestStatus: (interestStatuses[v.id] ??
+            null) as InterestStatus | null,
+        ownerInvitationStatus: (ownerInvitationStatuses[v.id] ??
+            null) as InvitationStatus,
     }));
 
     return (
@@ -69,7 +78,7 @@ export function YachtsMatchGrid() {
                 qualifications
             </p>
             <section className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
-                {enrichedVessels.map((yacht) => (
+                {yachts.map((yacht) => (
                     <YachtsMatchCard key={yacht.id} yacht={yacht} />
                 ))}
             </section>

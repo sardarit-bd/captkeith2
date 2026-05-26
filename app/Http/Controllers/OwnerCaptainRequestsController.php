@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CaptainVesselInterest;
+use App\Models\CaptainProfile;
+use App\Models\OwnerCaptainInvitation;
 use App\Models\OwnerProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,14 +23,14 @@ class OwnerCaptainRequestsController extends Controller
 
         $vesselIds = $ownerProfile->vessels()->pluck('id');
 
-        $interests = CaptainVesselInterest::whereIn('vessel_id', $vesselIds)
+        $interests = OwnerCaptainInvitation::whereIn('vessel_id', $vesselIds)
             ->with([
                 'captain.user',
                 'vessel.photos' => fn($q) => $q->orderBy('display_order'),
             ])
             ->latest()
             ->get()
-            ->map(function (CaptainVesselInterest $interest) {
+            ->map(function (OwnerCaptainInvitation $interest) {
                 $captain = $interest->captain;
                 $vessel  = $interest->vessel;
                 $photo   = $vessel?->photos->first();
@@ -83,6 +84,7 @@ class OwnerCaptainRequestsController extends Controller
                         : '—',
                     'requestedAt'     => $interest->created_at->format('M j, Y'),
                     'status'          => $interest->status ?? 'pending',
+                    'initiatedBy'     => $interest->initiated_by ?? 'owner',
                 ];
             });
 
@@ -91,7 +93,7 @@ class OwnerCaptainRequestsController extends Controller
         ]);
     }
 
-    public function respond(Request $request, CaptainVesselInterest $interest): RedirectResponse
+    public function respond(Request $request, OwnerCaptainInvitation $interest): RedirectResponse
     {
         $validated = $request->validate([
             'status' => ['required', 'in:accepted,declined'],
@@ -115,12 +117,11 @@ class OwnerCaptainRequestsController extends Controller
         return back()->with('success', $message);
     }
 
-
-    public function revokeAcceptance(Request $request, \App\Models\CaptainProfile $captain): RedirectResponse
+    public function revokeAcceptance(Request $request, CaptainProfile $captain): RedirectResponse
     {
         $ownerProfile = OwnerProfile::where('user_id', $request->user()->id)->firstOrFail();
 
-        \App\Models\CaptainVesselInterest::whereIn(
+        OwnerCaptainInvitation::whereIn(
             'vessel_id',
             $ownerProfile->vessels()->pluck('id')
         )

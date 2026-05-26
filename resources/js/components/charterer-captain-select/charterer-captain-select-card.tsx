@@ -1,38 +1,156 @@
+import { router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import {
     Anchor,
     Briefcase,
+    CheckCircle2,
+    Clock,
     MapPin,
+    RefreshCw,
+    Send,
     ShieldCheck,
     User,
     Waves,
+    X,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { Captain } from '@/pages/charterer/captain-select';
+import { send as sendCaptainRequests } from '@/routes/charterer/captain-requests';
 
-export function ChartererCaptainSelectCard({
+function RequestButton({
     captain,
-    selected,
-    onSelect,
+    onAction,
 }: {
     captain: Captain;
-    selected: boolean;
-    onSelect: () => void;
+    onAction: () => void;
 }) {
+    const [loading, setLoading] = useState(false);
+
+    function handleSend() {
+        setLoading(true);
+        router.post(
+            sendCaptainRequests().url,
+            { captain_ids: [captain.id] },
+            { onFinish: () => setLoading(false), onSuccess: onAction },
+        );
+    }
+
+    function handleCancel() {
+        if (!captain.responseId) return;
+        setLoading(true);
+        router.post(
+            `/charterer/captain-requests/${captain.responseId}/cancel`,
+            {},
+            { onFinish: () => setLoading(false), onSuccess: onAction },
+        );
+    }
+
+    if (captain.requestStatus === 'available') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[12px] font-medium text-emerald-800">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Accepted
+            </span>
+        );
+    }
+
+    if (captain.requestStatus === 'pending') {
+        return (
+            <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[12px] font-medium text-amber-700">
+                    <Clock className="h-3.5 w-3.5" />
+                    Request Sent
+                </span>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancel();
+                    }}
+                    disabled={loading}
+                    className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-1 text-[12px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                >
+                    <X className="h-3 w-3" />
+                    {loading ? 'Cancelling…' : 'Cancel Request'}
+                </button>
+            </div>
+        );
+    }
+
+    if (captain.requestStatus === 'unavailable') {
+        return (
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleSend();
+                }}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#0A273F] bg-white px-3 py-1 text-[12px] font-medium text-[#0A273F] transition hover:bg-[#0A273F] hover:text-white disabled:opacity-50"
+            >
+                <RefreshCw className="h-3 w-3" />
+                {loading ? 'Sending…' : 'Send Request Again'}
+            </button>
+        );
+    }
+
     return (
         <button
             type="button"
-            onClick={onSelect}
-            className={`w-full cursor-pointer overflow-hidden rounded-2xl border bg-white text-left transition-all ${
-                selected
-                    ? 'border-[#0A273F] ring-1 ring-[#0A273F]'
-                    : 'border-[#e5e7eb] hover:border-[#d1d5db]'
+            onClick={(e) => {
+                e.stopPropagation();
+                handleSend();
+            }}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A273F] px-3 py-1 text-[12px] font-medium text-white transition hover:bg-[#123651] disabled:opacity-50"
+        >
+            <Send className="h-3 w-3" />
+            {loading ? 'Sending…' : 'Send Request'}
+        </button>
+    );
+}
+
+export function ChartererCaptainSelectCard({
+    captain,
+    onAction,
+}: {
+    captain: Captain;
+    onAction: () => void;
+}) {
+    const isAccepted = captain.requestStatus === 'available';
+
+    return (
+        <div
+            className={`w-full overflow-hidden rounded-2xl border bg-white text-left transition-all ${
+                isAccepted
+                    ? 'border-emerald-300 ring-1 ring-emerald-300'
+                    : captain.requestStatus === 'pending'
+                      ? 'border-amber-200'
+                      : 'border-[#e5e7eb]'
             }`}
         >
-            {selected && (
-                <div className="flex items-center gap-1.5 bg-[#0A273F] px-3 py-1">
-                    <ShieldCheck className="h-3 w-3 text-white" />
+            {captain.requestStatus && (
+                <div
+                    className={`flex items-center gap-1.5 px-3 py-1 ${
+                        isAccepted
+                            ? 'bg-emerald-600'
+                            : captain.requestStatus === 'pending'
+                              ? 'bg-amber-500'
+                              : 'bg-gray-400'
+                    }`}
+                >
+                    {isAccepted && (
+                        <CheckCircle2 className="h-3 w-3 text-white" />
+                    )}
+                    {captain.requestStatus === 'pending' && (
+                        <Clock className="h-3 w-3 text-white" />
+                    )}
                     <span className="text-[11px] font-medium text-white">
-                        Selected
+                        {isAccepted
+                            ? 'Accepted'
+                            : captain.requestStatus === 'pending'
+                              ? 'Request Sent — Awaiting Response'
+                              : 'Declined / Expired'}
                     </span>
                 </div>
             )}
@@ -43,10 +161,10 @@ export function ChartererCaptainSelectCard({
                         <img
                             src={captain.photo}
                             alt={captain.name}
-                            className="h-18 w-18 rounded-full border border-[#e5e7eb] object-cover"
+                            className="h-16 w-16 rounded-full border border-[#e5e7eb] object-cover"
                         />
                     ) : (
-                        <div className="flex h-18 w-18 items-center justify-center rounded-full border border-[#e5e7eb] bg-gray-100">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#e5e7eb] bg-gray-100">
                             <User className="h-7 w-7 text-gray-400" />
                         </div>
                     )}
@@ -60,10 +178,8 @@ export function ChartererCaptainSelectCard({
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                            {/* Clickable name → captain profile. stopPropagation so it doesn't toggle selection */}
                             <Link
                                 href={`/captains/${captain.id}`}
-                                onClick={(e) => e.stopPropagation()}
                                 className="text-[15px] leading-tight font-semibold text-[#111827] hover:text-[#0A273F] hover:underline"
                             >
                                 {captain.name}
@@ -147,14 +263,17 @@ export function ChartererCaptainSelectCard({
                 </div>
             )}
 
-            <div className="flex gap-5 border-t border-[#f1f5f9] bg-[#f9fafb] px-5 py-2.5">
-                {captain.canProvideDeckhand && (
-                    <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                        Can provide deckhand
-                    </span>
-                )}
+            <div className="flex items-center justify-between gap-3 border-t border-[#f1f5f9] bg-[#f9fafb] px-5 py-3">
+                <div>
+                    {captain.canProvideDeckhand && (
+                        <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                            Can provide deckhand
+                        </span>
+                    )}
+                </div>
+                <RequestButton captain={captain} onAction={onAction} />
             </div>
-        </button>
+        </div>
     );
 }

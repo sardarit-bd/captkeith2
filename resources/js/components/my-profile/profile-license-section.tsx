@@ -50,7 +50,7 @@ export function ProfileLicenseSection({
                 description="Your maritime credentials"
             />
 
-            <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="mb-6 grid cursor-pointer grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                     <FieldLabel>
                         License Type <RequiredAsterisk />
@@ -75,7 +75,7 @@ export function ProfileLicenseSection({
                 </div>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-8 cursor-pointer">
                 <FieldLabel>License Document</FieldLabel>
                 <UploadBox
                     title="Upload license scan or photo"
@@ -91,7 +91,7 @@ export function ProfileLicenseSection({
                 <FieldError message={errors.license_doc} />
             </div>
 
-            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="mb-8 grid cursor-pointer grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                     <FieldLabel>
                         Tonnage Rating <RequiredAsterisk />

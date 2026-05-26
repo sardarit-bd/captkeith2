@@ -11,6 +11,7 @@ use App\Models\VesselMatch;
 use App\Services\Dashboard\Contracts\DashboardStrategy;
 use App\Services\Dashboard\Strategies\Concerns\AuthorizesDashboardAccess;
 use Illuminate\Support\Facades\Storage;
+use App\Models\OwnerCaptainInvitation;
 
 class OwnerDashboardStrategy implements DashboardStrategy
 {
@@ -59,7 +60,7 @@ class OwnerDashboardStrategy implements DashboardStrategy
             ->where('status', 'confirmed')
             ->count();
 
-        $pendingRequests = \App\Models\CaptainVesselInterest::whereIn('vessel_id', $vesselIds)
+        $pendingRequests = \App\Models\OwnerCaptainInvitation::whereIn('vessel_id', $vesselIds)
             ->where('status', 'pending')
             ->count();
 

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CaptainVesselInterest;
 use App\Models\DeckhandVesselInterest;
+use App\Models\OwnerCaptainInvitation;
 use App\Models\User;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
@@ -16,16 +16,17 @@ class YachtsMatchController extends Controller
     public function index(Request $request): Response
     {
         /** @var User $user */
-        $user        = $request->user();
-        $isCaptain   = $user->hasRole('captain');
-        $isDeckhand  = $user->hasRole('deckhand');
-        $profile     = $isCaptain ? $user->captainProfile : $user->deckhandProfile;
+        $user       = $request->user();
+        $isCaptain  = $user->hasRole('captain');
+        $isDeckhand = $user->hasRole('deckhand');
+        $profile    = $isCaptain ? $user->captainProfile : $user->deckhandProfile;
 
         if (! $profile) {
             return Inertia::render('yachts-match', [
                 'vessels'          => [],
                 'profileMissing'   => true,
                 'interestStatuses' => [],
+                'ownerInvitationStatuses' => [],
             ]);
         }
 
@@ -37,28 +38,23 @@ class YachtsMatchController extends Controller
             ->where('is_active', true)
             ->whereNull('deleted_at');
 
-
         if ($isCaptain) {
-
-            $qualifyingLicenses = match ($profile->license_type) {
-                'masters' => ['masters', 'oupv'],
-                'oupv'    => ['oupv'],
-                default   => [$profile->license_type],
-            };
-
-
-            $qualifyingEndorsements = match ($profile->endorsement) {
-                'unlimited'    => ['unlimited', 'near_coastal', 'inland'],
-                'near_coastal' => ['near_coastal', 'inland'],
-                'inland'       => ['inland'],
-                default        => [$profile->endorsement],
-            };
-
             if ($profile->license_type !== null) {
+                $qualifyingLicenses = match ($profile->license_type) {
+                    'masters' => ['masters', 'oupv'],
+                    'oupv'    => ['oupv'],
+                    default   => [$profile->license_type],
+                };
                 $query->whereIn('required_license_type', $qualifyingLicenses);
             }
 
             if ($profile->endorsement !== null) {
+                $qualifyingEndorsements = match ($profile->endorsement) {
+                    'unlimited'    => ['unlimited', 'near_coastal', 'inland'],
+                    'near_coastal' => ['near_coastal', 'inland'],
+                    'inland'       => ['inland'],
+                    default        => [$profile->endorsement],
+                };
                 $query->whereIn('required_endorsement', $qualifyingEndorsements);
             }
 
@@ -119,17 +115,22 @@ class YachtsMatchController extends Controller
                     'image'          => $photo?->image_path
                         ? Storage::url($photo->image_path)
                         : null,
-                    'ownerUserId'    => $vessel->owner?->user_id, // add this
+                    'ownerUserId'    => $vessel->owner?->user_id,
                 ];
             });
 
-
-        $interestStatuses = [];
+        $interestStatuses        = [];
+        $ownerInvitationStatuses = [];
 
         if ($isCaptain && $user->captainProfile) {
-            $interestStatuses = CaptainVesselInterest::where('captain_id', $user->captainProfile->id)
+            // Single source of truth — OwnerCaptainInvitation covers both
+            // captain-initiated interest and owner-initiated invitations
+            $ownerInvitationStatuses = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)
                 ->pluck('status', 'vessel_id')
                 ->toArray();
+
+            // For captains, interestStatuses mirrors ownerInvitationStatuses
+            $interestStatuses = $ownerInvitationStatuses;
         } elseif ($isDeckhand && $user->deckhandProfile) {
             $interestStatuses = DeckhandVesselInterest::where('deckhand_id', $user->deckhandProfile->id)
                 ->pluck('status', 'vessel_id')
@@ -137,9 +138,10 @@ class YachtsMatchController extends Controller
         }
 
         return Inertia::render('yachts-match', [
-            'vessels'          => $vessels,
-            'profileMissing'   => false,
-            'interestStatuses' => $interestStatuses,
+            'vessels'                 => $vessels,
+            'profileMissing'          => false,
+            'interestStatuses'        => $interestStatuses,
+            'ownerInvitationStatuses' => $ownerInvitationStatuses,
         ]);
     }
 }

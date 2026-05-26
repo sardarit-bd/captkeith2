@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
+use App\Services\VesselMatchingService;
 
 class VesselController extends Controller
 {
@@ -20,8 +21,8 @@ class VesselController extends Controller
     {
         $owner = OwnerProfile::where('user_id', $request->user()->id)->firstOrFail();
 
-
-        DB::transaction(function () use ($request, $owner) {
+        $vessel = null;
+        DB::transaction(function () use ($request, $owner, &$vessel) {
             /** @var Vessel $vessel */
 
             $vessel = Vessel::create([
@@ -52,7 +53,7 @@ class VesselController extends Controller
                 'requires_deckhand' => $request->boolean('requires_deckhand'),
                 'is_active' => true,
             ]);
-
+            (new VesselMatchingService())->matchForVessel($vessel);
             foreach ($request->file('photos', []) as $order => $photo) {
                 $path = $photo->store("vessels/{$vessel->id}/photos", 'public');
 
@@ -64,11 +65,12 @@ class VesselController extends Controller
             }
 
 
+
             foreach ($request->file('documents', []) as $document) {
                 $document->store("vessels/{$vessel->id}/documents", 'local');
             }
         });
-
+        (new VesselMatchingService())->matchForVessel($vessel);
         return redirect()
             ->route('my-yachts')
             ->with('success', 'Vessel added successfully.');
@@ -131,6 +133,48 @@ class VesselController extends Controller
             'vessels' => $vessels,
         ]);
     }
+
+
+
+
+    public function show(Vessel $vessel): Response
+    {
+        $vessel->load(['photos' => fn($q) => $q->orderBy('display_order')]);
+
+        return Inertia::render('yacht/details', [
+            'vessel' => [
+                'id'               => $vessel->id,
+                'name'             => $vessel->name,
+                'registrationNo'   => $vessel->official_number,
+                'image'            => $vessel->photos->first()
+                    ? Storage::url($vessel->photos->first()->image_path)
+                    : null,
+                'allImages'        => $vessel->photos->map(fn($p) => Storage::url($p->image_path))->values(),
+                'type'             => ucfirst($vessel->vessel_type ?? ''),
+                'lengthFt'         => $vessel->length_ft ? $vessel->length_ft . ' ft' : '—',
+                'beamFt'           => $vessel->beam_ft ? $vessel->beam_ft . ' ft' : '—',
+                'draftFt'          => $vessel->draft_ft ? $vessel->draft_ft . ' ft' : '—',
+                'year'             => $vessel->year ?? '—',
+                'make'             => $vessel->make ?? '—',
+                'model'            => $vessel->model ?? '—',
+                'capacity'         => $vessel->passenger_capacity ? $vessel->passenger_capacity . ' people' : '—',
+                'mooringLocation'  => trim(collect([
+                    $vessel->marina_name,
+                    $vessel->marina_city,
+                    $vessel->marina_state,
+                ])->filter()->implode(', ')) ?: '—',
+                'operatingArea'    => $vessel->operating_area ?? '—',
+                'deckhandRequired' => $vessel->requires_deckhand ? 'Yes' : 'No',
+                'requiredLicense'  => $vessel->required_license_type ?? '—',
+                'requiredEndorsement' => $vessel->required_endorsement ?? '—',
+                'requiredTonnage'  => $vessel->required_tonnage_rating ?? '—',
+                'requiredExperience' => $vessel->required_years_experience
+                    ? $vessel->required_years_experience . ' years'
+                    : '—',
+            ],
+        ]);
+    }
+
 
 
     public function edit(Vessel $vessel): Response
@@ -229,7 +273,7 @@ class VesselController extends Controller
                 $document->store("vessels/{$vessel->id}/documents", 'local');
             }
         });
-
+        (new VesselMatchingService())->matchForVessel($vessel->fresh());
         return redirect()->route('my-yachts')->with('success', 'Vessel updated successfully.');
     }
 }

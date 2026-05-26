@@ -29,12 +29,12 @@ class VesselMatch extends Model
 
     public function captainProfile(): BelongsTo
     {
-        return $this->belongsTo(CaptainProfile::class, 'profile_id')->where('profile_type', 'captain');
+        return $this->belongsTo(CaptainProfile::class, 'profile_id');
     }
 
     public function deckhandProfile(): BelongsTo
     {
-        return $this->belongsTo(DeckhandProfile::class, 'profile_id')->where('profile_type', 'deckhand');
+        return $this->belongsTo(DeckhandProfile::class, 'profile_id');
     }
 
     /**

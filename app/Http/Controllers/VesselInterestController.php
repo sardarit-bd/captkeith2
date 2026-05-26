@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CaptainVesselInterest;
+use App\Models\OwnerCaptainInvitation;
 use App\Models\DeckhandVesselInterest;
 use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
@@ -18,10 +18,17 @@ class VesselInterestController extends Controller
             $profile = $user->captainProfile;
             abort_if($profile === null, 403, 'No captain profile found.');
 
-            CaptainVesselInterest::firstOrCreate([
-                'captain_id' => $profile->id,
-                'vessel_id'  => $vessel->id,
-            ]);
+            OwnerCaptainInvitation::firstOrCreate(
+                [
+                    'owner_id'   => $vessel->owner_id,
+                    'captain_id' => $profile->id,
+                    'vessel_id'  => $vessel->id,
+                ],
+                [
+                    'status'       => 'pending',
+                    'initiated_by' => 'captain',
+                ]
+            );
         } else {
             $profile = $user->deckhandProfile;
             abort_if($profile === null, 403, 'No deckhand profile found.');
@@ -43,7 +50,8 @@ class VesselInterestController extends Controller
             $profile = $user->captainProfile;
             abort_if($profile === null, 403, 'No captain profile found.');
 
-            CaptainVesselInterest::where('captain_id', $profile->id)
+            OwnerCaptainInvitation::where('owner_id', $vessel->owner_id)
+                ->where('captain_id', $profile->id)
                 ->where('vessel_id', $vessel->id)
                 ->delete();
         } else {
