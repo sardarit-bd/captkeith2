@@ -406,34 +406,62 @@ class CharterController extends Controller
             ->where('expires_at', '<', now())
             ->update(['response' => 'unavailable']);
 
-        $responses = CharterCrewResponse::where('charter_event_id', $event->id)
+
+        $captainResponses = CharterCrewResponse::where('charter_event_id', $event->id)
             ->where('crew_role', 'captain')
             ->with(['captainProfile.user'])
             ->latest()
             ->get();
 
-        $acceptedCount = $responses->where('response', 'available')->count();
-        $canProceed    = $acceptedCount >= 2;
+        $acceptedCaptainCount = $captainResponses->where('response', 'available')->count();
 
-        $captainStatuses = $responses->map(function (CharterCrewResponse $r) {
+        $captainStatuses = $captainResponses->map(function (CharterCrewResponse $r) {
             $profile = $r->captainProfile;
             return [
-                'responseId' => $r->id,
-                'captainId'  => $profile?->id,
-                'name'       => $profile?->full_name ?? '—',
-                'photo'      => $profile?->photo_path ? Storage::url($profile->photo_path) : null,
-                'status'     => $r->response,
-                'expiresAt'  => $r->expires_at?->toIso8601String(),
+                'responseId'  => $r->id,
+                'captainId'   => $profile?->id,
+                'name'        => $profile?->full_name ?? '—',
+                'photo'       => $profile?->photo_path ? Storage::url($profile->photo_path) : null,
+                'status'      => $r->response,
+                'expiresAt'   => $r->expires_at?->toIso8601String(),
                 'respondedAt' => $r->responded_at?->format('M d, Y H:i'),
             ];
         })->values();
 
+
+        $deckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
+            ->where('crew_role', 'deckhand')
+            ->with(['deckhandProfile', 'selectingCaptain'])
+            ->first();
+
+        $deckhandStatus = null;
+
+        if ($deckhandResponse) {
+            $dProfile = $deckhandResponse->deckhandProfile;
+            $deckhandStatus = [
+                'responseId'        => $deckhandResponse->id,
+                'deckhandId'        => $dProfile?->id,
+                'name'              => $dProfile?->full_name ?? '—',
+                'photo'             => $dProfile?->photo_path
+                    ? Storage::url($dProfile->photo_path)
+                    : null,
+                'status'            => $deckhandResponse->response,
+                'selectedByCaptain' => $deckhandResponse->selectingCaptain?->full_name ?? '—',
+                'respondedAt'       => $deckhandResponse->responded_at?->format('M d, Y H:i'),
+            ];
+        }
+
+
+        $deckhandAccepted = $deckhandResponse?->response === 'available';
+        $canProceed       = $acceptedCaptainCount >= 2 && $deckhandAccepted;
+
         return Inertia::render('charterer/captain-request-status', [
             'captainStatuses' => $captainStatuses,
-            'acceptedCount'   => $acceptedCount,
+            'acceptedCount'   => $acceptedCaptainCount,
             'canProceed'      => $canProceed,
-            'slotsNeeded'     => max(0, 2 - $acceptedCount),
+            'slotsNeeded'     => max(0, 2 - $acceptedCaptainCount),
             'charterEventId'  => $event->id,
+            'deckhandStatus'  => $deckhandStatus,
         ]);
     }
 

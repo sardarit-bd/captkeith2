@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'response',
     'responded_at',
     'expires_at',
+    'selected_by_captain_id',
 ])]
 class CharterCrewResponse extends Model
 {
@@ -32,6 +33,12 @@ class CharterCrewResponse extends Model
     public function deckhandProfile(): BelongsTo
     {
         return $this->belongsTo(DeckhandProfile::class, 'profile_id');
+    }
+
+
+    public function selectingCaptain(): BelongsTo
+    {
+        return $this->belongsTo(CaptainProfile::class, 'selected_by_captain_id');
     }
 
     protected function casts(): array
