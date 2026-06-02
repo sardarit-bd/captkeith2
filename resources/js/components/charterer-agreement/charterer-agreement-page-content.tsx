@@ -227,7 +227,7 @@ function AgreementCard({
                     className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 ${
                         isSigned
                             ? 'cursor-default bg-emerald-600 text-white'
-                            : 'bg-[#35ADD5] text-white hover:bg-[#123651] hover:shadow-md'
+                            : 'bg-[#35ADD5] text-white hover:bg-[#35ADD5]/70 hover:shadow-md'
                     }`}
                 >
                     {isSigned ? (
@@ -339,7 +339,7 @@ export function ChartererAgreementPageContent() {
                             disabled={!allSigned || isSubmitting}
                             className={`flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-semibold shadow-sm transition-all duration-200 sm:w-auto ${
                                 allSigned && !isSubmitting
-                                    ? 'bg-[#35ADD5] text-white hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md'
+                                    ? 'bg-[#35ADD5] text-white hover:-translate-y-0.5 hover:bg-[#35ADD5]/70 hover:shadow-md'
                                     : 'cursor-not-allowed bg-[#35ADD5] text-white opacity-50'
                             }`}
                         >

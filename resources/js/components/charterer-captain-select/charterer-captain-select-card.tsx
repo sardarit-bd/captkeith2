@@ -102,7 +102,7 @@ function RequestButton({
                 handleSend();
             }}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#35ADD5] px-3 py-1 text-[12px] font-medium text-white transition hover:bg-[#123651] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#35ADD5] px-3 py-1 text-[12px] font-medium text-white transition hover:bg-[#35ADD5]/70 disabled:opacity-50"
         >
             <Send className="h-3 w-3" />
             {loading ? 'Sending…' : 'Send Request'}

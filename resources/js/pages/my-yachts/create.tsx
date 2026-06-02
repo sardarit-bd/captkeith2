@@ -1052,7 +1052,7 @@ export default function CreateYachtPage() {
                                         ? `Please upload at least ${MIN_PHOTOS} photos`
                                         : undefined
                                 }
-                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing ? (
                                     <>

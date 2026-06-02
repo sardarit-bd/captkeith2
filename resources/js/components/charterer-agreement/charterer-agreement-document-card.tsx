@@ -36,7 +36,7 @@ export function ChartererAgreementDocumentCard({
 
                 <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-6 py-3.5 text-sm font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#123651]"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-6 py-3.5 text-sm font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#35ADD5]/70"
                 >
                     {document.buttonLabel}
                 </button>

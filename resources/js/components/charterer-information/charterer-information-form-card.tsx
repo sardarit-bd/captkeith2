@@ -259,7 +259,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                     type="submit"
                     form="charterer-information-form"
                     disabled={processing}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#35ADD5]/70 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                     {processing ? (
                         <>

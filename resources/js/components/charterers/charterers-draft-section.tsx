@@ -211,7 +211,7 @@ function DraftCharterCard({ draft }: { draft: DraftCharter }) {
                             <button
                                 type="button"
                                 onClick={copyLink}
-                                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#35ADD5] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#123651]"
+                                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#35ADD5] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#35ADD5]/70"
                             >
                                 {copied ? (
                                     <>

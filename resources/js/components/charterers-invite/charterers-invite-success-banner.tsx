@@ -37,7 +37,7 @@ export function CharterersInviteSuccessBanner({
                 <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70"
                 >
                     <Copy className="h-4 w-4" />
                     {copied ? 'Copied' : 'Copy'}

@@ -114,7 +114,7 @@ export function ChartererCaptainSelectPageContent({
                         {canProceed ? (
                             <Link
                                 href={information()}
-                                className="rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                                className="rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70"
                             >
                                 Continue
                             </Link>

@@ -181,7 +181,7 @@ function InviteModal({
                             isLoading ||
                             currentStatus === 'accepted'
                         }
-                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -577,7 +577,7 @@ export default function CaptainsPage() {
                             <button
                                 type="button"
                                 onClick={handleClearFilters}
-                                className="mt-5 cursor-pointer rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#123651]"
+                                className="mt-5 cursor-pointer rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#35ADD5]/70"
                             >
                                 Clear all filters
                             </button>
