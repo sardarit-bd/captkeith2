@@ -103,7 +103,7 @@ export function ChartererCaptainSelectWaitingPageContent({
                                         {c.captainId ? (
                                             <Link
                                                 href={`/captains/${c.captainId}`}
-                                                className="text-[14px] font-semibold text-[#111827] hover:text-[#0A273F] hover:underline"
+                                                className="text-[14px] font-semibold text-[#111827] hover:text-[#35ADD5] hover:underline"
                                             >
                                                 {c.name}
                                             </Link>
@@ -139,7 +139,7 @@ export function ChartererCaptainSelectWaitingPageContent({
                                 Need more responses?{' '}
                                 <Link
                                     href={captainSelect()}
-                                    className="font-semibold text-[#0A273F] hover:underline"
+                                    className="font-semibold text-[#35ADD5] hover:underline"
                                 >
                                     Send requests to more captains
                                 </Link>
@@ -161,7 +161,7 @@ export function ChartererCaptainSelectWaitingPageContent({
                     {canProceed ? (
                         <Link
                             href={information()}
-                            className="rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                            className="rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
                         >
                             Continue
                         </Link>
@@ -169,7 +169,7 @@ export function ChartererCaptainSelectWaitingPageContent({
                         <button
                             type="button"
                             disabled
-                            className="cursor-not-allowed rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white opacity-40"
+                            className="cursor-not-allowed rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white opacity-40"
                         >
                             Continue
                         </button>

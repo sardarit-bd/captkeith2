@@ -86,7 +86,7 @@ function RequestButton({
                     handleSend();
                 }}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#0A273F] bg-white px-3 py-1 text-[12px] font-medium text-[#0A273F] transition hover:bg-[#0A273F] hover:text-white disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#35ADD5] bg-white px-3 py-1 text-[12px] font-medium text-[#35ADD5] transition hover:bg-[#35ADD5] hover:text-white disabled:opacity-50"
             >
                 <RefreshCw className="h-3 w-3" />
                 {loading ? 'Sending…' : 'Send Request Again'}
@@ -102,7 +102,7 @@ function RequestButton({
                 handleSend();
             }}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A273F] px-3 py-1 text-[12px] font-medium text-white transition hover:bg-[#123651] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#35ADD5] px-3 py-1 text-[12px] font-medium text-white transition hover:bg-[#123651] disabled:opacity-50"
         >
             <Send className="h-3 w-3" />
             {loading ? 'Sending…' : 'Send Request'}
@@ -180,7 +180,7 @@ export function ChartererCaptainSelectCard({
                         <div>
                             <Link
                                 href={`/captains/${captain.id}`}
-                                className="text-[15px] leading-tight font-semibold text-[#111827] hover:text-[#0A273F] hover:underline"
+                                className="text-[15px] leading-tight font-semibold text-[#111827] hover:text-[#35ADD5] hover:underline"
                             >
                                 {captain.name}
                             </Link>

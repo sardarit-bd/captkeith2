@@ -41,7 +41,7 @@ function FormField({
 }
 
 export function CharterersFormCard({ vessels }: Props) {
-    // Read vessel_id from URL query param (set by "Create Charter" button on yacht card)
+  
     const preselectedVesselId =
         new URLSearchParams(window.location.search).get('vessel_id') ?? '';
 
@@ -62,7 +62,7 @@ export function CharterersFormCard({ vessels }: Props) {
     };
 
     const inputCls =
-        'w-full cursor-pointer rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-[#0A273F] focus:ring-2 focus:ring-[#0A273F]/15';
+        'w-full cursor-pointer rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-[#35ADD5] focus:ring-2 focus:ring-[#35ADD5]/15';
     const inputErrCls =
         'w-full cursor-pointer rounded-lg border border-red-300 bg-red-50 px-4 py-3.5 text-sm text-[#334155] transition outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/15';
 
@@ -204,7 +204,7 @@ export function CharterersFormCard({ vessels }: Props) {
                 <button
                     type="submit"
                     disabled={processing}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {processing ? 'Saving…' : 'Save Charter'}
                 </button>

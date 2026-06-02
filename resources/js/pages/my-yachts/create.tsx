@@ -100,11 +100,11 @@ function FieldError({ message }: { message?: string }) {
 }
 
 const inputCls =
-    'w-full rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-sm placeholder-gray-400 transition-colors focus:border-[#0A273F] focus:outline-none focus:ring-1 focus:ring-[#0A273F]';
+    'w-full rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-sm placeholder-gray-400 transition-colors focus:border-[#35ADD5] focus:outline-none focus:ring-1 focus:ring-[#35ADD5]';
 const inputErrCls =
     'w-full rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm placeholder-gray-400 transition-colors focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500';
 const selectCls =
-    'w-full appearance-none rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition-colors focus:border-[#0A273F] focus:outline-none focus:ring-1 focus:ring-[#0A273F]';
+    'w-full appearance-none rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition-colors focus:border-[#35ADD5] focus:outline-none focus:ring-1 focus:ring-[#35ADD5]';
 const selectErrCls =
     'w-full appearance-none rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-gray-700 transition-colors focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500';
 
@@ -655,8 +655,8 @@ export default function CreateYachtPage() {
                                                 className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-2.5"
                                             >
                                                 <div className="flex min-w-0 items-center gap-3">
-                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#0A273F]/10">
-                                                        <FileText className="h-4 w-4 text-[#0A273F]" />
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#35ADD5]/10">
+                                                        <FileText className="h-4 w-4 text-[#35ADD5]" />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="truncate text-sm font-medium text-gray-800">
@@ -698,7 +698,7 @@ export default function CreateYachtPage() {
                                     onClick={() =>
                                         documentInputRef.current?.click()
                                     }
-                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-[#0A273F] hover:bg-white hover:text-[#0A273F]"
+                                    className="inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-[#35ADD5] hover:bg-white hover:text-[#35ADD5]"
                                 >
                                     <Plus className="h-4 w-4" />
                                     Attach Document
@@ -855,7 +855,7 @@ export default function CreateYachtPage() {
                                     onClick={() =>
                                         photoInputRef.current?.click()
                                     }
-                                    className="group flex aspect-square flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white text-gray-400 transition-all hover:border-[#0A273F] hover:bg-gray-50 hover:text-[#0A273F]"
+                                    className="group flex aspect-square flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white text-gray-400 transition-all hover:border-[#35ADD5] hover:bg-gray-50 hover:text-[#35ADD5]"
                                 >
                                     <Upload className="mb-1.5 h-5 w-5 transition-transform group-hover:scale-110" />
                                     <span className="px-1 text-center text-[11px] leading-tight font-medium">
@@ -1035,7 +1035,7 @@ export default function CreateYachtPage() {
                                             e.target.checked,
                                         )
                                     }
-                                    className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#0A273F] focus:ring-[#0A273F]"
+                                    className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#35ADD5] focus:ring-[#35ADD5]"
                                 />
                                 <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">
                                     Deckhand Required
@@ -1052,7 +1052,7 @@ export default function CreateYachtPage() {
                                         ? `Please upload at least ${MIN_PHOTOS} photos`
                                         : undefined
                                 }
-                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing ? (
                                     <>

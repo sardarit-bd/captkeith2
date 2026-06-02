@@ -17,7 +17,7 @@ export function CharterersActiveBookingsSection({ bookings }: Props) {
                         Manage your confirmed charters and clients
                     </p>
                 </div>
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#0A273F] text-xs font-bold text-white">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#35ADD5] text-xs font-bold text-white">
                     {bookings.length}
                 </span>
             </header>

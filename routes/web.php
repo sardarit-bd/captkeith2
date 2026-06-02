@@ -84,6 +84,7 @@
                 ->name('yachts-match');
             Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
             Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
+            Route::post('requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');
             Route::get('account-preferences', [\App\Http\Controllers\AccountPreferencesController::class, 'index'])
                 ->name('account-preferences');
 

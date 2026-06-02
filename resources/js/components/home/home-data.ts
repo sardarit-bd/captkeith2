@@ -1,5 +1,5 @@
 export const homeTheme = {
-    primary: '#0D314D',
+    primary: '#35ADD5',
     secondary: '#35ADD5',
     footerBg: '#101828',
     menuText: '#2B2B2B',

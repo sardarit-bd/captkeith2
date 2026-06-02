@@ -28,7 +28,7 @@ function TaxonomyCard({
                     >
                         {icon}
                     </span>
-                    <h4 className="text-sm font-semibold text-[#11395d]">
+                    <h4 className="text-sm font-semibold text-[#35ADD5]">
                         {title}
                     </h4>
                 </div>
@@ -43,7 +43,7 @@ export function PlatformSettingsUscgTab() {
     return (
         <div className="space-y-6">
             <div className="border-b border-[#e6ebf1] pb-4">
-                <h3 className="text-xl font-semibold text-[#11395d]">
+                <h3 className="text-xl font-semibold text-[#35ADD5]">
                     USCG Compliance Taxonomy
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
@@ -59,7 +59,7 @@ export function PlatformSettingsUscgTab() {
                 action={
                     <button
                         type="button"
-                        className="inline-flex items-center text-sm font-medium text-[#35ADD5] transition-colors hover:text-[#11395d]"
+                        className="inline-flex items-center text-sm font-medium text-[#35ADD5] transition-colors hover:text-[#35ADD5]"
                     >
                         <Plus className="mr-1 h-4 w-4" />
                         Add Type
@@ -84,7 +84,7 @@ export function PlatformSettingsUscgTab() {
                                 <ToggleField checked={type.enabled} />
                                 <button
                                     type="button"
-                                    className="text-slate-400 transition-colors hover:text-[#11395d]"
+                                    className="text-slate-400 transition-colors hover:text-[#35ADD5]"
                                 >
                                     Edit
                                 </button>
@@ -140,7 +140,7 @@ export function PlatformSettingsUscgTab() {
                         />
                         <button
                             type="button"
-                            className="rounded-lg bg-[#11395d] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+                            className="rounded-lg bg-[#35ADD5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
                         >
                             Add
                         </button>

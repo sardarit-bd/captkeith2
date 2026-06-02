@@ -35,7 +35,7 @@ export function CharterersActiveBookingCard({
                 </div>
 
                 <div>
-                    <h4 className="text-base font-bold text-[#111827] transition-colors group-hover:text-[#0A273F]">
+                    <h4 className="text-base font-bold text-[#111827] transition-colors group-hover:text-[#35ADD5]">
                         {booking.yachtName}
                     </h4>
                     <div className="mt-1 flex items-center gap-2">

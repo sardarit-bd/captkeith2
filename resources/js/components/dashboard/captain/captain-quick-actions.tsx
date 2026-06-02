@@ -4,7 +4,7 @@ import { captainQuickActions } from './captain-dashboard-data';
 export function CaptainQuickActions() {
     return (
         <section className="rounded-2xl border border-[#d4dbe3] bg-white p-5 shadow-sm">
-            <h2 className="text-[16px] font-semibold text-[#0D314D]">
+            <h2 className="text-[16px] font-semibold text-[#35ADD5]">
                 Quick Actions
             </h2>
 

@@ -64,7 +64,7 @@ export function CaptainCharterRequests() {
                                 <div className="flex gap-3">
                                     <button
                                         type="button"
-                                        className="inline-flex cursor-pointer items-center rounded-lg bg-[#0D314D] px-5 py-2 text-[12px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f]"
+                                        className="inline-flex cursor-pointer items-center rounded-lg bg-[#35ADD5] px-5 py-2 text-[12px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]"
                                     >
                                         Accept
                                     </button>
@@ -82,7 +82,7 @@ export function CaptainCharterRequests() {
 
                 <Link
                     href={requests()}
-                    className="mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#0D314D] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#0a273f]"
+                    className="mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#35ADD5] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#35ADD5]/70"
                 >
                     View All Requests
                 </Link>

@@ -39,7 +39,7 @@ export function AdminVerificationTable() {
                                             {item.initials}
                                         </span>
                                         <div>
-                                            <p className="font-medium text-[#11395d]">
+                                            <p className="font-medium text-[#35ADD5]">
                                                 {item.name}
                                             </p>
                                             <p className="text-xs text-slate-500">
@@ -61,7 +61,7 @@ export function AdminVerificationTable() {
                                 <td className="px-6 py-4 text-right">
                                     <button
                                         type="button"
-                                        className="rounded-lg bg-[#11395d] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#0f2e49]"
+                                        className="rounded-lg bg-[#35ADD5] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#0f2e49]"
                                     >
                                         Review
                                     </button>

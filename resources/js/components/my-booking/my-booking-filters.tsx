@@ -19,9 +19,9 @@ export function MyBookingFilters({
                     key={filter.id}
                     type="button"
                     onClick={() => onFilterChange(filter.id)}
-                    className={`rounded-lg px-5 py-2 text-[13px] font-medium transition-colors ${
+                    className={`cursor-pointer rounded-lg px-5 py-2 text-[13px] font-medium transition-colors ${
                         activeFilter === filter.id
-                            ? 'bg-[#0A273F] text-white shadow-sm'
+                            ? 'bg-[#35ADD5] text-white shadow-sm'
                             : 'border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]'
                     }`}
                 >

@@ -22,7 +22,7 @@ export function ComplianceLogStats() {
                             <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
                                 {stat.label}
                             </p>
-                            <h3 className="mt-1 text-2xl font-bold text-[#11395d]">
+                            <h3 className="mt-1 text-2xl font-bold text-[#35ADD5]">
                                 {stat.value}
                             </h3>
                         </div>

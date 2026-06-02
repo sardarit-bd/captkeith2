@@ -28,13 +28,13 @@
         </div>
 
         <!-- 404 Number -->
-        <h1 class="brand-font text-[120px] font-bold leading-none text-[#0a273f] opacity-10 select-none">
+        <h1 class="brand-font text-[120px] font-bold leading-none text-[#35ADD5] opacity-10 select-none">
             404
         </h1>
 
         <!-- Message -->
         <div class="-mt-6">
-            <h2 class="brand-font text-3xl font-semibold text-[#0a273f] mb-3">
+            <h2 class="brand-font text-3xl font-semibold text-[#35ADD5] mb-3">
                 Page Not Found
             </h2>
             <p class="text-[#6b7280] text-base mb-8">
@@ -45,7 +45,7 @@
         <!-- Button -->
         <a
             href="/"
-            class="inline-flex items-center gap-2 bg-[#0a273f] text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-[#123651] transition-colors shadow-sm"
+            class="inline-flex items-center gap-2 bg-[#35ADD5] text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-[#123651] transition-colors shadow-sm"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />

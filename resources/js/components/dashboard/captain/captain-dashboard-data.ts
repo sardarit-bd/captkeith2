@@ -93,7 +93,7 @@ export const captainQuickActions: CaptainQuickAction[] = [
         title: 'Browse Yachts',
         description: 'Find matching yacht opportunities',
         icon: Ship,
-        iconColor: '#0D314D',
+        iconColor: '#35ADD5',
         iconBg: '#F1F5F9',
         href: '/yachts-match',
     },

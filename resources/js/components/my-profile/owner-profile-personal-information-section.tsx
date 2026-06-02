@@ -67,7 +67,7 @@ export function OwnerProfilePersonalInformationSection({
                         <UserCircle className="h-5 w-5" />
                     </div>
                     <div>
-                        <h3 className="text-[16px] font-bold text-[#0D314D]">
+                        <h3 className="text-[16px] font-bold text-[#35ADD5]">
                             Personal Information
                         </h3>
                         <p className="text-[12px] text-[#9ca3af]">
@@ -113,7 +113,7 @@ export function OwnerProfilePersonalInformationSection({
 
                     {/* Name + hint */}
                     <div className="flex-1">
-                        <p className="mb-1 text-[13px] font-semibold text-[#0D314D]">
+                        <p className="mb-1 text-[13px] font-semibold text-[#35ADD5]">
                             Profile Photo
                         </p>
                         <p className="mb-3 text-[12px] text-[#9ca3af]">
@@ -243,7 +243,7 @@ export function OwnerProfilePersonalInformationSection({
                         type="button"
                         onClick={onSubmit}
                         disabled={processing}
-                        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0D314D] px-6 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#123651] hover:shadow-md disabled:opacity-50 sm:w-auto"
+                        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-6 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md disabled:opacity-50 sm:w-auto"
                     >
                         {processing ? (
                             <Spinner />

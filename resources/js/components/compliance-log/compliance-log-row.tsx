@@ -114,7 +114,7 @@ export function ComplianceLogRow({ record }: { record: ComplianceLogRecord }) {
                         className={`font-semibold ${
                             record.overallStatus === 'Blocked / Void'
                                 ? 'text-slate-700'
-                                : 'text-[#11395d]'
+                                : 'text-[#35ADD5]'
                         }`}
                     >
                         ID: {record.charterCode}
@@ -184,7 +184,7 @@ export function ComplianceLogRow({ record }: { record: ComplianceLogRecord }) {
                 {record.overallStatus === 'Cleared for Sail' ? (
                     <button
                         type="button"
-                        className="inline-flex items-center rounded-lg border border-[#e6ebf1] bg-white px-3 py-1.5 text-xs font-medium text-[#11395d] shadow-sm transition-colors hover:bg-slate-50"
+                        className="inline-flex items-center rounded-lg border border-[#e6ebf1] bg-white px-3 py-1.5 text-xs font-medium text-[#35ADD5] shadow-sm transition-colors hover:bg-slate-50"
                     >
                         <FolderDown className="mr-1.5 h-3.5 w-3.5" />
                         {record.actionLabel}
@@ -192,7 +192,7 @@ export function ComplianceLogRow({ record }: { record: ComplianceLogRecord }) {
                 ) : record.overallStatus === 'Action Required' ? (
                     <button
                         type="button"
-                        className="inline-flex items-center rounded-lg border border-[#e6ebf1] bg-white px-3 py-1.5 text-xs font-medium text-[#11395d] shadow-sm transition-colors hover:bg-slate-50"
+                        className="inline-flex items-center rounded-lg border border-[#e6ebf1] bg-white px-3 py-1.5 text-xs font-medium text-[#35ADD5] shadow-sm transition-colors hover:bg-slate-50"
                     >
                         <Mail className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
                         {record.actionLabel}

@@ -8,13 +8,13 @@ export function MyBookingPageContent() {
                 <div className="mx-auto mt-6 w-full max-w-300">
                     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div />
-                        <button
+                        {/* <button
                             type="button"
                             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#06B6D4] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#0891B2] sm:w-auto"
                         >
                             <CalendarPlus className="h-4 w-4" />
                             New Booking
-                        </button>
+                        </button> */}
                     </div>
 
                     <MyBookingList />

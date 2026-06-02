@@ -218,7 +218,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            className="h-11 rounded-xl px-4 text-[15px] text-[#334155] hover:bg-[#e8edf3] hover:text-[#11395d]"
+                            className="h-11 cursor-pointer! rounded-xl px-4 text-[15px] text-[#334155] hover:bg-[#e8edf3] hover:text-[#35ADD5]"
                         >
                             <Link
                                 href={logout()}

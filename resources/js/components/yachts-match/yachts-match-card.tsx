@@ -55,9 +55,9 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
             return (
                 <Link
                     href="/invitations"
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-amber-500 py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-amber-600"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#35ADD5] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70"
                 >
-                    <Bell className="h-4 w-4" />
+                    {/* <Bell className="h-4 w-4" /> */}
                     {yacht.ownerInvitationStatus === 'pending' &&
                         'Review Invitation'}
                 </Link>
@@ -69,7 +69,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                 <button
                     type="button"
                     disabled
-                    className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-[#14532d] py-3 text-[14px] font-medium text-white opacity-90 shadow-sm"
+                    className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-gray-500 py-3 text-[14px] font-medium text-white opacity-90 shadow-sm"
                 >
                     <CheckCircle className="h-4 w-4" />
                     Accepted
@@ -83,13 +83,12 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                     type="button"
                     disabled={isLoading}
                     onClick={handleSendInterest}
-                    className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] py-3 text-[14px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#0D314D] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#35ADD5] py-3 text-[14px] font-medium text-[#374151] text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Heart className="h-4 w-4" fill="none" />
-                    )}
+                    ) : // <Heart className="h-4 w-4" fill="none" />
+                    null}
                     Send Interest Again
                 </button>
             );
@@ -106,7 +105,7 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                     {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                        <Heart className="h-4 w-4 fill-current text-[#0D314D]" />
+                        <Heart className="h-4 w-4 fill-current text-[#35ADD5]" />
                     )}
                     Cancel Request
                 </button>
@@ -118,13 +117,12 @@ export function YachtsMatchCard({ yacht }: { yacht: YachtMatchRecord }) {
                 type="button"
                 disabled={isLoading}
                 onClick={handleSendInterest}
-                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0D314D] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] py-3 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                    <Heart className="h-4 w-4" fill="none" />
-                )}
+                ) : // <Heart className="h-4 w-4" fill="none" />
+                null}
                 Send Interest
             </button>
         );

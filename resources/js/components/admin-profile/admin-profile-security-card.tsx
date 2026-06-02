@@ -7,7 +7,7 @@ export function AdminProfileSecurityCard() {
                 <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
                     <Lock className="h-4 w-4" />
                 </span>
-                <h4 className="text-sm font-semibold text-[#11395d]">
+                <h4 className="text-sm font-semibold text-[#35ADD5]">
                     Security & Password
                 </h4>
             </header>
@@ -51,7 +51,7 @@ export function AdminProfileSecurityCard() {
                 <div className="flex items-start space-x-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
                     <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#35ADD5]" />
                     <div>
-                        <h5 className="text-sm font-medium text-[#11395d]">
+                        <h5 className="text-sm font-medium text-[#35ADD5]">
                             Password Requirements
                         </h5>
                         <p className="mt-1 text-xs leading-relaxed text-slate-600">

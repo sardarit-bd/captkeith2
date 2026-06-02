@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 
 export const aboutTheme = {
     overlay: '#041728',
-    primary: '#0D314D',
+    primary: '#35ADD5',
     secondary: '#35ADD5',
     body: '#364153',
 } as const;

@@ -213,7 +213,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                         </label>
 
                         <label
-                            className="group mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#d1d5db] px-6 py-10 transition-colors hover:border-[#0A273F] hover:bg-blue-50/50"
+                            className="group mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#d1d5db] px-6 py-10 transition-colors hover:border-[#35ADD5] hover:bg-blue-50/50"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {photoPreview ? (
@@ -224,7 +224,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                                 />
                             ) : (
                                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f9fafb] shadow-sm transition-all group-hover:bg-white">
-                                    <UploadCloud className="h-5 w-5 text-[#6b7280] transition-colors group-hover:text-[#0A273F]" />
+                                    <UploadCloud className="h-5 w-5 text-[#6b7280] transition-colors group-hover:text-[#35ADD5]" />
                                 </div>
                             )}
                             <span className="mb-2 text-sm font-medium text-[#374151]">
@@ -232,7 +232,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                                     ? 'Change photo'
                                     : 'Upload profile photo'}
                             </span>
-                            <span className="inline-flex items-center rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#4b5563] shadow-sm transition-colors group-hover:border-[#0A273F] group-hover:text-[#0A273F]">
+                            <span className="inline-flex items-center rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#4b5563] shadow-sm transition-colors group-hover:border-[#35ADD5] group-hover:text-[#35ADD5]">
                                 Choose File
                             </span>
                             <input
@@ -259,7 +259,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                     type="submit"
                     form="charterer-information-form"
                     disabled={processing}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0A273F] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                     {processing ? (
                         <>
@@ -368,7 +368,7 @@ function TextInput({
             className={`w-full rounded-xl border bg-[#f9fafb] py-3.5 pr-4 text-sm text-[#111827] transition-all duration-200 placeholder:text-[#9ca3af] focus:bg-white focus:ring-4 focus:outline-none ${
                 hasError
                     ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10'
-                    : 'border-[#e5e7eb] focus:border-[#0A273F] focus:ring-[#0A273F]/10'
+                    : 'border-[#e5e7eb] focus:border-[#35ADD5] focus:ring-[#35ADD5]/10'
             } ${withIcon ? 'pl-11' : 'px-4'} ${readOnly ? 'cursor-default opacity-70' : ''}`}
         />
     );

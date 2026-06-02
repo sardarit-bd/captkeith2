@@ -8,7 +8,7 @@ export function AdminProfilePersonalCard() {
                 <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
                     <User className="h-4 w-4" />
                 </span>
-                <h4 className="text-sm font-semibold text-[#11395d]">
+                <h4 className="text-sm font-semibold text-[#35ADD5]">
                     Personal Details
                 </h4>
             </header>

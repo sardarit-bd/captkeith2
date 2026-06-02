@@ -32,7 +32,7 @@ export function PlatformSettingsPageContent() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="inline-flex items-center rounded-lg bg-[#11395d] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+                                    className="inline-flex items-center rounded-lg bg-[#35ADD5] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
                                 >
                                     <Save className="mr-2 h-4 w-4" />
                                     Save Configuration

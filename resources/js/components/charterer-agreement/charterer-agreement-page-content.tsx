@@ -41,7 +41,7 @@ function BareboatAgreementText({
 }) {
     return (
         <div className="space-y-3 text-sm leading-relaxed text-[#374151]">
-            <p className="text-center font-bold tracking-wide text-[#0A273F] uppercase">
+            <p className="text-center font-bold tracking-wide text-[#35ADD5] uppercase">
                 BAREBOAT/DEMISE CHARTER AGREEMENT
             </p>
             <p>
@@ -58,13 +58,13 @@ function BareboatAgreementText({
                 equipment, fixtures and other property delivered to CHARTERER
                 with said Yacht.
             </p>
-            <p className="font-semibold text-[#0A273F]">1. TERM</p>
+            <p className="font-semibold text-[#35ADD5]">1. TERM</p>
             <p>
                 The term of the charter shall commence at the agreed-upon start
                 time on <strong>{vessel.charterDate}</strong> and end at the
                 agreed-upon return time.
             </p>
-            <p className="font-semibold text-[#0A273F]">2. RENTAL</p>
+            <p className="font-semibold text-[#35ADD5]">2. RENTAL</p>
             <p>
                 The total rent to be paid by the CHARTERER to the OWNER is as
                 specified in the booking arrangement. The full amount shall be
@@ -73,7 +73,7 @@ function BareboatAgreementText({
                 If Charterer elects to hire a Captain preapproved by The Walston
                 Group Inc., the deposit requirement shall be waived.
             </p>
-            <p className="font-semibold text-[#0A273F]">3. INSURANCE</p>
+            <p className="font-semibold text-[#35ADD5]">3. INSURANCE</p>
             <p>
                 The OWNER agrees to keep the Yacht insured against Fire, Marine
                 and Collision risks, and with Protection and Indemnity coverage
@@ -82,7 +82,7 @@ function BareboatAgreementText({
                 premium in full, providing 3rd party liability coverage up to
                 $50,000 per occurrence.
             </p>
-            <p className="font-semibold text-[#0A273F]">4. BAREBOAT CHARTER</p>
+            <p className="font-semibold text-[#35ADD5]">4. BAREBOAT CHARTER</p>
             <p>
                 This charter shall at all times be construed as a
                 bareboat/demise charter. CHARTERER assumes all responsibility
@@ -90,7 +90,7 @@ function BareboatAgreementText({
                 during the period of the charter or at any time when the vessel
                 is under the control of the CHARTERER.
             </p>
-            <p className="font-semibold text-[#0A273F]">
+            <p className="font-semibold text-[#35ADD5]">
                 5. CHARTERER'S AUTHORITY OVER CREW
             </p>
             <p>
@@ -115,7 +115,7 @@ function CaptainHireAgreementText({
 }) {
     return (
         <div className="space-y-3 text-sm leading-relaxed text-[#374151]">
-            <p className="text-center font-bold tracking-wide text-[#0A273F] uppercase">
+            <p className="text-center font-bold tracking-wide text-[#35ADD5] uppercase">
                 INDEPENDENT CAPTAIN FOR HIRE AGREEMENT
             </p>
             <p>
@@ -124,7 +124,7 @@ function CaptainHireAgreementText({
                 <strong>{parties.charterer}</strong> (Charterer) and{' '}
                 <strong>{parties.captain}</strong> (Captain).
             </p>
-            <p className="font-semibold text-[#0A273F]">1. PURPOSE</p>
+            <p className="font-semibold text-[#35ADD5]">1. PURPOSE</p>
             <p>
                 This Agreement is entered in connection with a separately
                 executed Bareboat Charter Agreement for vessel{' '}
@@ -132,7 +132,7 @@ function CaptainHireAgreementText({
                 <strong>{vessel.charterDate}</strong>. The Charterer has
                 independently selected and hired the Captain named above.
             </p>
-            <p className="font-semibold text-[#0A273F]">
+            <p className="font-semibold text-[#35ADD5]">
                 2. INDEPENDENT CONTRACTOR
             </p>
             <p>
@@ -141,7 +141,7 @@ function CaptainHireAgreementText({
                 The Captain shall be solely responsible for compliance with all
                 applicable maritime laws and safe vessel operation.
             </p>
-            <p className="font-semibold text-[#0A273F]">
+            <p className="font-semibold text-[#35ADD5]">
                 3. CAPTAIN'S AUTHORITY
             </p>
             <p>
@@ -151,14 +151,14 @@ function CaptainHireAgreementText({
                 and docking. The Charterer and guests agree to comply with all
                 lawful instructions of the Captain.
             </p>
-            <p className="font-semibold text-[#0A273F]">4. COMPENSATION</p>
+            <p className="font-semibold text-[#35ADD5]">4. COMPENSATION</p>
             <p>
                 The Hirer agrees to pay the Captain the agreed-upon hourly or
                 daily rate for the duration of services provided. Payment terms
                 shall be strictly adhered to as specified in the booking
                 arrangement.
             </p>
-            <p className="font-semibold text-[#0A273F]">5. HOLD HARMLESS</p>
+            <p className="font-semibold text-[#35ADD5]">5. HOLD HARMLESS</p>
             <p>
                 The Charterer agrees to hold harmless and indemnify the Captain
                 from claims arising from the actions of the Charterer or guests
@@ -187,9 +187,9 @@ function AgreementCard({
     return (
         <div className="overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#f0f0f0] bg-[#f8fbff] px-5 py-4">
-                <FileText className="h-5 w-5 shrink-0 text-[#0A273F]" />
+                <FileText className="h-5 w-5 shrink-0 text-[#35ADD5]" />
                 <div>
-                    <p className="text-sm font-semibold text-[#0A273F]">
+                    <p className="text-sm font-semibold text-[#35ADD5]">
                         {doc.title}
                     </p>
                     <p className="text-xs text-[#6b7280]">
@@ -227,7 +227,7 @@ function AgreementCard({
                     className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 ${
                         isSigned
                             ? 'cursor-default bg-emerald-600 text-white'
-                            : 'bg-[#0A273F] text-white hover:bg-[#123651] hover:shadow-md'
+                            : 'bg-[#35ADD5] text-white hover:bg-[#123651] hover:shadow-md'
                     }`}
                 >
                     {isSigned ? (
@@ -305,7 +305,7 @@ export function ChartererAgreementPageContent() {
                                 type="checkbox"
                                 checked={allSigned}
                                 readOnly
-                                className="h-5 w-5 cursor-pointer rounded border-[#d1d5db] text-[#0A273F]"
+                                className="h-5 w-5 cursor-pointer rounded border-[#d1d5db] text-[#35ADD5]"
                             />
                         </div>
                         <span className="text-sm leading-relaxed text-[#374151] italic transition-colors group-hover:text-[#111827]">
@@ -339,8 +339,8 @@ export function ChartererAgreementPageContent() {
                             disabled={!allSigned || isSubmitting}
                             className={`flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-semibold shadow-sm transition-all duration-200 sm:w-auto ${
                                 allSigned && !isSubmitting
-                                    ? 'bg-[#0A273F] text-white hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md'
-                                    : 'cursor-not-allowed bg-[#0A273F] text-white opacity-50'
+                                    ? 'bg-[#35ADD5] text-white hover:-translate-y-0.5 hover:bg-[#123651] hover:shadow-md'
+                                    : 'cursor-not-allowed bg-[#35ADD5] text-white opacity-50'
                             }`}
                         >
                             {isSubmitting ? (

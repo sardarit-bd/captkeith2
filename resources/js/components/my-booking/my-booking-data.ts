@@ -25,9 +25,9 @@ export type BookingCardRecord = {
     time: string;
     totalPaid: string;
     rating?: number | null;
-    actions: Array<{
-        id: string;
-        label: string;
-        icon: 'message-square' | 'arrow-right' | 'download' | 'refresh-cw';
-    }>;
+    // actions: Array<{
+    //     id: string;
+    //     label: string;
+    //     icon: 'message-square' | 'arrow-right' | 'download' | 'refresh-cw';
+    // }>;
 };

@@ -4,7 +4,7 @@ export function PlatformSettingsSecurityTab() {
     return (
         <div className="space-y-6">
             <div className="border-b border-[#e6ebf1] pb-4">
-                <h3 className="text-xl font-semibold text-[#11395d]">
+                <h3 className="text-xl font-semibold text-[#35ADD5]">
                     Security & Access
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">

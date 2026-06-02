@@ -40,7 +40,7 @@ export function MyBookingCard({ booking }: { booking: BookingCardRecord }) {
                 <div>
                     <header className="mb-6 flex items-start justify-between gap-4">
                         <div>
-                            <h3 className="text-xl font-bold leading-tight text-[#111827]">
+                            <h3 className="text-xl leading-tight font-bold text-[#111827]">
                                 {booking.yachtName}
                             </h3>
                             <p className="mt-1 text-[13px] text-[#6b7280]">
@@ -97,9 +97,13 @@ export function MyBookingCard({ booking }: { booking: BookingCardRecord }) {
 
                             {booking.rating ? (
                                 <div className="flex items-center gap-2 pt-1">
-                                    <p className="text-[13px] text-[#4b5563]">Your Rating:</p>
+                                    <p className="text-[13px] text-[#4b5563]">
+                                        Your Rating:
+                                    </p>
                                     <div className="flex items-center gap-1">
-                                        {Array.from({ length: booking.rating }).map((_, index) => (
+                                        {Array.from({
+                                            length: booking.rating,
+                                        }).map((_, index) => (
                                             <Star
                                                 key={`${booking.id}-star-${index}`}
                                                 className="h-4 w-4 fill-[#fb923c] text-[#fb923c]"
@@ -139,7 +143,7 @@ export function MyBookingCard({ booking }: { booking: BookingCardRecord }) {
                     </div>
                 </div>
 
-                <footer className="mt-8 flex items-center gap-3 border-t border-[#f1f5f9] pt-5">
+                {/* <footer className="mt-8 flex items-center gap-3 border-t border-[#f1f5f9] pt-5">
                     {booking.actions.map((action) => {
                         const Icon = actionIcons[action.icon];
 
@@ -154,7 +158,7 @@ export function MyBookingCard({ booking }: { booking: BookingCardRecord }) {
                             </button>
                         );
                     })}
-                </footer>
+                </footer> */}
             </div>
         </article>
     );

@@ -45,7 +45,7 @@ export function ToggleSwitch({
                 onChange={(e) => onChange(e.target.checked)}
                 className="peer sr-only"
             />
-            <div className="h-6 w-11 rounded-full bg-[#e5e7eb] peer-checked:bg-[#0a273f] after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-[#d1d5db] after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white" />
+            <div className="h-6 w-11 rounded-full bg-[#e5e7eb] peer-checked:bg-[#35ADD5] after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-[#d1d5db] after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white" />
         </label>
     );
 }

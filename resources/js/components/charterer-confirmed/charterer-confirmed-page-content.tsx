@@ -96,7 +96,7 @@ export function ChartererConfirmedPageContent() {
 
                                     <button
                                         type="button"
-                                        className="flex items-center gap-2 text-sm font-semibold text-[#374151] transition-colors hover:text-[#0A273F]"
+                                        className="flex items-center gap-2 text-sm font-semibold text-[#374151] transition-colors hover:text-[#35ADD5]"
                                     >
                                         <Download className="h-4 w-4" />
                                         Download
@@ -151,7 +151,7 @@ export function ChartererConfirmedPageContent() {
 
                         <Link
                             href={dashboard()}
-                            className="w-full rounded-lg bg-[#0A273F] px-8 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] sm:w-auto"
+                            className="w-full rounded-lg bg-[#35ADD5] px-8 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] sm:w-auto"
                         >
                             Return to Home
                         </Link>

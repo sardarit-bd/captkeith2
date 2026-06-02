@@ -5,7 +5,7 @@ export function PlatformSettingsNotificationsTab() {
     return (
         <div className="space-y-6">
             <div className="border-b border-[#e6ebf1] pb-4">
-                <h3 className="text-xl font-semibold text-[#11395d]">
+                <h3 className="text-xl font-semibold text-[#35ADD5]">
                     Notifications & Alerts
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
@@ -14,7 +14,7 @@ export function PlatformSettingsNotificationsTab() {
             </div>
 
             <section className="space-y-4 rounded-2xl border border-[#e6ebf1] bg-white p-6 shadow-sm">
-                <h4 className="mb-4 border-b border-slate-100 pb-3 text-sm font-semibold text-[#11395d]">
+                <h4 className="mb-4 border-b border-slate-100 pb-3 text-sm font-semibold text-[#35ADD5]">
                     Admin Email Triggers
                 </h4>
 

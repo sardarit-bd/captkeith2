@@ -485,7 +485,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5pt;
     margin-bottom: 18pt;
-    border-bottom: 2pt solid #0A273F;
+    border-bottom: 2pt solid #35ADD5;
     padding-bottom: 8pt;
 }
 .intro {
@@ -501,7 +501,7 @@ h2 {
     text-transform: uppercase;
     margin-top: 14pt;
     margin-bottom: 5pt;
-    color: #0A273F;
+    color: #35ADD5;
 }
 ul {
     margin: 6pt 0 10pt 20pt;

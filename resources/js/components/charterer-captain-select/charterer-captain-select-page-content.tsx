@@ -49,7 +49,7 @@ export function ChartererCaptainSelectPageContent({
         <div className="flex h-full flex-1 flex-col bg-[#F6FDFF]">
             <div className="border-b border-[#e5e7eb] bg-white px-4 py-3 sm:px-6 lg:px-8">
                 <div className="mx-auto flex max-w-4xl items-center gap-3">
-                    <Users className="h-4 w-4 shrink-0 text-[#0A273F]" />
+                    <Users className="h-4 w-4 shrink-0 text-[#35ADD5]" />
                     {canProceed ? (
                         <p className="text-[13px] font-semibold text-emerald-700">
                             ✓ 2 captains have accepted — you can proceed!
@@ -114,7 +114,7 @@ export function ChartererCaptainSelectPageContent({
                         {canProceed ? (
                             <Link
                                 href={information()}
-                                className="rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                                className="rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
                             >
                                 Continue
                             </Link>
@@ -122,7 +122,7 @@ export function ChartererCaptainSelectPageContent({
                             <button
                                 type="button"
                                 disabled
-                                className="cursor-not-allowed rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white opacity-40"
+                                className="cursor-not-allowed rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white opacity-40"
                             >
                                 Continue
                             </button>

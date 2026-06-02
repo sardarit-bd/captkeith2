@@ -41,7 +41,7 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
     return (
         <input
             {...props}
-            className="h-11.25 w-full rounded-[10px] border border-transparent bg-[#F3F3F5] px-3.75 py-2 text-[15px] text-[#374151] transition-colors placeholder:text-[#9ca3af] focus:border-[#0a273f] focus:ring-1 focus:ring-[#0a273f] focus:outline-none"
+            className="h-11.25 w-full rounded-[10px] border border-transparent bg-[#F3F3F5] px-3.75 py-2 text-[15px] text-[#374151] transition-colors placeholder:text-[#9ca3af] focus:border-[#35ADD5] focus:ring-1 focus:ring-[#35ADD5] focus:outline-none"
         />
     );
 }
@@ -52,7 +52,7 @@ export function TextArea(
     return (
         <textarea
             {...props}
-            className="w-full resize-y rounded-[10px] border border-transparent bg-[#F3F3F5] px-3.75 py-2 text-[14px] text-[#374151] transition-colors placeholder:text-[#9ca3af] focus:border-[#0a273f] focus:ring-1 focus:ring-[#0a273f] focus:outline-none"
+            className="w-full resize-y rounded-[10px] border border-transparent bg-[#F3F3F5] px-3.75 py-2 text-[14px] text-[#374151] transition-colors placeholder:text-[#9ca3af] focus:border-[#35ADD5] focus:ring-1 focus:ring-[#35ADD5] focus:outline-none"
         />
     );
 }
@@ -71,7 +71,7 @@ export function SelectInput({
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="h-11.25 w-full appearance-none rounded-[10px] border border-transparent bg-[#F3F3F5] px-3.75 py-2 text-[14px] text-[#374151] transition-colors focus:border-[#0a273f] focus:ring-1 focus:ring-[#0a273f] focus:outline-none"
+                className="h-11.25 w-full appearance-none rounded-[10px] border border-transparent bg-[#F3F3F5] px-3.75 py-2 text-[14px] text-[#374151] transition-colors focus:border-[#35ADD5] focus:ring-1 focus:ring-[#35ADD5] focus:outline-none"
             >
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -95,13 +95,13 @@ export function RatingSelectInput({
 }) {
     return (
         <div className="relative">
-            <span className="pointer-events-none absolute top-1/2 left-3 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-[#0A273F] text-white shadow-sm">
+            <span className="pointer-events-none absolute top-1/2 left-3 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-[#35ADD5] text-white shadow-sm">
                 <Award className="h-3.5 w-3.5" />
             </span>
             <select
                 value={String(value)}
                 onChange={(e) => onChange(e.target.value)}
-                className="h-11.25 w-full appearance-none rounded-[10px] border border-[#DDE2EA] bg-[linear-gradient(180deg,#FFFFFF_0%,#F7F9FC_100%)] px-3.75 py-2 pr-10 pl-11 text-[14px] font-medium text-[#0A0A0A] shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-all focus:border-[#0a273f] focus:ring-2 focus:ring-[#0a273f]/15 focus:outline-none"
+                className="h-11.25 w-full appearance-none rounded-[10px] border border-[#DDE2EA] bg-[linear-gradient(180deg,#FFFFFF_0%,#F7F9FC_100%)] px-3.75 py-2 pr-10 pl-11 text-[14px] font-medium text-[#0A0A0A] shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-all focus:border-[#35ADD5] focus:ring-2 focus:ring-[#35ADD5]/15 focus:outline-none"
             >
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -166,7 +166,7 @@ export function UploadBox({
                         href={existingUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-medium text-[#0a273f] underline underline-offset-2"
+                        className="font-medium text-[#35ADD5] underline underline-offset-2"
                     >
                         View
                     </a>
@@ -220,20 +220,32 @@ export function ToggleField({
     onChange?: (checked: boolean) => void;
 }) {
     return (
-        <label
-            htmlFor={id}
-            className="group flex cursor-pointer items-center gap-3"
-        >
+        <label htmlFor={id} className="flex cursor-pointer items-center gap-3">
             <input
                 id={id}
                 type="checkbox"
                 checked={checked ?? false}
                 onChange={(e) => onChange?.(e.target.checked)}
-                className="h-4 w-4 cursor-pointer rounded border-[#d1d5db] text-[#0a273f] focus:ring-[#0a273f]"
+                className="peer sr-only"
             />
-            <span className="text-[14px] font-medium text-[#1f2937] transition-colors group-hover:text-[#111827]">
-                {label}
-            </span>
+
+            <div className="flex h-5 w-5 items-center justify-center rounded border border-[#35ADD5] peer-checked:bg-[#35ADD5]">
+                <svg
+                    className="h-3 w-3 text-white peer-checked:opacity-100"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                    />
+                </svg>
+            </div>
+
+            <span>{label}</span>
         </label>
     );
 }

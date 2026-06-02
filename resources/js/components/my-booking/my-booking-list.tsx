@@ -36,7 +36,7 @@ export function MyBookingList() {
     });
 
     return (
-        <>
+        <div className="flex flex-col gap-4">
             {filters.length > 0 && (
                 <MyBookingFilters
                     filters={filters}
@@ -66,6 +66,6 @@ export function MyBookingList() {
                     ))}
                 </section>
             )}
-        </>
+        </div>
     );
 }

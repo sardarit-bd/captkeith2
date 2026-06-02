@@ -68,7 +68,7 @@ export function AdminStatsCards() {
                         </div>
 
                         <div className="mt-4">
-                            <h3 className="text-3xl font-bold text-[#11395d]">
+                            <h3 className="text-3xl font-bold text-[#35ADD5]">
                                 {card.value}
                             </h3>
                             <p

@@ -55,7 +55,7 @@ export function AdminUsersFilters() {
 
                 <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#e6ebf1] bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-[#11395d] transition-colors hover:bg-slate-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#e6ebf1] bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-[#35ADD5] transition-colors hover:bg-slate-50"
                 >
                     <Download className="h-4 w-4" />
                     Export CSV

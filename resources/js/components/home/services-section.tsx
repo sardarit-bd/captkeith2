@@ -33,7 +33,7 @@ export function ServicesSection() {
                         <div key={card.title} className="rounded-[12px] bg-white p-8 shadow-sm transition hover:shadow-md md:rounded-[16px] md:p-10">
                             <div
                                 className="mb-8 flex h-12 w-12 items-center justify-center rounded-[8px]"
-                                style={{ background: 'linear-gradient(to right, #015291, #0D314D)' }}
+                                style={{ background: 'linear-gradient(to right, #015291, #35ADD5)' }}
                             >
                                 {card.image ? (
                                     <img

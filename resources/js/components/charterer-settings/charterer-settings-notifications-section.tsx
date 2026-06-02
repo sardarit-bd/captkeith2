@@ -76,7 +76,7 @@ export function ChartererSettingsNotificationsSection() {
             <SecondaryButton
                 onClick={handleSave}
                 disabled={processing}
-                className="mt-6 cursor-pointer bg-[#0A273F] text-white hover:bg-[#123651] disabled:opacity-50"
+                className="mt-6 cursor-pointer bg-[#35ADD5] text-white hover:bg-[#123651] disabled:opacity-50"
             >
                 {processing ? 'Saving…' : 'Save Preferences'}
             </SecondaryButton>
