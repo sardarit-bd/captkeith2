@@ -32,6 +32,7 @@ class OwnerCaptainInvitationController extends Controller
                 'owner_id'   => $owner->id,
                 'captain_id' => $captain->id,
                 'vessel_id'  => $validated['vessel_id'],
+                'initiated_by' => 'owner',
             ],
             ['status' => 'pending']
         );
@@ -84,6 +85,7 @@ class OwnerCaptainInvitationController extends Controller
                 'owner.vessels.photos' => fn($q) => $q->orderBy('display_order'),
                 'vessel.photos'        => fn($q) => $q->orderBy('display_order'),
             ])
+            ->where('initiated_by', 'owner')
             ->latest()
             ->get()
             ->map(function (OwnerCaptainInvitation $invitation) {

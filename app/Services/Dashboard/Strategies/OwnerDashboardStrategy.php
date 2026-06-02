@@ -62,6 +62,7 @@ class OwnerDashboardStrategy implements DashboardStrategy
 
         $pendingRequests = \App\Models\OwnerCaptainInvitation::whereIn('vessel_id', $vesselIds)
             ->where('status', 'pending')
+            ->where('initiated_by', 'captain')
             ->count();
 
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['owner_id', 'captain_id', 'vessel_id', 'status'])]
+#[Fillable(['owner_id', 'captain_id', 'vessel_id', 'status', 'initiated_by' ])]
 class OwnerCaptainInvitation extends Model
 {
     use HasUuids;
