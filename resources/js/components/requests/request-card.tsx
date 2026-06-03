@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { AlertCircle, Check, MessageSquare, Ship, User, X } from 'lucide-react';
-import { respond } from '@/routes/requests';
+import { respond, selectDeckhand } from '@/routes/requests'; 
 import { DeckhandSelectModal } from './deckhand-select-modal';
 import type { CaptainRequestRecord } from './requests-data';
 
@@ -69,48 +69,35 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
         request.status === 'available' || request.status === 'accepted';
     const isInvitation = request.type === 'owner_invitation';
     const deckhandInfo = request.deckhandInfo;
-
     const [showDeckhandModal, setShowDeckhandModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showHireOutside, setShowHireOutside] = useState(false);
-
     const mustSelectDeckhand = deckhandInfo?.mustSelectDeckhand === true;
     const hasQualifiedDeckhands = deckhandInfo?.hasQualifiedDeckhands === true;
     const deckhandAlreadySelected = !!deckhandInfo?.selectedDeckhand;
-
-    const noDeckhandsWarning =
-        isPending && mustSelectDeckhand && !hasQualifiedDeckhands;
+    const isAcceptDisabled = !isPending || isSubmitting || (!isInvitation && mustSelectDeckhand);
+    const isSelectDeckhandDisabled = !isPending || isSubmitting || deckhandAlreadySelected || !hasQualifiedDeckhands || isInvitation;
 
     function handleAcceptClick() {
-        if (isInvitation) {
-            submitAccept(undefined);
-            return;
-        }
-
-        if (mustSelectDeckhand) {
-            if (hasQualifiedDeckhands) {
-                setShowDeckhandModal(true);
-            } else {
-                setShowHireOutside(true);
-            }
-            return;
-        }
-
-        submitAccept(undefined);
+        submitAccept();
     }
 
-    function submitAccept(deckhandId?: string) {
+    function submitAccept() {
         setIsSubmitting(true);
+        router.patch(respond({ crewResponse: request.id }).url, { response: 'available' }, {
+            preserveScroll: true,
+            onFinish: () => setIsSubmitting(false),
+        });
+    }
 
-        const payload: Record<string, any> = { response: 'available' };
-        if (deckhandId) payload.deckhand_id = deckhandId;
-
-        router.patch(respond({ crewResponse: request.id }).url, payload, {
+    function submitSelectDeckhand(deckhandIds: string[]) {
+        setIsSubmitting(true);
+        router.patch(selectDeckhand({ crewResponse: request.id }).url, {
+            deckhand_ids: deckhandIds,
+        }, {
             preserveScroll: true,
             onFinish: () => {
                 setIsSubmitting(false);
                 setShowDeckhandModal(false);
-                setShowHireOutside(false);
             },
         });
     }
@@ -143,15 +130,9 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                             className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover"
                         />
                         <div>
-                            <h3 className="text-[15px] font-bold text-[#111827]">
-                                {request.yachtName}
-                            </h3>
-                            <p className="text-[13px] text-[#6b7280]">
-                                {request.yachtSpec}
-                            </p>
-                            <p className="text-[13px] text-[#6b7280]">
-                                {request.marina}
-                            </p>
+                            <h3 className="text-[15px] font-bold text-[#111827]">{request.yachtName}</h3>
+                            <p className="text-[13px] text-[#6b7280]">{request.yachtSpec}</p>
+                            <p className="text-[13px] text-[#6b7280]">{request.marina}</p>
                         </div>
                     </div>
                     <span
@@ -164,79 +145,66 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                 {!isInvitation && (
                     <>
                         <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                            <RequestInfoItem
-                                label="Date"
-                                value={request.date}
-                            />
-                            <RequestInfoItem
-                                label="Time"
-                                value={request.time}
-                            />
-                            <RequestInfoItem
-                                label="Duration"
-                                value={request.duration}
-                            />
+                            <RequestInfoItem label="Date" value={request.date} />
+                            <RequestInfoItem label="Time" value={request.time} />
+                            <RequestInfoItem label="Duration" value={request.duration} />
                         </div>
                         <section className="mb-6">
-                            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">
-                                Special Notes
-                            </p>
-                            <p className="text-[14px] text-[#1f2937]">
-                                {request.specialNotes || '—'}
-                            </p>
+                            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">Special Notes</p>
+                            <p className="text-[14px] text-[#1f2937]">{request.specialNotes || '—'}</p>
                         </section>
                     </>
                 )}
 
-                {!isInvitation &&
-                    isAccepted &&
-                    deckhandInfo?.selectedDeckhand && (
-                        <div className="mb-6">
-                            <DeckhandStatusPill
-                                name={deckhandInfo.selectedDeckhand.name}
-                                status={
-                                    deckhandInfo.selectedDeckhand.responseStatus
-                                }
-                                selectedByMe={
-                                    deckhandInfo.selectedDeckhand.selectedByMe
-                                }
-                            />
-                        </div>
-                    )}
-
-                {!isInvitation &&
-                    isPending &&
-                    deckhandAlreadySelected &&
-                    !mustSelectDeckhand && (
-                        <div className="mb-6 flex items-start gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2.5 text-[12px] text-[#6b7280]">
-                            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#16a34a]" />
-                            <span>
-                                A deckhand has already been selected by your
-                                co-captain.
-                            </span>
-                        </div>
-                    )}
-
-                {noDeckhandsWarning && (
-                    <div className="mb-6 flex items-start gap-2 rounded-lg border border-[#fca5a5] bg-[#FEF2F2] px-3 py-2.5 text-[12px] text-[#991b1b]">
-                        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                        <span>
-                            No qualified deckhands available. You can hire from
-                            outside.
-                        </span>
+                {!isInvitation && isAccepted && deckhandInfo?.selectedDeckhand && (
+                    <div className="mb-6">
+                        <DeckhandStatusPill
+                            name={deckhandInfo.selectedDeckhand.name}
+                            status={deckhandInfo.selectedDeckhand.responseStatus}
+                            selectedByMe={deckhandInfo.selectedDeckhand.selectedByMe}
+                        />
                     </div>
                 )}
 
-                <footer className="flex flex-wrap items-center gap-3">
+                <footer className="flex flex-wrap items-center gap-4">
+   
+                    {!isInvitation && (
+                        <div className="flex flex-col items-start gap-1.5">
+                            <button
+                                type="button"
+                                disabled={isSelectDeckhandDisabled}
+                                onClick={() => setShowDeckhandModal(true)}
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#2563eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#2563eb] shadow-sm transition-colors hover:bg-[#eff6ff] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <User className="h-4 w-4" />
+                                Select Deckhand
+                            </button>
+                            
+                            {deckhandAlreadySelected && (
+                                <span className="text-[11px] text-[#16a34a] font-medium flex items-center gap-1">
+                                    <Check className="h-3 w-3" /> Deckhand is already selected
+                                </span>
+                            )}
+                            
+                            {!deckhandAlreadySelected && !hasQualifiedDeckhands && (
+                                <span className="text-[11px] text-[#991b1b] font-medium flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" /> No qualified deckhands available
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+
                     <button
                         type="button"
-                        disabled={!isPending || isSubmitting}
+                        disabled={isAcceptDisabled}
                         onClick={handleAcceptClick}
                         className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         <Check className="h-4 w-4" />
                         Accept Request
                     </button>
+
 
                     <button
                         type="button"
@@ -251,11 +219,7 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                     {request.ownerUserId && (
                         <button
                             type="button"
-                            onClick={() =>
-                                router.get('/messages', {
-                                    with: request.ownerUserId,
-                                })
-                            }
+                            onClick={() => router.get('/messages', { with: request.ownerUserId })}
                             className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
                         >
                             <MessageSquare className="h-4 w-4" />
@@ -269,47 +233,9 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                 <DeckhandSelectModal
                     deckhands={deckhandInfo.availableDeckhands}
                     isSubmitting={isSubmitting}
-                    onConfirm={submitAccept}
+                    onConfirm={submitSelectDeckhand}
                     onCancel={() => setShowDeckhandModal(false)}
                 />
-            )}
-
-            {showHireOutside && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                        <h3 className="text-lg font-semibold text-[#111827]">
-                            Hire Deckhand from Outside
-                        </h3>
-                        <p className="mt-3 text-sm text-[#6b7280]">
-                            No qualified deckhands are currently available for
-                            this vessel.
-                            <br />
-                            By continuing, you agree to hire an external
-                            deckhand under our
-                            <span className="cursor-pointer text-blue-600 underline">
-                                Terms & Conditions
-                            </span>
-                            .
-                        </p>
-                        <div className="mt-6 flex gap-3">
-                            <button
-                                onClick={() => setShowHireOutside(false)}
-                                className="flex-1 rounded-lg border border-[#e5e7eb] py-3 text-sm font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => {
-                                    submitAccept('external');
-                                    setShowHireOutside(false);
-                                }}
-                                className="flex-1 rounded-lg bg-[#111827] py-3 text-sm font-medium text-white"
-                            >
-                                Agree & Accept Request
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
         </>
     );
@@ -318,9 +244,7 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
 function RequestInfoItem({ label, value }: { label: string; value: string }) {
     return (
         <div>
-            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">
-                {label}
-            </p>
+            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">{label}</p>
             <p className="text-[15px] font-bold text-[#111827]">{value}</p>
         </div>
     );

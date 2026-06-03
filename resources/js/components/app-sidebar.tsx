@@ -5,6 +5,7 @@ import {
     ClipboardList,
     LayoutGrid,
     LogOut,
+    Mail,
     MessageCircle,
     Settings,
     ShieldCheck,
@@ -31,6 +32,8 @@ import {
     charterers,
     complianceLog,
     dashboard,
+    deckhandRequests,
+    deckhands,
     logout,
     messages,
     myBooking,
@@ -103,7 +106,17 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 title: 'Captain Requests',
                 href: '/captain-requests',
                 icon: ClipboardList,
+            },  {
+                title: 'Deckhands',
+                href: deckhands(),
+                icon: User,
             },
+                {
+                title: 'Deckhand Requests',
+                href: '/deckhand-requests',
+                icon: Mail, 
+            },
+        
             {
                 title: 'Charterers',
                 href: charterers(),
@@ -152,6 +165,11 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 title: 'Requests',
                 href: requests(),
                 icon: ClipboardList,
+            },
+                {
+                title: 'Invitations',
+                href: '/deckhand-invitations',
+                icon: Mail, 
             },
             sharedItems[1],
         ];

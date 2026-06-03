@@ -46,7 +46,6 @@ class RequestsController extends Controller
                 $deckhandInfo = null;
 
                 if ($crewRole === 'captain' && $event) {
-
                     $existingDeckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
                         ->where('crew_role', 'deckhand')
                         ->with('deckhandProfile')
@@ -78,15 +77,15 @@ class RequestsController extends Controller
                     $mustSelectDeckhand = !$existingDeckhandResponse;
 
                     $deckhandInfo = [
-                        'selectedDeckhand'   => $existingDeckhandResponse ? [
+                        'selectedDeckhand'      => $existingDeckhandResponse ? [
                             'id'             => $existingDeckhandResponse->deckhandProfile?->id,
                             'name'           => $existingDeckhandResponse->deckhandProfile?->full_name ?? '—',
                             'responseStatus' => $existingDeckhandResponse->response,
                             'selectedByMe'   => $thisCaptainSelected,
                         ] : null,
-                        'availableDeckhands' => $availableDeckhands,
-                        'mustSelectDeckhand' => $mustSelectDeckhand,
-                        'canHireOutside'     => true,   // New flag
+                        'availableDeckhands'    => $availableDeckhands,
+                        'mustSelectDeckhand'    => $mustSelectDeckhand,
+                        'hasQualifiedDeckhands' => count($availableDeckhands) > 0, // Added for frontend logic
                     ];
                 }
 
@@ -113,7 +112,67 @@ class RequestsController extends Controller
         ]);
     }
 
+    /**
+     * NEW METHOD: Handles sending requests to one or multiple deckhands
+     */
+    public function selectDeckhand(Request $request, CharterCrewResponse $crewResponse): RedirectResponse
+    {
+        $user = Auth::user();
+        $profile = CaptainProfile::where('user_id', $user->id)->firstOrFail();
 
+        abort_if($crewResponse->profile_id !== $profile->id || $crewResponse->crew_role !== 'captain', 403);
+
+        $validated = $request->validate([
+            'deckhand_ids'   => ['required', 'array', 'min:1'],
+            'deckhand_ids.*' => ['uuid', 'exists:deckhand_profiles,id'],
+        ]);
+
+        $event = $crewResponse->charterEvent;
+        abort_if(!$event, 422, 'Charter event not found.');
+
+        // Prevent sending requests if a deckhand has already been hired (accepted)
+        $acceptedDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
+            ->where('crew_role', 'deckhand')
+            ->whereIn('response', ['available', 'accepted'])
+            ->exists();
+
+        if ($acceptedDeckhand) {
+            return back()->withErrors(['deckhand_ids' => 'A deckhand has already been hired for this charter.']);
+        }
+
+        foreach ($validated['deckhand_ids'] as $deckhandId) {
+            $validInterest = DeckhandVesselInterest::where('deckhand_id', $deckhandId)
+                ->where('vessel_id', $event->vessel_id)
+                ->where('status', 'accepted')
+                ->exists();
+
+            if (!$validInterest) {
+                continue; // Skip if not qualified
+            }
+
+            $exists = CharterCrewResponse::where('charter_event_id', $event->id)
+                ->where('profile_id', $deckhandId)
+                ->where('crew_role', 'deckhand')
+                ->exists();
+
+            if (!$exists) {
+                CharterCrewResponse::create([
+                    'charter_event_id'       => $event->id,
+                    'profile_id'             => $deckhandId,
+                    'crew_role'              => 'deckhand',
+                    'response'               => 'pending',
+                    'expires_at'             => now()->addHours(48),
+                    'selected_by_captain_id' => $profile->id,
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Deckhand request(s) sent successfully. You can now accept the charter request.');
+    }
+
+    /**
+     * UPDATED METHOD: Simplified to only handle charter acceptance/decline
+     */
     public function respond(Request $request, CharterCrewResponse $crewResponse): RedirectResponse
     {
         $user = Auth::user();
@@ -129,55 +188,22 @@ class RequestsController extends Controller
 
         abort_if($crewResponse->profile_id !== $profile->id || $crewResponse->crew_role !== $crewRole, 403);
 
-        if (!$isCaptain) {
-
-            $validated = $request->validate([
-                'response' => ['required', 'in:available,unavailable'],
-            ]);
-
-            $crewResponse->update([
-                'response'     => $validated['response'],
-                'responded_at' => now(),
-            ]);
-
-            return back()->with('success', 'Response submitted successfully.');
-        }
-
-
         $validated = $request->validate([
-            'response'    => ['required', 'in:available,unavailable'],
-            'deckhand_id' => ['nullable', 'uuid', 'exists:deckhand_profiles,id'],
+            'response' => ['required', 'in:available,unavailable'],
         ]);
 
-        $event = $crewResponse->charterEvent;
-        abort_if(!$event, 422, 'Charter event not found.');
+        // If a captain is accepting, ensure a deckhand has been selected/requested
+        if ($isCaptain && $validated['response'] === 'available') {
+            $event = $crewResponse->charterEvent;
+            abort_if(!$event, 422, 'Charter event not found.');
 
-        if ($validated['response'] === 'available') {
             $existingDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
                 ->where('crew_role', 'deckhand')
                 ->first();
 
             if (!$existingDeckhand) {
-                if (empty($validated['deckhand_id'])) {
-                    return back()->withErrors([
-                        'deckhand_id' => 'You must select a deckhand before accepting this request.'
-                    ]);
-                }
-
-                $validInterest = DeckhandVesselInterest::where('deckhand_id', $validated['deckhand_id'])
-                    ->where('vessel_id', $event->vessel_id)
-                    ->where('status', 'accepted')
-                    ->exists();
-
-                abort_if(!$validInterest, 422, 'This deckhand is not qualified for this vessel.');
-
-                CharterCrewResponse::create([
-                    'charter_event_id'       => $event->id,
-                    'profile_id'             => $validated['deckhand_id'],
-                    'crew_role'              => 'deckhand',
-                    'response'               => 'pending',
-                    'expires_at'             => now()->addHours(48),
-                    'selected_by_captain_id' => $profile->id,
+                return back()->withErrors([
+                    'deckhand' => 'You must select a deckhand before accepting this request.'
                 ]);
             }
         }

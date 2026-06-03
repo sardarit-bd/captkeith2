@@ -4,7 +4,7 @@ import type { AvailableDeckhand } from './requests-data';
 
 interface DeckhandSelectModalProps {
     deckhands: AvailableDeckhand[];
-    onConfirm: (deckhandId: string) => void;
+    onConfirm: (deckhandIds: string[]) => void;
     onCancel: () => void;
     isSubmitting: boolean;
 }
@@ -15,7 +15,13 @@ export function DeckhandSelectModal({
     onCancel,
     isSubmitting,
 }: DeckhandSelectModalProps) {
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    const toggleSelection = (id: string) => {
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+        );
+    };
 
     return (
         <div
@@ -28,11 +34,10 @@ export function DeckhandSelectModal({
                 <div className="flex items-center justify-between border-b border-[#f3f4f6] px-6 py-4">
                     <div>
                         <h2 className="text-[16px] font-bold text-[#111827]">
-                            Select a Deckhand
+                            Select Deckhand(s)
                         </h2>
                         <p className="mt-0.5 text-[12px] text-[#6b7280]">
-                            Choose one deckhand for this charter before
-                            accepting.
+                            Choose one or more deckhands to send a request. The first to accept will be hired.
                         </p>
                     </div>
                     <button
@@ -45,7 +50,7 @@ export function DeckhandSelectModal({
                     </button>
                 </div>
 
-                <div className="max-h-[340px] overflow-y-auto px-6 py-4">
+                <div className="max-h-85 overflow-y-auto px-6 py-4">
                     {deckhands.length === 0 ? (
                         <p className="py-6 text-center text-[13px] text-[#9ca3af]">
                             No available deckhands for this vessel.
@@ -53,12 +58,12 @@ export function DeckhandSelectModal({
                     ) : (
                         <ul className="space-y-3">
                             {deckhands.map((d) => {
-                                const isSelected = selectedId === d.id;
+                                const isSelected = selectedIds.includes(d.id);
                                 return (
                                     <li key={d.id}>
                                         <button
                                             type="button"
-                                            onClick={() => setSelectedId(d.id)}
+                                            onClick={() => toggleSelection(d.id)}
                                             className={`w-full rounded-xl border px-4 py-3 text-left transition-all ${
                                                 isSelected
                                                     ? 'border-[#111827] bg-[#f9fafb] ring-1 ring-[#111827]'
@@ -86,15 +91,12 @@ export function DeckhandSelectModal({
                                                         <span className="text-[12px] text-[#6b7280]">
                                                             {d.experience}
                                                         </span>
-                                                        <span className="text-[#d1d5db]">
-                                                            ·
-                                                        </span>
+                                                        <span className="text-[#d1d5db]">·</span>
                                                         <span className="text-[12px] text-[#6b7280]">
                                                             {d.rate}
                                                         </span>
                                                     </div>
-                                                    {(d.hasServer ||
-                                                        d.hasBartend) && (
+                                                    {(d.hasServer || d.hasBartend) && (
                                                         <div className="mt-1 flex flex-wrap gap-1">
                                                             {d.hasServer && (
                                                                 <span className="inline-flex items-center rounded-full bg-[#EFF6FF] px-2 py-0.5 text-[10px] font-medium text-[#2563eb]">
@@ -135,14 +137,12 @@ export function DeckhandSelectModal({
                     </button>
                     <button
                         type="button"
-                        disabled={!selectedId || isSubmitting}
-                        onClick={() => selectedId && onConfirm(selectedId)}
+                        disabled={selectedIds.length === 0 || isSubmitting}
+                        onClick={() => onConfirm(selectedIds)}
                         className="inline-flex items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         <Check className="h-4 w-4" />
-                        {isSubmitting
-                            ? 'Submitting…'
-                            : 'Confirm & Accept Request'}
+                        {isSubmitting ? 'Sending…' : 'Send Request(s)'}
                     </button>
                 </div>
             </div>

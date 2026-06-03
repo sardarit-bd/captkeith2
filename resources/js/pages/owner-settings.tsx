@@ -538,7 +538,7 @@ export default function OwnerSettingsPage() {
                                 type="button"
                                 onClick={savePreferences}
                                 disabled={savingPrefs}
-                                className="mt-6 rounded-lg bg-[#35ADD5] px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 cursor-pointer! disabled:opacity-50"
+                                className="mt-6 rounded-lg bg-[#35ADD5]! px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70! cursor-pointer! disabled:opacity-50"
                             >
                                 {savingPrefs ? 'Saving…' : 'Save Preferences'}
                             </button>

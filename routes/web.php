@@ -41,6 +41,26 @@
                 ->name('owner-settings.preferences');
             Route::patch('owner/settings/deactivate', [\App\Http\Controllers\OwnerSettingsController::class, 'deactivate'])
                 ->name('owner-settings.deactivate');
+                // Deckhands routes
+            Route::get('deckhands', [\App\Http\Controllers\DeckhandController::class, 'index'])->name('deckhands');
+            Route::post('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'store'])
+                ->name('deckhands.invite.store');
+            Route::delete('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'destroy'])
+                ->name('deckhands.invite.destroy');
+            Route::delete(
+                'deckhands/{deckhand}/revoke-acceptance',
+                [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'revokeAcceptance']
+            )->name('deckhands.revoke-acceptance');
+
+            Route::get(
+                'deckhand-requests',
+                [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'index']
+            )->name('deckhand-requests');
+
+            Route::patch(
+                'deckhand-requests/{interest}/respond',
+                [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'respond']
+            )->name('deckhand-requests.respond');
             Route::delete('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'destroy'])
                 ->name('owner-settings.destroy');
             Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
@@ -84,7 +104,7 @@
                 ->name('yachts-match');
             Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
             Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
-            Route::post('requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');
+            Route::patch('/requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');
             Route::get('account-preferences', [\App\Http\Controllers\AccountPreferencesController::class, 'index'])
                 ->name('account-preferences');
 
@@ -112,6 +132,11 @@
                 [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'respond']
             )->name('invitations.respond');
             Route::get('invitations', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'index'])->name('invitations');
+            Route::patch(
+            'deckhand-invitations/{invitation}/respond',
+            [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
+            )->name('deckhand-invitations.respond');
+            Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
         });
 
         Route::middleware('role:charterer')->group(function () {

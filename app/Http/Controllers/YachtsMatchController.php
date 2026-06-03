@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DeckhandVesselInterest;
 use App\Models\OwnerCaptainInvitation;
+use App\Models\OwnerDeckhandInvitation; 
 use App\Models\User;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
@@ -23,9 +24,9 @@ class YachtsMatchController extends Controller
 
         if (! $profile) {
             return Inertia::render('yachts-match', [
-                'vessels'          => [],
-                'profileMissing'   => true,
-                'interestStatuses' => [],
+                'vessels'                 => [],
+                'profileMissing'          => true,
+                'interestStatuses'        => [],
                 'ownerInvitationStatuses' => [],
             ]);
         }
@@ -67,10 +68,32 @@ class YachtsMatchController extends Controller
             }
         }
 
+        // 1. Fetch statuses BEFORE mapping the vessels
+        $interestStatuses        = [];
+        $ownerInvitationStatuses = [];
+
+        if ($isCaptain && $user->captainProfile) {
+            $ownerInvitationStatuses = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)
+                ->pluck('status', 'vessel_id')
+                ->toArray();
+
+            $interestStatuses = $ownerInvitationStatuses;
+        } elseif ($isDeckhand && $user->deckhandProfile) {
+            $invitations = OwnerDeckhandInvitation::where('deckhand_id', $user->deckhandProfile->id)->get();
+            foreach ($invitations as $inv) {
+                if ($inv->initiated_by === 'deckhand') {
+                    $interestStatuses[$inv->vessel_id] = $inv->status;
+                } else {
+                    $ownerInvitationStatuses[$inv->vessel_id] = $inv->status;
+                }
+            }
+        }
+
+        // 2. Map vessels and attach the statuses (Executed ONLY ONCE now)
         $vessels = $query
             ->latest()
             ->get()
-            ->map(function (Vessel $vessel) {
+            ->map(function (Vessel $vessel) use ($interestStatuses, $ownerInvitationStatuses) {
                 $photo          = $vessel->photos->first();
                 $qualifications = [];
 
@@ -102,40 +125,24 @@ class YachtsMatchController extends Controller
                 }
 
                 return [
-                    'id'             => $vessel->id,
-                    'name'           => $vessel->name,
-                    'registrationNo' => $vessel->official_number,
-                    'type'           => ucfirst($vessel->vessel_type ?? ''),
-                    'length'         => $vessel->length_ft ? $vessel->length_ft . ' ft' : null,
-                    'marina'         => $vessel->marina_name,
-                    'city'           => $vessel->marina_city,
-                    'state'          => $vessel->marina_state,
-                    'operatingArea'  => $vessel->operating_area,
-                    'qualifications' => $qualifications,
-                    'image'          => $photo?->image_path
+                    'id'                    => $vessel->id,
+                    'name'                  => $vessel->name,
+                    'registrationNo'        => $vessel->official_number,
+                    'type'                  => ucfirst($vessel->vessel_type ?? ''),
+                    'length'                => $vessel->length_ft ? $vessel->length_ft . ' ft' : null,
+                    'marina'                => $vessel->marina_name,
+                    'city'                  => $vessel->marina_city,
+                    'state'                 => $vessel->marina_state,
+                    'operatingArea'         => $vessel->operating_area,
+                    'qualifications'        => $qualifications,
+                    'image'                 => $photo?->image_path
                         ? Storage::url($photo->image_path)
                         : null,
-                    'ownerUserId'    => $vessel->owner?->user_id,
+                    'ownerUserId'           => $vessel->owner?->user_id,
+                    'interestStatus'        => $interestStatuses[$vessel->id] ?? null, 
+                    'ownerInvitationStatus' => $ownerInvitationStatuses[$vessel->id] ?? null,
                 ];
             });
-
-        $interestStatuses        = [];
-        $ownerInvitationStatuses = [];
-
-        if ($isCaptain && $user->captainProfile) {
-            // Single source of truth — OwnerCaptainInvitation covers both
-            // captain-initiated interest and owner-initiated invitations
-            $ownerInvitationStatuses = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)
-                ->pluck('status', 'vessel_id')
-                ->toArray();
-
-            // For captains, interestStatuses mirrors ownerInvitationStatuses
-            $interestStatuses = $ownerInvitationStatuses;
-        } elseif ($isDeckhand && $user->deckhandProfile) {
-            $interestStatuses = DeckhandVesselInterest::where('deckhand_id', $user->deckhandProfile->id)
-                ->pluck('status', 'vessel_id')
-                ->toArray();
-        }
 
         return Inertia::render('yachts-match', [
             'vessels'                 => $vessels,
