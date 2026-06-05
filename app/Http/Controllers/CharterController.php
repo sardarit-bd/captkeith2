@@ -72,7 +72,7 @@ class CharterController extends Controller
 
         $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
             ->whereNull('deleted_at')
-            ->whereIn('status', ['confirmed', 'booked', 'pending'])
+            ->whereNotIn('status', ['draft', 'completed', 'cancelled'])
             ->with(['vessel.photos', 'charterer.user'])
             ->latest('charter_date')
             ->get()
@@ -87,7 +87,7 @@ class CharterController extends Controller
                     : null,
                 'chartererName'   => $event->charterer?->user?->name ?? 'Pending',
                 'chartererAvatar' => null,
-                'status'          => ucfirst($event->status ?? 'Booked'),
+                'status' => ucfirst($event->status ?? 'Booked'),
             ]);
 
         return Inertia::render('charterers', [

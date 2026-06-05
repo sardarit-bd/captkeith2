@@ -16,7 +16,6 @@ class VesselPhoto extends Model
 {
     use HasUuids;
 
-
     public function vessel(): BelongsTo
     {
         return $this->belongsTo(Vessel::class);

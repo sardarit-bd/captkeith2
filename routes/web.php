@@ -137,6 +137,11 @@
             [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
             )->name('deckhand-invitations.respond');
             Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
+            Route::post('/requests/deckhand/send', [\App\Http\Controllers\RequestsController::class, 'sendDeckhandRequest'])
+                ->name('requests.send-deckhand');
+                
+            Route::post('/requests/deckhand/cancel', [\App\Http\Controllers\RequestsController::class, 'cancelDeckhandRequest'])
+                ->name('requests.cancel-deckhand');
         });
 
         Route::middleware('role:charterer')->group(function () {

@@ -37,7 +37,16 @@ export interface ChartererCompletedCharterItem {
 export interface ChartererDashboardData {
     role: string;
     stats: ChartererStats;
-    upcomingBooking: ChartererUpcomingBookingData | null;
+        upcomingBooking: {
+        captainName: string | null;
+        deckhand: {
+            name: string;
+            experience: string;
+            rate: string;
+            selectedBy: string;
+        } | null;
+    } | null;
     recentActivity: ChartererActivityItem[];
     completedCharters: ChartererCompletedCharterItem[];
+    
 }

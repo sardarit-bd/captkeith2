@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { Anchor, Calendar, Clock, MapPin, User } from 'lucide-react';
+import { Anchor, Calendar, Clock, MapPin, User, Briefcase, DollarSign, UserCheck } from 'lucide-react';
 import type { ChartererDashboardData } from './charterer-dashboard-types';
 
 const statusColors: Record<string, string> = {
@@ -19,7 +19,7 @@ export function ChartererUpcomingBooking() {
     const { dashboard } = usePage<{ dashboard: ChartererDashboardData }>()
         .props;
     const booking = dashboard.upcomingBooking;
-
+    console.log('Upcoming Booking:', booking);
     return (
         <section className="flex h-full flex-col rounded-[14px] border border-[#f1f5f9] bg-white p-6 shadow-sm sm:p-8">
             <div className="mb-6">
@@ -79,7 +79,35 @@ export function ChartererUpcomingBooking() {
                                 Captain: {booking.captainName}
                             </p>
                         )}
+
+                        
                     </div>
+                    {booking?.deckhand && (
+                        <div className="mt-5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                            <div className="mb-3 flex items-center gap-2">
+                                <UserCheck className="h-4 w-4 text-[#16a34a]" />
+                                <h5 className="text-[14px] font-bold text-[#111827]">Deckhand Selected</h5>
+                            </div>
+                            <div className="space-y-2.5">
+                                <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
+                                    <User className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                                    <span className="font-semibold text-[#111827]">{booking.deckhand.name}</span>
+                                </p>
+                                <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
+                                    <Briefcase className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                                    {booking.deckhand.experience}
+                                </p>
+                                <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
+                                    <DollarSign className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                                    {booking.deckhand.rate}
+                                </p>
+                                <p className="flex items-center gap-3 text-[13px] text-[#4b5563]">
+                                    <UserCheck className="h-4 w-4 shrink-0 text-[#9ca3af]" />
+                                    Selected by: <span className="font-medium text-[#111827]">{booking.deckhand.selectedBy}</span>
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </section>

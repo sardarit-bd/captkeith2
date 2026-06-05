@@ -59,12 +59,14 @@ interface VesselData {
     marina_state: string;
     marina_zip: string;
     operating_area: string;
+    passenger_capacity: string; 
     required_license_type: string;
     required_endorsement: string;
     required_tonnage_rating: string;
     required_years_experience: string;
     requires_deckhand: boolean;
     existing_photos: ExistingPhoto[];
+    passengerCapacity: string;
 }
 
 type VesselFormData = {
@@ -82,6 +84,7 @@ type VesselFormData = {
     marina_state: string;
     marina_zip: string;
     operating_area: string;
+    passenger_capacity: string; 
     required_license_type: string;
     required_endorsement: string;
     required_tonnage_rating: string;
@@ -138,6 +141,7 @@ export default function CreateYachtPage() {
             marina_state: vessel?.marina_state ?? '',
             marina_zip: vessel?.marina_zip ?? '',
             operating_area: vessel?.operating_area ?? '',
+            passenger_capacity: vessel?.passenger_capacity ?? '',
             required_license_type: vessel?.required_license_type ?? '',
             required_endorsement: vessel?.required_endorsement ?? '',
             required_tonnage_rating: vessel?.required_tonnage_rating ?? '',
@@ -229,6 +233,8 @@ export default function CreateYachtPage() {
             formData.append('marina_state', data.marina_state);
             formData.append('marina_zip', data.marina_zip);
             formData.append('operating_area', data.operating_area);
+            formData.append('passenger_capacity', data.passenger_capacity); 
+            // formData.append('passengerCapacity', data.passengerCapacity);
             formData.append(
                 'required_license_type',
                 data.required_license_type,
@@ -248,8 +254,7 @@ export default function CreateYachtPage() {
             );
             newPhotos.forEach((p) => formData.append('photos[]', p.file));
             documents.forEach((d) => formData.append('documents[]', d.file));
-
-            router.post(`/my-yachts/${vessel.id}?_method=PUT`, formData, {
+            router.put(`/my-yachts/${vessel.id}`, formData, {
                 onSuccess: () => {
                     setNewPhotos([]);
                     setDocuments([]);
@@ -636,6 +641,32 @@ export default function CreateYachtPage() {
                                 />
                                 <FieldError message={errors.operating_area} />
                             </div>
+
+
+
+                                <div className="mt-6">
+                                    <label className="mb-2 block text-sm font-semibold text-gray-900">
+                                        Passenger Capacity
+                                        <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        placeholder="8"
+                                        min="1"
+                                        max="1000"
+                                        value={data.passenger_capacity}
+                                        onChange={(e) =>
+                                            setData('passenger_capacity', e.target.value)
+                                        }
+                                        className={
+                                            errors.passenger_capacity
+                                                ? inputErrCls
+                                                : inputCls
+                                        }
+                                    />
+                                    <FieldError message={errors.passenger_capacity} />
+                                </div>
+
 
                             <div className="mt-6">
                                 <label className="mb-2 block text-sm font-semibold text-gray-900">

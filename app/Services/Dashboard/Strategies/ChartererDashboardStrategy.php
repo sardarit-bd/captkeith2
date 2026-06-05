@@ -15,9 +15,7 @@ class ChartererDashboardStrategy implements DashboardStrategy
 {
     use AuthorizesDashboardAccess;
 
-    /**
-     * Statuses that count as "active" bookings.
-     */
+
     private const ACTIVE_STATUSES = [
         'awaiting_responses',
         'ready_for_charterer',
@@ -28,18 +26,14 @@ class ChartererDashboardStrategy implements DashboardStrategy
         'insurance_complete',
     ];
 
-    /**
-     * Statuses that count as "pending" (waiting on something from the charterer).
-     */
+ 
     private const PENDING_STATUSES = [
         'ready_for_charterer',
         'agreements_pending',
         'insurance_pending',
     ];
 
-    /**
-     * Statuses considered "upcoming" (charter hasn't happened yet).
-     */
+
     private const UPCOMING_STATUSES = [
         'awaiting_responses',
         'ready_for_charterer',
@@ -75,11 +69,11 @@ class ChartererDashboardStrategy implements DashboardStrategy
 
         $allEvents = CharterEvent::where('charterer_id', $profile->id)
             ->whereNull('deleted_at')
-            ->with(['vessel.photos', 'selectedCaptain'])
+            ->with(['vessel.photos', 'selectedCaptain', 'selectedDeckhand'])
             ->latest('updated_at')
             ->get();
 
-        // Upcoming: active status AND charter date is today or in the future
+  
         $upcoming = $allEvents
             ->whereIn('status', self::UPCOMING_STATUSES)
             ->filter(fn(CharterEvent $e) => $e->charter_date?->gte(now()->startOfDay()))
@@ -93,28 +87,59 @@ class ChartererDashboardStrategy implements DashboardStrategy
         $totalBooked    = $allEvents->whereIn('status', self::ACTIVE_STATUSES)->count();
         $totalCompleted = $allEvents->where('status', 'completed')->count();
         $totalPending   = $allEvents->whereIn('status', self::PENDING_STATUSES)->count();
-        $totalSpent     = 0; // extend when payments are tracked
+        $totalSpent     = 0; 
 
         $upcomingBooking = null;
         if ($upcoming) {
             $vessel = $upcoming->vessel;
             $photo  = $vessel?->photos->first();
 
+            $deckhandInfo = null;
+            
+       
+            if ($upcoming->selected_deckhand_id && $upcoming->selectedDeckhand) {
+                $dProfile = $upcoming->selectedDeckhand;
+                
+         
+                $deckhandResponse = \App\Models\CharterCrewResponse::where('charter_event_id', $upcoming->id)
+                    ->where('profile_id', $dProfile->id)
+                    ->where('crew_role', 'deckhand')
+                    ->with(['selectingCaptain'])
+                    ->first();
+                
+                $deckhandInfo = [
+                    'name'       => $dProfile->full_name ?? '—',
+                    'experience' => $dProfile->years_experience ? $dProfile->years_experience . ' years experience' : '—',
+                    'rate'       => $dProfile->hourly_rate ? '$' . number_format($dProfile->hourly_rate, 0) . '/hr' : '—',
+                    'selectedBy' => $deckhandResponse?->selectingCaptain?->full_name ?? 'Unknown Captain',
+                ];
+            } else {
+            
+                $deckhandResponse = \App\Models\CharterCrewResponse::where('charter_event_id', $upcoming->id)
+                    ->where('crew_role', 'deckhand')
+                    ->with(['deckhandProfile', 'selectingCaptain'])
+                    ->first();
+
+                if ($deckhandResponse && $deckhandResponse->deckhandProfile) {
+                    $dProfile = $deckhandResponse->deckhandProfile;
+                    $deckhandInfo = [
+                        'name'       => $dProfile->full_name ?? '—',
+                        'experience' => $dProfile->years_experience ? $dProfile->years_experience . ' years experience' : '—',
+                        'rate'       => $dProfile->hourly_rate ? '$' . number_format($dProfile->hourly_rate, 0) . '/hr' : '—',
+                        'selectedBy' => $deckhandResponse->selectingCaptain?->full_name ?? 'Unknown Captain',
+                    ];
+                }
+            }
+
             $upcomingBooking = [
                 'id'          => $upcoming->id,
                 'yachtName'   => $vessel?->name ?? '—',
-                'yachtImage'  => $photo?->image_path
-                    ? Storage::url($photo->image_path)
-                    : null,
+                'yachtImage'  => $photo?->image_path ? Storage::url($photo->image_path) : null,
                 'status'      => $upcoming->status,
                 'statusLabel' => $this->statusLabel($upcoming->status),
                 'date'        => $upcoming->charter_date?->format('M d, Y') ?? '—',
-                'startTime'   => $upcoming->start_time
-                    ? Carbon::parse($upcoming->start_time)->format('g:i A')
-                    : '—',
-                'duration'    => $upcoming->duration_minutes
-                    ? round($upcoming->duration_minutes / 60, 1) . ' hrs'
-                    : '—',
+                'startTime'   => $upcoming->start_time ? Carbon::parse($upcoming->start_time)->format('g:i A') : '—',
+                'duration'    => $upcoming->duration_minutes ? round($upcoming->duration_minutes / 60, 1) . ' hrs' : '—',
                 'marina'      => $vessel
                     ? trim(
                         collect([
@@ -125,6 +150,7 @@ class ChartererDashboardStrategy implements DashboardStrategy
                     )
                     : '—',
                 'captainName' => $upcoming->selectedCaptain?->full_name ?? null,
+                'deckhand'    => $deckhandInfo, 
             ];
         }
 
@@ -134,7 +160,7 @@ class ChartererDashboardStrategy implements DashboardStrategy
                 'yachtName' => $event->vessel?->name ?? '—',
                 'captain'   => $event->selectedCaptain?->full_name ?? 'No captain assigned',
                 'date'      => $event->charter_date?->format('M d, Y') ?? '—',
-                'rating'    => 5, // extend when ratings are tracked
+                'rating'    => 5, 
             ];
         })->values()->toArray();
 

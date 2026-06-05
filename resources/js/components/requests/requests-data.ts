@@ -1,11 +1,14 @@
+
 export type AvailableDeckhand = {
     id: string;
     name: string;
-    photo: string | null;
+    photo?: string | null;
     experience: string;
     rate: string;
-    hasServer: boolean;
-    hasBartend: boolean;
+    hasServer?: boolean;
+    hasBartend?: boolean;
+    requestStatus?: 'none' | 'pending' | 'accepted' | 'declined';
+    requestId?: string | null;
 };
 
 export type SelectedDeckhandInfo = {

@@ -2,12 +2,18 @@ import { Calendar, Ship, User } from 'lucide-react';
 import type { ActiveBooking } from './charterers-data';
 
 const STATUS_STYLES: Record<string, string> = {
-    Booked: 'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669]',
-    Confirmed: 'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669]',
-    Pending: 'border-[#FEF3C7] bg-[#FFFBEB] text-[#D97706]',
-    Cancelled: 'border-[#FEE2E2] bg-[#FFF1F2] text-[#E11D48]',
+    'Booked':               'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669]',
+    'Confirmed':            'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669]',
+    'Pending':              'border-[#FEF3C7] bg-[#FFFBEB] text-[#D97706]',
+    'Awaiting Responses':   'border-[#DBEAFE] bg-[#EFF6FF] text-[#2563EB]',
+    'Ready for Charterer':  'border-[#DBEAFE] bg-[#EFF6FF] text-[#2563EB]',
+    'Captain Selected':     'border-[#E9D5FF] bg-[#F5F3FF] text-[#7C3AED]',
+    'Agreements Pending':   'border-[#FEF3C7] bg-[#FFFBEB] text-[#D97706]',
+    'Agreements Signed':    'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669]',
+    'Insurance Pending':    'border-[#FEF3C7] bg-[#FFFBEB] text-[#D97706]',
+    'Insurance Complete':   'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669]',
+    'Cancelled':            'border-[#FEE2E2] bg-[#FFF1F2] text-[#E11D48]',
 };
-
 export function CharterersActiveBookingCard({
     booking,
 }: {
@@ -82,7 +88,7 @@ export function CharterersActiveBookingCard({
                 <span
                     className={`inline-flex shrink-0 items-center rounded-full border px-4 py-1.5 text-xs font-bold tracking-wide ${statusCls}`}
                 >
-                    {booking.status}
+                    {booking.status=="awaiting_responses" ? "awaiting responses" : booking.status}
                 </span>
             </div>
         </article>

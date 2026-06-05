@@ -18,6 +18,7 @@ class RequestsController extends Controller
     public function index(): Response
     {
         $user = Auth::user();
+        
 
         if ($user->hasRole('captain')) {
             $profile  = CaptainProfile::where('user_id', $user->id)->firstOrFail();
@@ -54,27 +55,42 @@ class RequestsController extends Controller
                     $thisCaptainSelected = $existingDeckhandResponse
                         && $existingDeckhandResponse->selected_by_captain_id === $profile->id;
 
-                    $availableDeckhands = DeckhandVesselInterest::where('vessel_id', $vessel?->id)
-                        ->where('status', 'accepted')
+                    $approvedInvitations = \App\Models\OwnerDeckhandInvitation::where('vessel_id', $vessel?->id)
+                        ->where('status', 'accepted') 
                         ->with(['deckhand.user'])
-                        ->get()
-                        ->map(function ($interest) {
-                            $deckhand = $interest->deckhand;
-                            $user = $deckhand?->user;
-                            return [
-                                'id'         => $deckhand?->id,
-                                'name'       => $deckhand?->full_name ?? $user?->name ?? '—',
-                                'photo'      => $deckhand?->photo_path ? Storage::url($deckhand->photo_path) : null,
-                                'experience' => $deckhand?->years_experience ? $deckhand->years_experience . ' yrs experience' : '—',
-                                'rate'       => $deckhand?->hourly_rate ? '$' . number_format($deckhand->hourly_rate, 0) . '/hr' : '—',
-                                'hasServer'  => (bool) ($deckhand?->has_server_experience ?? false),
-                                'hasBartend' => (bool) ($deckhand?->has_bartending_experience ?? false),
-                            ];
-                        })
-                        ->values()
+                        ->get();
+
+                    $hiredDeckhandIds = CharterCrewResponse::where('charter_event_id', $event->id)
+                        ->where('crew_role', 'deckhand')
+                        ->where('response', 'accepted')
+                        ->pluck('profile_id')
                         ->toArray();
 
-                    $mustSelectDeckhand = !$existingDeckhandResponse;
+                    $availableDeckhands = \App\Models\DeckhandProfile::query()
+                        ->with('user') 
+                        ->leftJoin('charter_crew_responses as ccr', function($join) use ($event, $profile) {
+                            $join->on('ccr.profile_id', '=', 'deckhand_profiles.id')
+                                ->where('ccr.charter_event_id', $event->id)
+                                ->where('ccr.crew_role', 'deckhand')
+                                ->where('ccr.selected_by_captain_id', $profile->id);
+                        })
+                        ->addSelect('deckhand_profiles.*', 'ccr.response as request_status', 'ccr.id as request_id')
+                        ->get()
+                        ->map(function($deckhand) {
+                            return [
+                                'id' => $deckhand->id,
+                                'name' => $deckhand->user->name ?? 'Unknown',
+                                'photo' => $deckhand->photo_path ? asset('storage/' . $deckhand->photo_path) : null,
+                                'experience' => ($deckhand->experience_years ?? 0) . ' years',
+                                'rate' => '$' . ($deckhand->daily_rate ?? 0) . '/day',
+                                'hasServer' => (bool) ($deckhand->has_server ?? false),
+                                'hasBartend' => (bool) ($deckhand->has_bartend ?? false),
+                                'requestStatus' => $deckhand->request_status ?? 'none',
+                                'requestId' => $deckhand->request_id,
+                            ];
+                        });
+
+                    $mustSelectDeckhand = empty($hiredDeckhandIds);
 
                     $deckhandInfo = [
                         'selectedDeckhand'      => $existingDeckhandResponse ? [
@@ -85,7 +101,7 @@ class RequestsController extends Controller
                         ] : null,
                         'availableDeckhands'    => $availableDeckhands,
                         'mustSelectDeckhand'    => $mustSelectDeckhand,
-                        'hasQualifiedDeckhands' => count($availableDeckhands) > 0, // Added for frontend logic
+                        'hasQualifiedDeckhands' => count($availableDeckhands) > 0,
                     ];
                 }
 
@@ -112,9 +128,63 @@ class RequestsController extends Controller
         ]);
     }
 
-    /**
-     * NEW METHOD: Handles sending requests to one or multiple deckhands
-     */
+
+public function sendDeckhandRequest(Request $request)
+{
+    $validated = $request->validate([
+        'charter_event_id' => 'required|exists:charter_events,id',
+        'deckhand_profile_id' => 'required|exists:deckhand_profiles,id',
+    ]);
+
+    $captainProfileId = auth()->user()->captainProfile->id;
+
+
+    $alreadyHired = \App\Models\CharterCrewResponse::where('charter_event_id', $validated['charter_event_id'])
+        ->where('profile_id', $validated['deckhand_profile_id'])
+        ->where('response', 'accepted')
+        ->exists();
+
+    if ($alreadyHired) {
+        return back()->withErrors(['deckhand' => 'This deckhand is already hired for this charter.']);
+    }
+
+
+    \App\Models\CharterCrewResponse::updateOrCreate(
+        [
+            'charter_event_id' => $validated['charter_event_id'],
+            'profile_id' => $validated['deckhand_profile_id'],
+            'crew_role' => 'deckhand',
+            'selected_by_captain_id' => $captainProfileId,
+        ],
+        [
+            'response' => 'pending',
+            'responded_at' => null,
+            'expires_at' => now()->addDays(3),
+        ]
+    );
+
+    return back()->with('success', 'Request sent successfully!');
+}
+
+
+public function cancelDeckhandRequest(Request $request)
+{
+    $validated = $request->validate([
+        'charter_event_id' => 'required|exists:charter_events,id',
+        'deckhand_profile_id' => 'required|exists:deckhand_profiles,id',
+    ]);
+
+    $captainProfileId = auth()->user()->captainProfile->id;
+
+    \App\Models\CharterCrewResponse::where('charter_event_id', $validated['charter_event_id'])
+        ->where('profile_id', $validated['deckhand_profile_id'])
+        ->where('selected_by_captain_id', $captainProfileId)
+        ->where('response', 'pending')
+        ->delete();
+
+    return back()->with('success', 'Request cancelled.');
+}
+
     public function selectDeckhand(Request $request, CharterCrewResponse $crewResponse): RedirectResponse
     {
         $user = Auth::user();
@@ -130,49 +200,47 @@ class RequestsController extends Controller
         $event = $crewResponse->charterEvent;
         abort_if(!$event, 422, 'Charter event not found.');
 
-        // Prevent sending requests if a deckhand has already been hired (accepted)
-        $acceptedDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
+      
+        $hiredDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
             ->where('crew_role', 'deckhand')
-            ->whereIn('response', ['available', 'accepted'])
+            ->where('response', 'accepted')
             ->exists();
 
-        if ($acceptedDeckhand) {
+        if ($hiredDeckhand) {
             return back()->withErrors(['deckhand_ids' => 'A deckhand has already been hired for this charter.']);
         }
 
         foreach ($validated['deckhand_ids'] as $deckhandId) {
-            $validInterest = DeckhandVesselInterest::where('deckhand_id', $deckhandId)
+         
+            $validInvitation = \App\Models\OwnerDeckhandInvitation::where('deckhand_id', $deckhandId)
                 ->where('vessel_id', $event->vessel_id)
-                ->where('status', 'accepted')
+                ->where('status', 'approved')
                 ->exists();
 
-            if (!$validInterest) {
-                continue; // Skip if not qualified
+            if (!$validInvitation) {
+                continue; 
             }
 
-            $exists = CharterCrewResponse::where('charter_event_id', $event->id)
-                ->where('profile_id', $deckhandId)
-                ->where('crew_role', 'deckhand')
-                ->exists();
-
-            if (!$exists) {
-                CharterCrewResponse::create([
-                    'charter_event_id'       => $event->id,
-                    'profile_id'             => $deckhandId,
-                    'crew_role'              => 'deckhand',
+           
+            CharterCrewResponse::updateOrCreate(
+                [
+                    'charter_event_id' => $event->id,
+                    'profile_id'       => $deckhandId,
+                    'crew_role'        => 'deckhand',
+                ],
+                [
                     'response'               => 'pending',
                     'expires_at'             => now()->addHours(48),
                     'selected_by_captain_id' => $profile->id,
-                ]);
-            }
+                    'responded_at'           => null, 
+                ]
+            );
         }
 
         return back()->with('success', 'Deckhand request(s) sent successfully. You can now accept the charter request.');
     }
 
-    /**
-     * UPDATED METHOD: Simplified to only handle charter acceptance/decline
-     */
+
     public function respond(Request $request, CharterCrewResponse $crewResponse): RedirectResponse
     {
         $user = Auth::user();
@@ -192,7 +260,7 @@ class RequestsController extends Controller
             'response' => ['required', 'in:available,unavailable'],
         ]);
 
-        // If a captain is accepting, ensure a deckhand has been selected/requested
+   
         if ($isCaptain && $validated['response'] === 'available') {
             $event = $crewResponse->charterEvent;
             abort_if(!$event, 422, 'Charter event not found.');

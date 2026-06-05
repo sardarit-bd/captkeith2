@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeckhandVesselInterest;
 use App\Models\OwnerCaptainInvitation;
 use App\Models\OwnerDeckhandInvitation; 
 use App\Models\User;

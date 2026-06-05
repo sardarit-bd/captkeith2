@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { AlertCircle, Check, MessageSquare, Ship, User, X } from 'lucide-react';
-import { respond, selectDeckhand } from '@/routes/requests'; 
+import { respond, selectDeckhand, sendDeckhand, cancelDeckhand } from '@/routes/requests'; 
 import { DeckhandSelectModal } from './deckhand-select-modal';
 import type { CaptainRequestRecord } from './requests-data';
 
@@ -74,7 +74,7 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
     const mustSelectDeckhand = deckhandInfo?.mustSelectDeckhand === true;
     const hasQualifiedDeckhands = deckhandInfo?.hasQualifiedDeckhands === true;
     const deckhandAlreadySelected = !!deckhandInfo?.selectedDeckhand;
-    const isAcceptDisabled = !isPending || isSubmitting || (!isInvitation && mustSelectDeckhand);
+    const isAcceptDisabled = !isPending || isSubmitting || (!isInvitation && mustSelectDeckhand && !deckhandAlreadySelected);
     const isSelectDeckhandDisabled = !isPending || isSubmitting || deckhandAlreadySelected || !hasQualifiedDeckhands || isInvitation;
 
     function handleAcceptClick() {
@@ -228,13 +228,24 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
                     )}
                 </footer>
             </article>
-
+            
             {showDeckhandModal && deckhandInfo && (
                 <DeckhandSelectModal
                     deckhands={deckhandInfo.availableDeckhands}
-                    isSubmitting={isSubmitting}
-                    onConfirm={submitSelectDeckhand}
+                    onSendRequest={(id) => router.post(sendDeckhand().url, { 
+                        charter_event_id: request.charterEventId, 
+                        deckhand_profile_id: id 
+                    })}
+                    onCancelRequest={(id) => router.post(cancelDeckhand().url, { 
+                        charter_event_id: request.charterEventId, 
+                        deckhand_profile_id: id 
+                    })}
+                    onResendRequest={(id) => router.post(sendDeckhand().url, { 
+                        charter_event_id: request.charterEventId, 
+                        deckhand_profile_id: id 
+                    })}
                     onCancel={() => setShowDeckhandModal(false)}
+                    isSubmitting={isSubmitting}
                 />
             )}
         </>

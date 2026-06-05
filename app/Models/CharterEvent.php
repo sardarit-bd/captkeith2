@@ -22,10 +22,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'status',
     'invite_token',
     'invite_token_expires_at',
+    'passengerCapacity', // New field added without _
 ])]
 class CharterEvent extends Model
 {
     use HasUuids, SoftDeletes;
+
+    // REMOVED: protected $table = 'charterEvents'; 
+    // Laravel will now correctly look for the default 'charter_events' table.
 
     public function vessel(): BelongsTo
     {
@@ -77,9 +81,6 @@ class CharterEvent extends Model
         return $this->hasOne(InsurancePolicy::class, 'charter_event_id');
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
