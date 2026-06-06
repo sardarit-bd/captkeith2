@@ -81,13 +81,20 @@ export function RequestCard({ request }: { request: CaptainRequestRecord }) {
         submitAccept();
     }
 
-    function submitAccept() {
-        setIsSubmitting(true);
-        router.patch(respond({ crewResponse: request.id }).url, { response: 'available' }, {
+function submitAccept() {
+    setIsSubmitting(true);
+    router.patch(respond({ crewResponse: request.id }).url, 
+        { response: 'available' }, 
+        {
             preserveScroll: true,
+            onError: (errors) => {
+                setIsSubmitting(false);
+                // Handle specific errors
+            },
             onFinish: () => setIsSubmitting(false),
-        });
-    }
+        }
+    );
+}
 
     function submitSelectDeckhand(deckhandIds: string[]) {
         setIsSubmitting(true);

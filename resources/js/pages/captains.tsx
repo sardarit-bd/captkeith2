@@ -1,3 +1,4 @@
+
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     Award,
@@ -16,7 +17,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { captains } from '@/routes';
-
 interface Captain {
     id: string;
     user_id: string;
@@ -440,6 +440,13 @@ export default function CaptainsPage() {
             },
         );
     };
+
+        const handleClearFilters = () => {
+            router.get(captains().url, {}, { 
+                preserveState: true, 
+                replace: true 
+            });
+        };
 
     const hasActiveFilters = licenseType !== '' || minExperience !== '';
 

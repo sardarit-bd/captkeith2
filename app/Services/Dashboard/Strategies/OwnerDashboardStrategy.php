@@ -68,7 +68,10 @@ class OwnerDashboardStrategy implements DashboardStrategy
 
         $recentVessels = Vessel::where('owner_id', $ownerProfile->id)
             ->whereNull('deleted_at')
-            ->with(['photos' => fn($q) => $q->orderBy('display_order')->limit(1)])
+            ->with([
+                'photos' => fn($q) => $q->orderBy('display_order')->limit(1),
+                'charterEvents.hireAgreements' 
+            ])
             ->latest()
             ->limit(5)
             ->get()
@@ -78,12 +81,23 @@ class OwnerDashboardStrategy implements DashboardStrategy
                     ? Storage::url($photo->image_path)
                     : null;
 
+                
+                $agreements = $vessel->charterEvents->flatMap(function ($event) {
+                    return $event->hireAgreements->map(function ($agreement) {
+                        return [
+                            'id' => $agreement->id,
+                            'type' => ucfirst(str_replace('_', ' ', $agreement->agreement_type ?? 'agreement')),
+                        ];
+                    });
+                })->values();
+
                 return [
                     'id'         => $vessel->id,
                     'name'       => $vessel->name,
                     'spec'       => trim(($vessel->vessel_type ?? '') . ' • ' . ($vessel->length_ft ? (int) $vessel->length_ft . 'ft' : ''), ' •'),
                     'marina'     => $vessel->marina_name ?? $vessel->marina_city ?? '—',
                     'photo_url'  => $photoUrl,
+                    'agreements' => $agreements, 
                 ];
             });
 

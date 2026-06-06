@@ -30,15 +30,34 @@ class CharterController extends Controller
             ]);
         }
 
-        $vessels = Vessel::where('owner_id', $owner->id)
-            ->whereNull('deleted_at')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get()
-            ->map(fn(Vessel $v) => [
-                'value' => $v->id,
-                'label' => $v->name,
-            ]);
+            $vessels = Vessel::where('owner_id', $owner->id)
+                ->whereNull('deleted_at')
+                ->where('is_active', true)
+                ->with(['charterEvents.hireAgreements'])
+                ->orderBy('name')
+                ->get()
+                ->map(function(Vessel $v) {
+                    $agreements = $v->charterEvents->flatMap(function($event) {
+                        return $event->hireAgreements->map(function($agreement) {
+                            return [
+                                'id' => $agreement->id,
+                                'type' => ucfirst(str_replace('_', ' ', $agreement->agreement_type ?? 'agreement')),
+                                'signedAt' => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
+                            ];
+                        });
+                    })->values();
+
+                    return [
+                        'value' => $v->id,
+                        'label' => $v->name,
+                        'id' => $v->id,
+                        'name' => $v->name,
+                        'registrationNo' => $v->official_number ?? '—',
+                        'image' => $v->photos->first() ? Storage::url($v->photos->first()->image_path) : null,
+                        'agreements' => $agreements,
+                        // ... add other fields as needed for YachtRecord
+                    ];
+                });
 
         $vesselIds = Vessel::where('owner_id', $owner->id)
             ->whereNull('deleted_at')
@@ -176,8 +195,7 @@ class CharterController extends Controller
         }
 
         $vessel = $event->vessel;
-        // If the owner deleted the yacht, $vessel will be null. 
-        // Abort with a 404 to show the Not Found page.
+       
         if (! $vessel) {
             abort(404, 'The yacht associated with this booking is no longer available.');
         }
@@ -678,9 +696,9 @@ class CharterController extends Controller
                 [
                     'charter_event_id' => $event->id,
                     'charterer_id'     => $charterer->id,
-                    'captain_profile_id' => $captain->id,
+                    'captain_profile_id' => null, 
                     'agreement_type'   => 'bareboat',
-                    'crew_role'        => 'captain',
+                    'crew_role'        => 'owner',
                 ],
                 [
                     'pdf_path'    => $bareboadPath,

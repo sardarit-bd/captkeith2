@@ -1,7 +1,8 @@
 import { usePage, Link } from '@inertiajs/react';
-import { Ship } from 'lucide-react';
+import { Download, Ship } from 'lucide-react';
 import { myYachts } from '@/routes';
 import type { OwnerDashboardProps } from '@/types';
+
 
 type DashboardPageProps = {
     dashboard?: OwnerDashboardProps;
@@ -27,38 +28,51 @@ export function OwnerYachtsList() {
                             No vessels registered yet.
                         </p>
                     ) : (
-                        vessels.map((vessel) => (
-                            <div
-                                key={vessel.id}
-                                className="flex items-center justify-between gap-3"
-                            >
-                                <div className="flex items-center gap-3">
-                                    {vessel.photo_url ? (
-                                        <img
-                                            src={vessel.photo_url}
-                                            alt={vessel.name}
-                                            className="h-12 w-12 rounded-lg object-cover"
-                                        />
-                                    ) : (
-                                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-[#EFF6FF]">
-                                            <Ship className="h-6 w-6 text-[#2563eb]" />
-                                        </span>
-                                    )}
-                                    <div>
-                                        <p className="text-[13px] font-semibold text-[#111827]">
-                                            {vessel.name}
-                                        </p>
-                                        <p className="text-[12.5px] text-[#6b7280]">
-                                            {vessel.spec}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <span className="rounded-full bg-[#E8F5EE] px-3 py-1 text-[11px] font-medium text-[#35ADD5]">
-                                    {vessel.marina}
+                    vessels.map((vessel) => (
+                    <div
+                        key={vessel.id}
+                        className="flex items-center justify-between gap-3"
+                    >
+                        <div className="flex items-center gap-3 flex-1">
+                            {vessel.photo_url ? (
+                                <img
+                                    src={vessel.photo_url}
+                                    alt={vessel.name}
+                                    className="h-12 w-12 rounded-lg object-cover"
+                                />
+                            ) : (
+                                <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-[#EFF6FF]">
+                                    <Ship className="h-6 w-6 text-[#2563eb]" />
                                 </span>
+                            )}
+                            <div className="flex-1">
+                                <p className="text-[13px] font-semibold text-[#111827]">
+                                    {vessel.name}
+                                </p>
+                                <p className="text-[12.5px] text-[#6b7280]">
+                                    {vessel.spec}
+                                </p>
                             </div>
-                        ))
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            {vessel.agreements && vessel.agreements.length > 0 && (
+                                <a
+                                    href={`/charterer/agreement/${vessel.agreements[0].id}/download`}
+                                    className="inline-flex items-center gap-1 rounded-lg bg-[#EFF8FD] px-2.5 py-1.5 text-[11px] font-medium text-[#35ADD5] hover:bg-[#35ADD5] hover:text-white transition-colors"
+                                    download
+                                    title="Download Agreement"
+                                >
+                                    <Download className="h-3 w-3" />
+                                    {vessel.agreements.length}
+                                </a>
+                            )}
+                            <span className="rounded-full bg-[#E8F5EE] px-3 py-1 text-[11px] font-medium text-[#35ADD5]">
+                                {vessel.marina}
+                            </span>
+                        </div>
+                    </div>
+                ))
                     )}
                 </div>
             </div>

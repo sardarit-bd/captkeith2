@@ -60,6 +60,9 @@ class RequestsController extends Controller
                         ->with(['deckhand.user'])
                         ->get();
 
+                    
+                    $approvedDeckhandIds = $approvedInvitations->pluck('deckhand_id')->toArray();
+
                     $hiredDeckhandIds = CharterCrewResponse::where('charter_event_id', $event->id)
                         ->where('crew_role', 'deckhand')
                         ->where('response', 'accepted')
@@ -68,6 +71,7 @@ class RequestsController extends Controller
 
                     $availableDeckhands = \App\Models\DeckhandProfile::query()
                         ->with('user') 
+                        ->whereIn('deckhand_profiles.id', $approvedDeckhandIds) 
                         ->leftJoin('charter_crew_responses as ccr', function($join) use ($event, $profile) {
                             $join->on('ccr.profile_id', '=', 'deckhand_profiles.id')
                                 ->where('ccr.charter_event_id', $event->id)
@@ -137,6 +141,20 @@ public function sendDeckhandRequest(Request $request)
     ]);
 
     $captainProfileId = auth()->user()->captainProfile->id;
+
+    $event = \App\Models\CharterEvent::find($validated['charter_event_id']);
+    if (!$event) {
+        return back()->withErrors(['charter_event_id' => 'Charter event not found.']);
+    }
+
+    $validInvitation = \App\Models\OwnerDeckhandInvitation::where('deckhand_id', $validated['deckhand_profile_id'])
+        ->where('vessel_id', $event->vessel_id)
+        ->where('status', 'accepted')
+        ->exists();
+
+    if (!$validInvitation) {
+        return back()->withErrors(['deckhand' => 'This deckhand is not approved by the owner for this specific vessel.']);
+    }
 
 
     $alreadyHired = \App\Models\CharterCrewResponse::where('charter_event_id', $validated['charter_event_id'])
@@ -214,7 +232,7 @@ public function cancelDeckhandRequest(Request $request)
          
             $validInvitation = \App\Models\OwnerDeckhandInvitation::where('deckhand_id', $deckhandId)
                 ->where('vessel_id', $event->vessel_id)
-                ->where('status', 'approved')
+                ->where('status', 'accepted') 
                 ->exists();
 
             if (!$validInvitation) {
@@ -260,15 +278,13 @@ public function cancelDeckhandRequest(Request $request)
             'response' => ['required', 'in:available,unavailable'],
         ]);
 
-   
-        if ($isCaptain && $validated['response'] === 'available') {
-            $event = $crewResponse->charterEvent;
-            abort_if(!$event, 422, 'Charter event not found.');
+        $event = $crewResponse->charterEvent; 
 
+        if ($isCaptain && $validated['response'] === 'available') {
             $existingDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
                 ->where('crew_role', 'deckhand')
                 ->first();
-
+            
             if (!$existingDeckhand) {
                 return back()->withErrors([
                     'deckhand' => 'You must select a deckhand before accepting this request.'

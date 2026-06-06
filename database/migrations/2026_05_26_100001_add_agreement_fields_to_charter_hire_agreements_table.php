@@ -8,11 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE charter_hire_agreements MODIFY crew_role ENUM('captain','deckhand','owner') NOT NULL");
+        Schema::table('charter_hire_agreements', function (Blueprint $table) {
+            $table->string('agreement_type')->nullable()->after('crew_role');
+            $table->string('pdf_path')->nullable()->after('agreement_type');
+        });
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE charter_hire_agreements MODIFY crew_role ENUM('captain','deckhand') NOT NULL");
+        Schema::table('charter_hire_agreements', function (Blueprint $table) {
+            $table->dropColumn(['agreement_type', 'pdf_path']);
+        });
     }
 };

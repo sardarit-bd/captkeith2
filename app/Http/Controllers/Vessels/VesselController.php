@@ -82,7 +82,10 @@ class VesselController extends Controller
 
         $vessels = Vessel::where('owner_id', $owner->id)
             ->whereNull('deleted_at')
-            ->with(['photos' => fn($q) => $q->orderBy('display_order')])
+      ->with([
+                'photos' => fn($q) => $q->orderBy('display_order'),
+                'charterEvents.hireAgreements' 
+            ])
             ->latest()
             ->get()
             ->map(function (Vessel $vessel) {
@@ -123,6 +126,7 @@ class VesselController extends Controller
                         'endorsement'       => $vessel->required_endorsement,
                         'min_experience'    => $vessel->required_years_experience,
                     ],
+                    'agreements' => $agreements
                 ];
             });
 

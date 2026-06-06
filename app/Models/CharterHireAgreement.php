@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'initiated_by',
     'payor',
     's3_key',
+    'pdf_path',       
+    'agreement_type', 
     'esign_envelope_id',
     'sign_status',
     'charterer_sign_url',

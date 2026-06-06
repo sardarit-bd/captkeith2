@@ -1,3 +1,4 @@
+import { show as showVessel } from '@/routes/vessels';
 import { Link, router } from '@inertiajs/react';
 import { AlertTriangle, Edit2, Ship, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -6,7 +7,7 @@ import {
     edit as editVessel,
     destroy as destroyVessel,
 } from '@/routes/my-yachts';
-import { show as showVessel } from '@/routes/vessels';
+
 
 const tabLabels: Record<YachtTab, string> = {
     details: 'Vessel Details',
@@ -306,8 +307,36 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                         </p>
                     </div>
 
-
                     <div className="flex gap-2">
+                        {yacht.agreements && yacht.agreements.length > 0 && (
+                            <div className="relative group">
+                                <button
+                                    type="button"
+                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#e5e7eb] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#374151] shadow-sm transition-all hover:border-[#3DB3DE] hover:text-[#3DB3DE]"
+                                >
+                                    <Download className="h-3.5 w-3.5" />
+                                    Agreements
+                                </button>
+                                <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-[#e5e7eb] bg-white p-2 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                    {yacht.agreements.map((agreement) => (
+                                        <a
+                                            key={agreement.id}
+                                            href={`/charterer/agreement/${agreement.id}/download`}
+                                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] text-[#374151] hover:bg-[#f3f4f6] transition-colors"
+                                            download
+                                        >
+                                            <Download className="h-3 w-3 text-[#35ADD5]" />
+                                            <div className="flex-1">
+                                                <p className="font-medium">{agreement.type}</p>
+                                                <p className="text-[10px] text-[#9ca3af]">
+                                                    {agreement.signedAt}
+                                                </p>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <Link
                             href={editVessel({ vessel: yacht.id }).url}
                             className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#e5e7eb] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#374151] shadow-sm transition-all hover:border-[#3DB3DE] hover:text-[#3DB3DE]"
@@ -324,7 +353,6 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                             Delete
                         </button>
                     </div>
-                </div>
 
                 <div className="flex flex-col lg:flex-row">
                     <div className="relative h-64 w-full shrink-0 lg:h-auto lg:w-96 xl:w-105">

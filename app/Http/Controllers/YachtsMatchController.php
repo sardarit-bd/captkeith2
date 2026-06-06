@@ -67,28 +67,30 @@ class YachtsMatchController extends Controller
             }
         }
 
-        // 1. Fetch statuses BEFORE mapping the vessels
         $interestStatuses        = [];
         $ownerInvitationStatuses = [];
 
         if ($isCaptain && $user->captainProfile) {
-            $ownerInvitationStatuses = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)
-                ->pluck('status', 'vessel_id')
-                ->toArray();
-
-            $interestStatuses = $ownerInvitationStatuses;
-        } elseif ($isDeckhand && $user->deckhandProfile) {
-            $invitations = OwnerDeckhandInvitation::where('deckhand_id', $user->deckhandProfile->id)->get();
+            $invitations = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)->get();
             foreach ($invitations as $inv) {
-                if ($inv->initiated_by === 'deckhand') {
+                if ($inv->initiated_by === 'captain') {
                     $interestStatuses[$inv->vessel_id] = $inv->status;
                 } else {
                     $ownerInvitationStatuses[$inv->vessel_id] = $inv->status;
                 }
             }
-        }
+        } elseif ($isDeckhand && $user->deckhandProfile) {
+                        $invitations = OwnerDeckhandInvitation::where('deckhand_id', $user->deckhandProfile->id)->get();
+                        foreach ($invitations as $inv) {
+                            if ($inv->initiated_by === 'deckhand') {
+                                $interestStatuses[$inv->vessel_id] = $inv->status;
+                            } else {
+                                $ownerInvitationStatuses[$inv->vessel_id] = $inv->status;
+                            }
+                        }
+                    }
 
-        // 2. Map vessels and attach the statuses (Executed ONLY ONCE now)
+ 
         $vessels = $query
             ->latest()
             ->get()
