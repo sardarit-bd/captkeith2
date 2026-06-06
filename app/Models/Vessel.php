@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'latitude',
     'longitude',
     'operating_area',
-    'passengerCapacity', // New field added without _
+    'passenger_capacity', 
     'requires_deckhand',
     'required_license_type',
     'required_endorsement',

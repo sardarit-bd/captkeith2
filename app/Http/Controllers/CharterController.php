@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\CaptainProfile;
 use App\Models\CharterCrewResponse;
 use App\Services\AgreementPdfService;
 
@@ -150,10 +149,10 @@ class CharterController extends Controller
                 ->with('error', 'This invite link has already been used.');
         }
 
-        return redirect()->route('charterer.request');
+        return redirect()->route('charterer.request', ['id' => $event->id]);
     }
 
-    public function request(): Response
+    public function request($id): Response
     {
         $charterer = ChartererProfile::where('user_id', auth()->id())->first();
 
@@ -177,6 +176,12 @@ class CharterController extends Controller
         }
 
         $vessel = $event->vessel;
+        // If the owner deleted the yacht, $vessel will be null. 
+        // Abort with a 404 to show the Not Found page.
+        if (! $vessel) {
+            abort(404, 'The yacht associated with this booking is no longer available.');
+        }
+
         $photo  = $vessel->photos->first();
         $marina = implode(', ', array_filter([
             $vessel->marina_name,
@@ -291,11 +296,11 @@ class CharterController extends Controller
             ->where('crew_role', 'captain')
             ->where('response', 'available')
             ->count();
-
         return Inertia::render('charterer/captain-select', [
-            'captains'      => $captains,
-            'acceptedCount' => $acceptedCount,
-            'slotsNeeded'   => max(0, 2 - $acceptedCount),
+            'charterEventId' => $event->id,
+            'captains'       => $captains,
+            'acceptedCount'  => $acceptedCount,
+            'slotsNeeded'    => max(0, 2 - $acceptedCount),
         ]);
     }
 

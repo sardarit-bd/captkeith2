@@ -7,7 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVesselRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return $this->user()->hasRole('owner');
@@ -16,69 +15,71 @@ class StoreVesselRequest extends FormRequest
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-public function rules(): array
-{
-    return [
-        'name' => ['required', 'string', 'max:100'],
-        'officialNumber' => ['required', 'string', 'max:50', 'unique:vessels,officialNumber'],
-        'make' => ['required', 'string', 'max:100'],
-        'model' => ['required', 'string', 'max:100'],
-        'vesselType' => ['required', 'string', 'in:power,sailing'],
-        'lengthFt' => ['required', 'numeric', 'min:1', 'max:9999'],
-        'beamFt' => ['required', 'numeric', 'min:1', 'max:9999'],
-        'draftFt' => ['required', 'numeric', 'min:0.1', 'max:999'],
-        'marinaName' => ['required', 'string', 'max:150'],
-        'marinaAddress' => ['required', 'string', 'max:255'],
-        'marinaCity' => ['required', 'string', 'max:100'],
-        'marinaState' => ['required', 'string', 'max:50'],
-        'marinaZip' => ['required', 'string', 'max:10'],
-        'operatingArea' => ['required', 'string', 'max:1000'],
-        'passengerCapacity'         => ['required', 'integer', 'min:1', 'max:1000'],
-        'requiredLicenseType' => ['required', 'string', 'in:oupv,masters'],
-        'requiredEndorsement' => ['required', 'string', 'in:inland,nearCoastal,unlimited'],
-        'requiredTonnageRating' => ['required', 'integer', 'min:0', 'max:65535'],
-        'requiredYearsExperience' => ['required', 'integer', 'min:0', 'max:65535'],
-        'requiresDeckhand' => ['boolean'],
-        'photos' => ['required', 'array', 'min:6'],
-        'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
-        'documents' => ['nullable', 'array'],
-        'documents.*' => ['file', 'mimes:pdf,doc,docx', 'max:20480'],
-    ];
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:100'],
+            'official_number' => ['required', 'string', 'max:50', 'unique:vessels,official_number'],
+            'make' => ['required', 'string', 'max:100'],
+            'model' => ['required', 'string', 'max:100'],
+            'vessel_type' => ['required', 'string', 'in:power,sailing'],
+            'length_ft' => ['required', 'numeric', 'min:1', 'max:9999'],
+            'beam_ft' => ['required', 'numeric', 'min:1', 'max:9999'],
+            'draft_ft' => ['required', 'numeric', 'min:0.1', 'max:999'],
+            'marina_name' => ['required', 'string', 'max:150'],
+            'marina_address' => ['required', 'string', 'max:255'],
+            'marina_city' => ['required', 'string', 'max:100'],
+            'marina_state' => ['required', 'string', 'max:50'],
+            'marina_zip' => ['required', 'string', 'max:10'],
+            'operating_area' => ['required', 'string', 'max:1000'],
+            'passenger_capacity' => ['required', 'integer', 'min:1', 'max:1000'],
+            'required_license_type' => ['required', 'string', 'in:oupv,masters'],
+            // Changed 'nearCoastal' to 'near_coastal' to match your React frontend
+            'required_endorsement' => ['required', 'string', 'in:inland,near_coastal,unlimited'], 
+            'required_tonnage_rating' => ['required', 'integer', 'min:0', 'max:65535'],
+            'required_years_experience' => ['required', 'integer', 'min:0', 'max:65535'],
+            'requires_deckhand' => ['boolean'],
+            'photos' => ['required', 'array', 'min:6'],
+            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'documents' => ['nullable', 'array'],
+            'documents.*' => ['file', 'mimes:pdf,doc,docx', 'max:20480'],
+        ];
     }
-    /**
-     * @return array<string, string>
-     */
-public function messages(): array
-{
-    return [
-        'passengerCapacity.required' => 'Please specify the passenger capacity.',
-        'passengerCapacity.integer' => 'Passenger capacity must be a number.',
-        'passengerCapacity.min' => 'Passenger capacity must be at least 1.',
-    ];
-}
 
     /**
      * @return array<string, string>
      */
-public function attributes(): array
-{
-    return [
-        'passengerCapacity' => 'passenger capacity',
-        'officialNumber' => 'official number',
-        'vesselType' => 'vessel type',
-        'lengthFt' => 'length',
-        'beamFt' => 'beam',
-        'draftFt' => 'draft',
-        'marinaName' => 'marina name',
-        'marinaAddress' => 'marina address',
-        'marinaCity' => 'marina city',
-        'marinaState' => 'marina state',
-        'marinaZip' => 'marina zip code',
-        'operatingArea' => 'operating area',
-        'requiredLicenseType' => 'required license type',
-        'requiredEndorsement' => 'required endorsement',
-        'requiredTonnageRating' => 'required tonnage rating',
-        'requiredYearsExperience' => 'required years of experience',
-    ];
-}
+    public function messages(): array
+    {
+        return [
+            'passenger_capacity.required' => 'Please specify the passenger capacity.',
+            'passenger_capacity.integer' => 'Passenger capacity must be a number.',
+            'passenger_capacity.min' => 'Passenger capacity must be at least 1.',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'passenger_capacity' => 'passenger capacity',
+            'official_number' => 'official number',
+            'vessel_type' => 'vessel type',
+            'length_ft' => 'length',
+            'beam_ft' => 'beam',
+            'draft_ft' => 'draft',
+            'marina_name' => 'marina name',
+            'marina_address' => 'marina address',
+            'marina_city' => 'marina city',
+            'marina_state' => 'marina state',
+            'marina_zip' => 'marina zip code',
+            'operating_area' => 'operating area',
+            'required_license_type' => 'required license type',
+            'required_endorsement' => 'required endorsement',
+            'required_tonnage_rating' => 'required tonnage rating',
+            'required_years_experience' => 'required years of experience',
+        ];
+    }
 }

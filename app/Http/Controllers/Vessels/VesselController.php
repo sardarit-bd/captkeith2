@@ -23,33 +23,31 @@ class VesselController extends Controller
 
         $vessel = null;
         DB::transaction(function () use ($request, $owner, &$vessel) {
-            /** @var Vessel $vessel */
+            $vessel = Vessel::create([
+                'owner_id' => $owner->id,
+                'name' => $request->input('name'),
+                'official_number' => $request->input('official_number'),
+                'make' => $request->input('make'),
+                'model' => $request->input('model'),
+                'vessel_type' => $request->input('vessel_type'),
+                'length_ft' => $request->input('length_ft'),
+                'beam_ft' => $request->input('beam_ft'),
+                'draft_ft' => $request->input('draft_ft'),
+                'marina_name' => $request->input('marina_name'),
+                'marina_address' => $request->input('marina_address'),
+                'marina_city' => $request->input('marina_city'),
+                'marina_state' => $request->input('marina_state'),
+                'marina_zip' => $request->input('marina_zip'),
+                'operating_area' => $request->input('operating_area'),
+                'passenger_capacity' => $request->input('passenger_capacity'),
+                'required_license_type' => $request->input('required_license_type'),
+                'required_endorsement' => $request->input('required_endorsement'),
+                'required_tonnage_rating' => $request->input('required_tonnage_rating'),
+                'required_years_experience' => $request->input('required_years_experience'),
+                'requires_deckhand' => $request->boolean('requires_deckhand'),
+                'is_active' => true,
+            ]);
 
-        $vessel = Vessel::create([
-            'ownerId' => $owner->id,
-            'name' => $request->input('name'),
-            'officialNumber' => $request->input('officialNumber'),
-            'make' => $request->input('make'),
-            'model' => $request->input('model'),
-            'vesselType' => $request->input('vesselType'),
-            'lengthFt' => $request->input('lengthFt'),
-            'beamFt' => $request->input('beamFt'),
-            'draftFt' => $request->input('draftFt'),
-            'marinaName' => $request->input('marinaName'),
-            'marinaAddress' => $request->input('marinaAddress'),
-            'marinaCity' => $request->input('marinaCity'),
-            'marinaState' => $request->input('marinaState'),
-            'marinaZip' => $request->input('marinaZip'),
-            'operatingArea' => $request->input('operatingArea'),
-            'passengerCapacity' => $request->input('passengerCapacity'),
-            'requiredLicenseType' => $request->input('requiredLicenseType'),
-            'requiredEndorsement' => $request->input('requiredEndorsement'),
-            'requiredTonnageRating' => $request->input('requiredTonnageRating'),
-            'requiredYearsExperience' => $request->input('requiredYearsExperience'),
-            'requiresDeckhand' => $request->boolean('requiresDeckhand'),
-            'isActive' => true,
-        ]);
-            (new VesselMatchingService())->matchForVessel($vessel);
             foreach ($request->file('photos', []) as $order => $photo) {
                 $path = $photo->store("vessels/{$vessel->id}/photos", 'public');
 
@@ -60,13 +58,15 @@ class VesselController extends Controller
                 ]);
             }
 
-
-
             foreach ($request->file('documents', []) as $document) {
                 $document->store("vessels/{$vessel->id}/documents", 'local');
             }
         });
-        (new VesselMatchingService())->matchForVessel($vessel);
+
+        if ($vessel) {
+            (new VesselMatchingService())->matchForVessel($vessel);
+        }
+
         return redirect()
             ->route('my-yachts')
             ->with('success', 'Vessel added successfully.');
@@ -98,16 +98,14 @@ class VesselController extends Controller
                         'type'             => ucfirst($vessel->vessel_type ?? ''),
                         'length'           => $vessel->length_ft ? $vessel->length_ft . ' ft' : '—',
                         'draft'            => $vessel->draft_ft ? $vessel->draft_ft . ' ft' : '—',
-                    'capacity' => $vessel->passengerCapacity ? $vessel->passengerCapacity . ' people' : '—',
-                    'length' => $vessel->lengthFt ? $vessel->lengthFt . ' ft' : '—',
-                    'draft' => $vessel->draftFt ? $vessel->draftFt . ' ft' : '—',
-                    'mooringLocation' => trim(collect([
-                        $vessel->marinaName,
-                        $vessel->marinaCity,
-                        $vessel->marinaState,
-                    ])->filter()->implode(', ')),
-                    'operatingArea' => $vessel->operatingArea ?? '—',
-                    'deckhandRequired' => $vessel->requiresDeckhand ? 'Yes' : 'No',
+                        'capacity'         => $vessel->passenger_capacity ? $vessel->passenger_capacity . ' people' : '—',
+                        'mooringLocation'  => trim(collect([
+                            $vessel->marina_name,
+                            $vessel->marina_city,
+                            $vessel->marina_state,
+                        ])->filter()->implode(', ')),
+                        'operatingArea'    => $vessel->operating_area ?? '—',
+                        'deckhandRequired' => $vessel->requires_deckhand ? 'Yes' : 'No',
                     ],
                     'captainRequirements' => [
                         'licenseTypes'      => array_filter([$vessel->required_license_type]),
@@ -132,9 +130,6 @@ class VesselController extends Controller
             'vessels' => $vessels,
         ]);
     }
-
-
-
 
     public function show(Vessel $vessel): Response
     {
@@ -174,8 +169,6 @@ class VesselController extends Controller
         ]);
     }
 
-
-
     public function edit(Vessel $vessel): Response
     {
         $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
@@ -187,22 +180,25 @@ class VesselController extends Controller
             'vessel' => [
                 'id'                        => $vessel->id,
                 'name'                      => $vessel->name,
-                'officialNumber' => $vessel->officialNumber,
-                'lengthFt' => (string) $vessel->lengthFt,
-                'beamFt' => (string) $vessel->beamFt,
-                'draftFt' => (string) $vessel->draftFt,
-                'marinaName' => $vessel->marinaName,
-                'marinaAddress' => $vessel->marinaAddress,
-                'marinaCity' => $vessel->marinaCity,
-                'marinaState' => $vessel->marinaState,
-                'marinaZip' => $vessel->marinaZip,
-                'operatingArea' => $vessel->operatingArea,
-                'requiredLicenseType' => $vessel->requiredLicenseType,
-                'requiredEndorsement' => $vessel->requiredEndorsement,
-                'requiredTonnageRating' => (string) $vessel->requiredTonnageRating,
-                'requiredYearsExperience' => (string) $vessel->requiredYearsExperience,
-                'requiresDeckhand' => (bool) $vessel->requiresDeckhand,
-                'passengerCapacity' => $vessel->passengerCapacity,
+                'official_number' => $vessel->official_number,
+                'make' => $vessel->make,
+                'model' => $vessel->model,
+                'vessel_type' => $vessel->vessel_type,
+                'length_ft' => (string) $vessel->length_ft,
+                'beam_ft' => (string) $vessel->beam_ft,
+                'draft_ft' => (string) $vessel->draft_ft,
+                'marina_name' => $vessel->marina_name,
+                'marina_address' => $vessel->marina_address,
+                'marina_city' => $vessel->marina_city,
+                'marina_state' => $vessel->marina_state,
+                'marina_zip' => $vessel->marina_zip,
+                'operating_area' => $vessel->operating_area,
+                'passenger_capacity' => (string) $vessel->passenger_capacity,
+                'required_license_type' => $vessel->required_license_type,
+                'required_endorsement' => $vessel->required_endorsement,
+                'required_tonnage_rating' => (string) $vessel->required_tonnage_rating,
+                'required_years_experience' => (string) $vessel->required_years_experience,
+                'requires_deckhand' => (bool) $vessel->requires_deckhand,
 
                 'existing_photos'           => $vessel->photos->map(fn($p) => [
                     'id'  => $p->id,
@@ -210,6 +206,54 @@ class VesselController extends Controller
                 ]),
             ],
         ]);
+    }
+
+    public function update(Request $request, Vessel $vessel): RedirectResponse
+    {
+        $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
+        abort_if($vessel->owner_id !== $owner->id, 403);
+
+        DB::transaction(function () use ($request, $vessel) {
+            $vessel->update([
+                'name' => $request->input('name'),
+                'official_number' => $request->input('official_number'),
+                'make' => $request->input('make'),
+                'model' => $request->input('model'),
+                'vessel_type' => $request->input('vessel_type'),
+                'length_ft' => $request->input('length_ft'),
+                'beam_ft' => $request->input('beam_ft'),
+                'draft_ft' => $request->input('draft_ft'),
+                'marina_name' => $request->input('marina_name'),
+                'marina_address' => $request->input('marina_address'),
+                'marina_city' => $request->input('marina_city'),
+                'marina_state' => $request->input('marina_state'),
+                'marina_zip' => $request->input('marina_zip'),
+                'operating_area' => $request->input('operating_area'),
+                'passenger_capacity' => $request->input('passenger_capacity'),
+                'required_license_type' => $request->input('required_license_type'),
+                'required_endorsement' => $request->input('required_endorsement'),
+                'required_tonnage_rating' => $request->input('required_tonnage_rating'),
+                'required_years_experience' => $request->input('required_years_experience'),
+                'requires_deckhand' => $request->boolean('requires_deckhand'),
+            ]);
+
+            foreach ($request->file('photos', []) as $order => $photo) {
+                $path = $photo->store("vessels/{$vessel->id}/photos", 'public');
+                VesselPhoto::create([
+                    'vessel_id'     => $vessel->id,
+                    'image_path'    => $path,
+                    'display_order' => $vessel->photos()->max('display_order') + $order + 1,
+                ]);
+            }
+
+            foreach ($request->file('documents', []) as $document) {
+                $document->store("vessels/{$vessel->id}/documents", 'local');
+            }
+        });
+        
+        (new VesselMatchingService())->matchForVessel($vessel->fresh());
+        
+        return redirect()->route('my-yachts')->with('success', 'Vessel updated successfully.');
     }
 
     public function destroy(Vessel $vessel): RedirectResponse
@@ -226,53 +270,5 @@ class VesselController extends Controller
         });
 
         return redirect()->route('my-yachts')->with('success', 'Vessel deleted successfully.');
-    }
-
-
-
-    public function update(Request $request, Vessel $vessel): RedirectResponse
-    {
-        $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
-        abort_if($vessel->owner_id !== $owner->id, 403);
-
-        DB::transaction(function () use ($request, $vessel) {
-        $vessel->update([
-            'name' => $request->input('name'),
-            'officialNumber' => $request->input('officialNumber'),
-            'make' => $request->input('make'),
-            'model' => $request->input('model'),
-            'vesselType' => $request->input('vesselType'),
-            'lengthFt' => $request->input('lengthFt'),
-            'beamFt' => $request->input('beamFt'),
-            'draftFt' => $request->input('draftFt'),
-            'marinaName' => $request->input('marinaName'),
-            'marinaAddress' => $request->input('marinaAddress'),
-            'marinaCity' => $request->input('marinaCity'),
-            'marinaState' => $request->input('marinaState'),
-            'marinaZip' => $request->input('marinaZip'),
-            'operatingArea' => $request->input('operatingArea'),
-            'passengerCapacity' => $request->input('passengerCapacity'),
-            'requiredLicenseType' => $request->input('requiredLicenseType'),
-            'requiredEndorsement' => $request->input('requiredEndorsement'),
-            'requiredTonnageRating' => $request->input('requiredTonnageRating'),
-            'requiredYearsExperience' => $request->input('requiredYearsExperience'),
-            'requiresDeckhand' => $request->boolean('requiresDeckhand'),
-        ]);
-
-            foreach ($request->file('photos', []) as $order => $photo) {
-                $path = $photo->store("vessels/{$vessel->id}/photos", 'public');
-                VesselPhoto::create([
-                    'vessel_id'     => $vessel->id,
-                    'image_path'    => $path,
-                    'display_order' => $vessel->photos()->max('display_order') + $order + 1,
-                ]);
-            }
-
-            foreach ($request->file('documents', []) as $document) {
-                $document->store("vessels/{$vessel->id}/documents", 'local');
-            }
-        });
-        (new VesselMatchingService())->matchForVessel($vessel->fresh());
-        return redirect()->route('my-yachts')->with('success', 'Vessel updated successfully.');
     }
 }

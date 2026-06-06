@@ -42,16 +42,20 @@ interface Filters {
     min_experience?: string;
 }
 
+interface InvitationData {
+    status: string;
+    initiated_by: string;
+}
+
 interface PageProps {
     captains: Captain[];
     filters: Filters;
     vessels: VesselOption[];
-    invitations: Record<string, Record<string, string>>;
-    acceptedCaptainIds: string[];
+    invitations: Record<string, Record<string, InvitationData>>;
+    acceptedCaptainIds: Record<string, string[]>; 
     acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
 }
-
 const LICENSE_OPTIONS = [
     { value: '', label: 'All Licenses' },
     { value: 'oupv', label: 'OUPV (6-Pack)' },
@@ -78,14 +82,13 @@ function InviteModal({
 }: {
     captain: Captain;
     vessels: VesselOption[];
-    existingInvitations: Record<string, string>;
+    existingInvitations: Record<string, InvitationData>;
     onClose: () => void;
-}) {
+}){
     const [selectedVessel, setSelectedVessel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
     const currentStatus = selectedVessel
-        ? existingInvitations[selectedVessel]
+        ? existingInvitations[selectedVessel]?.status
         : undefined;
 
     function handleSend() {
@@ -282,31 +285,41 @@ function InviteButton({
     acceptedCaptainIds,
     acceptedViaInterestIds,
     interestedCaptainIds,
+    vessels,
     onOpenInvite,
     onOpenCancel,
     onOpenRevokeAcceptance,
+    onAcceptRequest,
 }: {
     captain: Captain;
-    invitations: Record<string, Record<string, string>>;
-    acceptedCaptainIds: string[];
+    invitations: Record<string, Record<string, InvitationData>>;
+    acceptedCaptainIds: Record<string, string[]>;
     acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
+    vessels: VesselOption[];
     onOpenInvite: () => void;
     onOpenCancel: () => void;
     onOpenRevokeAcceptance: () => void;
+    onAcceptRequest: () => void;
 }) {
     const captainInvites = invitations[captain.id] ?? {};
-    const statuses = Object.values(captainInvites);
+    const statuses = Object.values(captainInvites).map(inv => inv.status);
+
+    // Check if captain requested owner (initiated_by === 'captain' and status is 'pending')
+    const hasCaptainRequest = Object.values(captainInvites).some(
+        (data) => data.status === 'pending' && data.initiated_by === 'captain'
+    );
+
+    const acceptedVessels = acceptedCaptainIds[captain.id] ?? [];
+
+    const isAcceptedForAllVessels =
+        vessels.length > 0 &&
+        acceptedVessels.length === vessels.length &&
+        vessels.every((v) => acceptedVessels.includes(v.value));
 
     const isAcceptedViaInterest = acceptedViaInterestIds.includes(captain.id);
-    const isAcceptedViaInvitation =
-        statuses.includes('accepted') ||
-        (acceptedCaptainIds.includes(captain.id) && !isAcceptedViaInterest);
-    const isAccepted = acceptedCaptainIds.includes(captain.id);
-    const hasPendingInterest =
-        interestedCaptainIds.includes(captain.id) && !isAccepted;
 
-    if (isAccepted) {
+    if (isAcceptedForAllVessels) {
         return (
             <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
@@ -329,7 +342,7 @@ function InviteButton({
         );
     }
 
-    if (statuses.includes('pending')) {
+    if (statuses.includes('pending') && !hasCaptainRequest) {
         return (
             <button
                 type="button"
@@ -342,12 +355,16 @@ function InviteButton({
         );
     }
 
-    if (hasPendingInterest) {
+    if (hasCaptainRequest) {
         return (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+            <button
+                type="button"
+                onClick={onAcceptRequest}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
+            >
                 <Check className="h-3.5 w-3.5" />
-                Requested You
-            </span>
+                Accept Request
+            </button>
         );
     }
 
@@ -387,7 +404,8 @@ export default function CaptainsPage() {
         useState<Captain | null>(null);
     const [revokeModalCaptain, setRevokeModalCaptain] =
         useState<Captain | null>(null);
-
+    const [acceptRequestModalCaptain, setAcceptRequestModalCaptain] =
+        useState<Captain | null>(null);
     const cancelVesselId = cancelModalCaptain
         ? (Object.entries(invitations[cancelModalCaptain.id] ?? {}).find(
               ([, status]) => status === 'pending' || status === 'accepted',
@@ -410,10 +428,17 @@ export default function CaptainsPage() {
         );
     };
 
-    const handleClearFilters = () => {
-        setLicenseType('');
-        setMinExperience('');
-        router.get('/captains', {}, { preserveState: false });
+    const handleAcceptRequest = (captainId: string) => {
+        router.post(
+            `/captains/${captainId}/accept-request`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setAcceptRequestModalCaptain(null);
+                },
+            },
+        );
     };
 
     const hasActiveFilters = licenseType !== '' || minExperience !== '';
@@ -688,34 +713,18 @@ export default function CaptainsPage() {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <InviteButton
-                                                captain={captain}
-                                                invitations={invitations}
-                                                acceptedCaptainIds={
-                                                    acceptedCaptainIds
-                                                }
-                                                acceptedViaInterestIds={
-                                                    acceptedViaInterestIds
-                                                }
-                                                interestedCaptainIds={
-                                                    interestedCaptainIds
-                                                }
-                                                onOpenInvite={() =>
-                                                    setInviteModalCaptain(
-                                                        captain,
-                                                    )
-                                                }
-                                                onOpenCancel={() =>
-                                                    setCancelModalCaptain(
-                                                        captain,
-                                                    )
-                                                }
-                                                onOpenRevokeAcceptance={() =>
-                                                    setRevokeModalCaptain(
-                                                        captain,
-                                                    )
-                                                }
-                                            />
+                                    <InviteButton
+                                        captain={captain}
+                                        invitations={invitations}
+                                        acceptedCaptainIds={acceptedCaptainIds}
+                                        acceptedViaInterestIds={acceptedViaInterestIds}
+                                        interestedCaptainIds={interestedCaptainIds}
+                                        vessels={vessels}
+                                        onOpenInvite={() => setInviteModalCaptain(captain)}
+                                        onOpenCancel={() => setCancelModalCaptain(captain)}
+                                        onOpenRevokeAcceptance={() => setRevokeModalCaptain(captain)}
+                                        onAcceptRequest={() => handleAcceptRequest(captain.id)}
+                                    />
                                             <button
                                                 type="button"
                                                 onClick={() =>

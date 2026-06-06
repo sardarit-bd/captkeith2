@@ -146,7 +146,7 @@
 
         Route::middleware('role:charterer')->group(function () {
             Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
-            Route::get('charterer/request', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
+           Route::get('charterer/request/{id}', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
             Route::get('/charterer/captain-select', [\App\Http\Controllers\CharterController::class, 'captainSelect'])->name('charterer.captain-select');
             Route::post('/charterer/captain-requests/{responseId}/cancel', [\App\Http\Controllers\CharterController::class, 'cancelCaptainRequest'])
                 ->name('charterer.captain-request.cancel');
