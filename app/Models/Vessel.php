@@ -74,10 +74,10 @@ class Vessel extends Model
         return $this->hasMany(DeckhandVesselInterest::class);
     }
 
-public function charterEvents()
-{
-    return $this->hasMany(CharterEvent::class);
-}
+    public function charterEvents()
+    {
+        return $this->hasMany(CharterEvent::class);
+    }
 
     protected function casts(): array
     {

@@ -17,6 +17,7 @@ interface AgreementDoc {
     subtitle: string;
     captainProfileId?: string;
     parties: AgreementParties;
+    isSigned?: boolean;
 }
 
 interface VesselInfo {
@@ -251,7 +252,9 @@ export function ChartererAgreementPageContent() {
     const { agreements, vessel, charterEventId, flash } =
         usePage<PageProps>().props;
 
-    const [signedIds, setSignedIds] = useState<Set<string>>(new Set());
+    const [signedIds, setSignedIds] = useState<Set<string>>(
+        new Set(agreements.filter(a => a.isSigned).map(a => a.id))
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const allSigned = useMemo(

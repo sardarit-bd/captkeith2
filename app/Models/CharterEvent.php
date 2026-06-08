@@ -66,7 +66,7 @@ class CharterEvent extends Model
         return $this->hasMany(LegalDocument::class);
     }
 
-    public function hireAgreements(): HasMany
+    public function hireAgreements()
     {
         return $this->hasMany(CharterHireAgreement::class);
     }

@@ -156,7 +156,9 @@
             Route::post('charterer/information', [\App\Http\Controllers\CharterController::class, 'saveInformation'])->name('charterer.information.save');
             Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
             Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
-            Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
+            // Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
+            Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
+            Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
             Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
             Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');
             Route::patch('charterer/settings/preferences', [\App\Http\Controllers\ChartererSettingsController::class, 'updatePreferences'])->name('charterer-settings.preferences');
