@@ -28,4 +28,5 @@ export type ActiveBooking = {
     chartererName: string;
     chartererAvatar: string | null;
     status: string;
+    bareboatAgreementId: string | null; 
 };

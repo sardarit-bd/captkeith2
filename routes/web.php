@@ -17,6 +17,7 @@
         Route::get('dashboard', DashboardController::class)->name('dashboard');
         Route::get('messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
         Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
+        Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
         Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
             Route::inertia('notifications', 'notifications')->name('notifications');
             Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
@@ -28,6 +29,7 @@
             Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
             Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
             Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
+            Route::get('owner/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('owner.agreement.download');
             Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
             Route::delete('charterers/{charterEvent}', [\App\Http\Controllers\CharterController::class, 'destroy'])->name('charterers.destroy');
             Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');

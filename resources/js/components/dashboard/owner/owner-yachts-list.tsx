@@ -55,10 +55,10 @@ export function OwnerYachtsList() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                             {vessel.agreements && vessel.agreements.length > 0 && (
                                 <a
-                                    href={`/charterer/agreement/${vessel.agreements[0].id}/download`}
+                                    href={`/owner/agreement/${vessel.agreements[0].id}/download`} 
                                     className="inline-flex items-center gap-1 rounded-lg bg-[#EFF8FD] px-2.5 py-1.5 text-[11px] font-medium text-[#35ADD5] hover:bg-[#35ADD5] hover:text-white transition-colors"
                                     download
                                     title="Download Agreement"
@@ -70,7 +70,7 @@ export function OwnerYachtsList() {
                             <span className="rounded-full bg-[#E8F5EE] px-3 py-1 text-[11px] font-medium text-[#35ADD5]">
                                 {vessel.marina}
                             </span>
-                        </div>
+                        </div> */}
                     </div>
                 ))
                     )}

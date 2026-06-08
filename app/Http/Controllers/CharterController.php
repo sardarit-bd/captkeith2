@@ -38,13 +38,15 @@ class CharterController extends Controller
                 ->get()
                 ->map(function(Vessel $v) {
                     $agreements = $v->charterEvents->flatMap(function($event) {
-                        return $event->hireAgreements->map(function($agreement) {
-                            return [
-                                'id' => $agreement->id,
-                                'type' => ucfirst(str_replace('_', ' ', $agreement->agreement_type ?? 'agreement')),
-                                'signedAt' => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
-                            ];
-                        });
+                        return $event->hireAgreements
+                            ->where('agreement_type', 'bareboat') 
+                            ->map(function($agreement) {
+                                return [
+                                    'id' => $agreement->id,
+                                    'type' => 'Owner-Charterer Agreement',
+                                    'signedAt' => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
+                                ];
+                            });
                     })->values();
 
                     return [
@@ -88,25 +90,26 @@ class CharterController extends Controller
                 'specialNotes'  => $event->special_notes,
             ]);
 
-        $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
-            ->whereNull('deleted_at')
-            ->whereNotIn('status', ['draft', 'completed', 'cancelled'])
-            ->with(['vessel.photos', 'charterer.user'])
-            ->latest('charter_date')
-            ->get()
-            ->map(fn(CharterEvent $event) => [
-                'id'              => $event->id,
-                'yachtName'       => $event->vessel->name,
-                'yachtType'       => ucfirst($event->vessel->vessel_type ?? ''),
-                'yachtLength'     => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
-                'date'            => $event->charter_date?->format('M d, Y') ?? '—',
-                'yachtImage'      => $event->vessel->photos->first()
-                    ? Storage::url($event->vessel->photos->first()->image_path)
-                    : null,
-                'chartererName'   => $event->charterer?->user?->name ?? 'Pending',
-                'chartererAvatar' => null,
-                'status' => ucfirst($event->status ?? 'Booked'),
-            ]);
+            $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
+                ->whereNull('deleted_at')
+                ->whereNotIn('status', ['draft', 'completed', 'cancelled'])
+                ->with(['vessel.photos', 'charterer.user', 'hireAgreements']) 
+                ->latest('charter_date')
+                ->get()
+                ->map(fn(CharterEvent $event) => [
+                    'id'              => $event->id,
+                    'yachtName'       => $event->vessel->name,
+                    'yachtType'       => ucfirst($event->vessel->vessel_type ?? ''),
+                    'yachtLength'     => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
+                    'date'            => $event->charter_date?->format('M d, Y') ?? '—',
+                    'yachtImage'      => $event->vessel->photos->first()
+                        ? Storage::url($event->vessel->photos->first()->image_path)
+                        : null,
+                    'chartererName'   => $event->charterer?->user?->name ?? 'Pending',
+                    'chartererAvatar' => null,
+                    'status'          => ucfirst($event->status ?? 'Booked'),
+                    'bareboatAgreementId' => $event->hireAgreements->where('agreement_type', 'bareboat')->first()?->id,
+                ]);
 
         return Inertia::render('charterers', [
             'vessels'  => $vessels,
@@ -680,7 +683,7 @@ class CharterController extends Controller
         $vessel = $event->vessel;
         $owner  = $vessel?->owner;
 
-        // Fetch existing agreements to determine which ones are already signed
+  
         $existingAgreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
             ->where('charterer_id', $charterer->id)
             ->get()
@@ -828,7 +831,9 @@ class CharterController extends Controller
         if (! $isCharterer && ! $isCaptain && ! $isOwner) {
             abort(403, 'You are not authorized to download this document.');
         }
-
+        if ($isOwner && $agreement->agreement_type !== 'bareboat') {
+            abort(403, 'Owners can only download the owner-charterer agreement.');
+        }
         $path = $agreement->pdf_path;
 
         if (! $path || ! \Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {

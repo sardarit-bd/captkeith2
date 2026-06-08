@@ -72,68 +72,66 @@ class VesselController extends Controller
             ->with('success', 'Vessel added successfully.');
     }
 
-    public function index(): Response
-    {
-        $owner = OwnerProfile::where('user_id', auth()->id())->first();
+public function index(): Response
+{
+    $owner = OwnerProfile::where('user_id', auth()->id())->first();
 
-        if (! $owner) {
-            return Inertia::render('my-yachts', ['vessels' => []]);
-        }
+   
+    $vessels = Vessel::where('owner_id', $owner->id)
+        ->whereNull('deleted_at')
+        ->with(['photos', 'charterEvents.hireAgreements'])
+        ->get()
+        ->map(function (Vessel $v) {
+            $agreements = $v->charterEvents->flatMap(function($event) {
+                return $event->hireAgreements->map(function($agreement) {
+                    return [
+                        'id'             => $agreement->id,
+                        'type'           => ucfirst(str_replace('_', ' ', $agreement->agreement_type ?? 'agreement')),
+                        'agreement_type' => $agreement->agreement_type, 
+                        'signedAt'       => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
+                    ];
+                });
+            })->values();
+            return [
+                'id'   => $v->id,
+                'name' => $v->name,
+                'registrationNo' => $v->official_number ?? '',
+                'image' => $v->photos->first() ? Storage::url($v->photos->first()->image_path) : null,
+                'defaultTab' => 'details',
+                'specs' => [
+                    'type' => ucfirst($v->vessel_type ?? ''),
+                    'length' => $v->length_ft ? $v->length_ft . ' ft' : '—',
+                    'draft' => $v->draft_ft ? $v->draft_ft . ' ft' : '—',
+                    'mooringLocation' => trim(collect([
+                        $v->marina_name,
+                        $v->marina_city,
+                        $v->marina_state,
+                    ])->filter()->implode(', ')) ?: '—',
+                    'operatingArea' => $v->operating_area ?? '—',
+                    'deckhandRequired' => $v->requires_deckhand ? 'Yes' : 'No',
+                ],
+                'captainRequirementsRaw' => [
+                    'license_type'      => $v->required_license_type,
+                    'endorsement'       => $v->required_endorsement,
+                    'min_experience'    => $v->required_years_experience,
+                ],
+                'captainRequirements' => [
+                    'licenseTypes' => $v->required_license_type ? (is_array($v->required_license_type) ? $v->required_license_type : [$v->required_license_type]) : [],
+                    'rating' => $v->required_tonnage_rating ?? '—',
+                    'endorsements' => $v->required_endorsement ? (is_array($v->required_endorsement) ? $v->required_endorsement : [$v->required_endorsement]) : [],
+                    'minimumExperience' => $v->required_years_experience ? $v->required_years_experience . ' years' : '—',
+                ],
+                'charters' => [
+                    'hasScheduledCharters' => $v->charterEvents->isNotEmpty(),
+                ],
+                'agreements' => $agreements, 
+            ];
+        });
 
-        $vessels = Vessel::where('owner_id', $owner->id)
-            ->whereNull('deleted_at')
-      ->with([
-                'photos' => fn($q) => $q->orderBy('display_order'),
-                'charterEvents.hireAgreements' 
-            ])
-            ->latest()
-            ->get()
-            ->map(function (Vessel $vessel) {
-                return [
-                    'id'                        => $vessel->id,
-                    'name'                      => $vessel->name,
-                    'registrationNo'            => $vessel->official_number,
-                    'image'                     => $vessel->photos->first()
-                        ? Storage::url($vessel->photos->first()->image_path)
-                        : null,
-                    'defaultTab'                => 'details',
-                    'specs' => [
-                        'type'             => ucfirst($vessel->vessel_type ?? ''),
-                        'length'           => $vessel->length_ft ? $vessel->length_ft . ' ft' : '—',
-                        'draft'            => $vessel->draft_ft ? $vessel->draft_ft . ' ft' : '—',
-                        'capacity'         => $vessel->passenger_capacity ? $vessel->passenger_capacity . ' people' : '—',
-                        'mooringLocation'  => trim(collect([
-                            $vessel->marina_name,
-                            $vessel->marina_city,
-                            $vessel->marina_state,
-                        ])->filter()->implode(', ')),
-                        'operatingArea'    => $vessel->operating_area ?? '—',
-                        'deckhandRequired' => $vessel->requires_deckhand ? 'Yes' : 'No',
-                    ],
-                    'captainRequirements' => [
-                        'licenseTypes'      => array_filter([$vessel->required_license_type]),
-                        'rating'            => $vessel->required_license_type ?? '—',
-                        'endorsements'      => array_filter([$vessel->required_endorsement]),
-                        'minimumExperience' => $vessel->required_years_experience
-                            ? $vessel->required_years_experience . ' years'
-                            : '—',
-                    ],
-                    'charters' => [
-                        'hasScheduledCharters' => false,
-                    ],
-                    'captainRequirementsRaw' => [
-                        'license_type'      => $vessel->required_license_type,
-                        'endorsement'       => $vessel->required_endorsement,
-                        'min_experience'    => $vessel->required_years_experience,
-                    ],
-                    'agreements' => $agreements
-                ];
-            });
-
-        return Inertia::render('my-yachts', [
-            'vessels' => $vessels,
-        ]);
-    }
+    return Inertia::render('my-yachts', [
+        'vessels' => $vessels,
+    ]);
+}
 
     public function show(Vessel $vessel): Response
     {
