@@ -141,9 +141,13 @@
             Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
             Route::post('/requests/deckhand/send', [\App\Http\Controllers\RequestsController::class, 'sendDeckhandRequest'])
                 ->name('requests.send-deckhand');
-                
+            Route::post('/requests/deckhand-agreement/{agreementId}/sign', [\App\Http\Controllers\RequestsController::class, 'confirmSignDeckhandAgreement'])
+    ->name('requests.deckhand-agreement.sign');
             Route::post('/requests/deckhand/cancel', [\App\Http\Controllers\RequestsController::class, 'cancelDeckhandRequest'])
                 ->name('requests.cancel-deckhand');
+                Route::get('requests/{crewResponse}/agreement-details', [\App\Http\Controllers\RequestsController::class, 'getAgreementDetails'])->name('requests.agreement-details');
+                Route::get('requests/agreement/{agreementId}/download', [\App\Http\Controllers\RequestsController::class, 'downloadAgreement'])->name('requests.agreement.download');
+                Route::post('requests/{crewResponse}/sign-deckhand-agreement', [\App\Http\Controllers\RequestsController::class, 'signDeckhandAgreement'])->name('requests.sign-deckhand-agreement');
         });
 
         Route::middleware('role:charterer')->group(function () {

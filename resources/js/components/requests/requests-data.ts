@@ -24,6 +24,17 @@ export type DeckhandInfo = {
     mustSelectDeckhand: boolean;
 };
 
+export type AgreementInfo = {
+    id: string;
+    type: 'bareboat' | 'captain_hire' | 'deckhand_hire';
+    title: string;
+    status: string;
+    downloadUrl: string;
+    isSignedByCharterer: boolean;
+    isSignedByCrew: boolean;
+    isFullySigned: boolean;
+};
+
 export type CaptainRequestRecord = {
     id: string;
     type: 'charter_request' | 'owner_invitation';
@@ -39,4 +50,5 @@ export type CaptainRequestRecord = {
     charterEventId: string | null;
     ownerUserId: string | null;
     deckhandInfo: DeckhandInfo | null;
+    agreements?: AgreementInfo[]; 
 };

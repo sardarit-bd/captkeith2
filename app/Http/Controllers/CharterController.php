@@ -150,12 +150,19 @@ class CharterController extends Controller
             ->with('success', 'Charter created successfully.');
     }
 
+    /**
+     * CHANGED: Added explicit 404 abort with a clear message if the token is invalid/deleted.
+     */
     public function join(string $token): RedirectResponse
     {
         $event = CharterEvent::where('invite_token', $token)
             ->whereNull('deleted_at')
             ->where('invite_token_expires_at', '>', now())
-            ->firstOrFail();
+            ->first();
+
+        if (! $event) {
+            abort(404, 'This invite link is invalid, expired, or has been deleted.');
+        }
 
         $charterer = ChartererProfile::where('user_id', auth()->id())->first();
 
@@ -174,27 +181,27 @@ class CharterController extends Controller
         return redirect()->route('charterer.request', ['id' => $event->id]);
     }
 
+    /**
+     * CHANGED: Now aborts with a 404 page instead of rendering a null event (which caused the broken UI).
+     * Also added 'deleted' to the status exclusion list.
+     */
     public function request($id): Response
     {
         $charterer = ChartererProfile::where('user_id', auth()->id())->first();
 
         if (! $charterer) {
-            return Inertia::render('charterer/request', [
-                'charterEvent' => null,
-            ]);
+            abort(404, 'Charter request not found.');
         }
 
         $event = CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')
-            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->whereNotIn('status', ['completed', 'cancelled', 'deleted'])
             ->with(['vessel.photos'])
             ->latest('created_at')
             ->first();
 
         if (! $event) {
-            return Inertia::render('charterer/request', [
-                'charterEvent' => null,
-            ]);
+            abort(404, 'This charter link has been deleted or is no longer available.');
         }
 
         $vessel = $event->vessel;
@@ -325,6 +332,9 @@ class CharterController extends Controller
         ]);
     }
 
+    /**
+     * CHANGED: Updates the status to 'deleted' before soft-deleting the record.
+     */
     public function destroy(CharterEvent $charterEvent): RedirectResponse
     {
         $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
@@ -335,6 +345,8 @@ class CharterController extends Controller
 
         abort_if($charterEvent->status !== 'draft', 403, 'Only draft charters can be deleted.');
 
+        // Set status to 'deleted' as requested, then soft delete the record
+        $charterEvent->update(['status' => 'deleted']);
         $charterEvent->delete();
 
         return redirect()

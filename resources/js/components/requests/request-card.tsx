@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { router } from '@inertiajs/react';
-import { AlertCircle, Check, MessageSquare, Ship, User, X } from 'lucide-react';
-import { respond, selectDeckhand, sendDeckhand, cancelDeckhand } from '@/routes/requests'; 
+import { useState, useEffect } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { AlertCircle, Check, MessageSquare, Ship, User, X, Download, PenTool, CheckCircle2, Clock } from 'lucide-react';
+import { respond, selectDeckhand, sendDeckhand, cancelDeckhand, signDeckhandAgreement } from '@/routes/requests'; 
 import { DeckhandSelectModal } from './deckhand-select-modal';
+import { DeckhandAgreementSigningModal } from './deckhand-agreement-signing-modal';
 import type { CaptainRequestRecord } from './requests-data';
 
 const statusStyles: Record<CaptainRequestRecord['status'], string> = {
@@ -46,17 +47,11 @@ function DeckhandStatusPill({
             <User className="h-3.5 w-3.5 shrink-0 text-[#9ca3af]" />
             <div className="min-w-0">
                 <p className="text-[11px] font-medium text-[#6b7280]">
-                    {selectedByMe
-                        ? 'Your deckhand selection'
-                        : 'Deckhand selected by co-captain'}
+                    {selectedByMe ? 'Your deckhand selection' : 'Deckhand selected by co-captain'}
                 </p>
-                <p className="truncate text-[13px] font-semibold text-[#111827]">
-                    {name}
-                </p>
+                <p className="truncate text-[13px] font-semibold text-[#111827]">{name}</p>
             </div>
-            <span
-                className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${colours[status] ?? 'bg-red-100! text-[#374151]'}`}
-            >
+            <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${colours[status] ?? 'bg-red-100! text-[#374151]'}`}>
                 {labels[status] ?? status}
             </span>
         </div>
@@ -64,37 +59,49 @@ function DeckhandStatusPill({
 }
 
 export function RequestCard({ request }: { request: CaptainRequestRecord }) {
+    const { flash } = usePage().props as { flash?: any };
+
     const isPending = request.status === 'pending';
-    const isAccepted =
-        request.status === 'available' || request.status === 'accepted';
+    const isAccepted = request.status === 'available' || request.status === 'accepted';
     const isInvitation = request.type === 'owner_invitation';
     const deckhandInfo = request.deckhandInfo;
+    
     const [showDeckhandModal, setShowDeckhandModal] = useState(false);
+    const [showDeckhandSignModal, setShowDeckhandSignModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const mustSelectDeckhand = deckhandInfo?.mustSelectDeckhand === true;
     const hasQualifiedDeckhands = deckhandInfo?.hasQualifiedDeckhands === true;
     const deckhandAlreadySelected = !!deckhandInfo?.selectedDeckhand;
+    
     const isAcceptDisabled = !isPending || isSubmitting || (!isInvitation && mustSelectDeckhand && !deckhandAlreadySelected);
     const isSelectDeckhandDisabled = !isPending || isSubmitting || deckhandAlreadySelected || !hasQualifiedDeckhands || isInvitation;
+
+    const deckhandAgreementId = flash?.signDeckhandAgreementId as string | undefined;
+    const deckhandAgreement = request.agreements?.find(agr => agr.type === 'deckhand_hire');
+    const isDeckhandAgreementSigned = deckhandAgreement?.isSignedByCrew || false;
+
+    useEffect(() => {
+        if (flash?.signDeckhandModalOpen && deckhandAgreementId) {
+            setShowDeckhandSignModal(true);
+        }
+    }, [flash, deckhandAgreementId]);
 
     function handleAcceptClick() {
         submitAccept();
     }
 
-function submitAccept() {
-    setIsSubmitting(true);
-    router.patch(respond({ crewResponse: request.id }).url, 
-        { response: 'available' }, 
-        {
-            preserveScroll: true,
-            onError: (errors) => {
-                setIsSubmitting(false);
-                // Handle specific errors
-            },
-            onFinish: () => setIsSubmitting(false),
-        }
-    );
-}
+    function submitAccept() {
+        setIsSubmitting(true);
+        router.patch(respond({ crewResponse: request.id }).url, 
+            { response: 'available' }, 
+            {
+                preserveScroll: true,
+                onError: () => setIsSubmitting(false),
+                onFinish: () => setIsSubmitting(false),
+            }
+        );
+    }
 
     function submitSelectDeckhand(deckhandIds: string[]) {
         setIsSubmitting(true);
@@ -117,6 +124,13 @@ function submitAccept() {
         );
     }
 
+    function handleSignDeckhandAgreement() {
+        router.post(signDeckhandAgreement({ crewResponse: request.id }).url, {}, {
+            preserveScroll: true,
+            onError: (errors) => console.error(errors),
+        });
+    }
+
     const fallbackImage = '/images/home/about3.jpg';
 
     return (
@@ -131,20 +145,14 @@ function submitAccept() {
 
                 <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-center gap-4">
-                        <img
-                            src={request.image ?? fallbackImage}
-                            alt={request.yachtName}
-                            className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover"
-                        />
+                        <img src={request.image ?? fallbackImage} alt={request.yachtName} className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover" />
                         <div>
                             <h3 className="text-[15px] font-bold text-[#111827]">{request.yachtName}</h3>
                             <p className="text-[13px] text-[#6b7280]">{request.yachtSpec}</p>
                             <p className="text-[13px] text-[#6b7280]">{request.marina}</p>
                         </div>
                     </div>
-                    <span
-                        className={`inline-flex self-start rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${statusStyles[request.status]}`}
-                    >
+                    <span className={`inline-flex self-start rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${statusStyles[request.status]}`}>
                         {statusLabels[request.status]}
                     </span>
                 </header>
@@ -162,6 +170,26 @@ function submitAccept() {
                         </section>
                     </>
                 )}
+                {request.agreements && request.agreements.length > 0 && (
+                    <div className="mb-6">
+                        <p className="mb-2 text-[12px] font-medium text-[#6b7280]">Agreement Progress</p>
+                        <div className="flex flex-wrap gap-2">
+                            {request.agreements.map((agr) => (
+                                <div 
+                                    key={agr.id} 
+                                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${
+                                        agr.isFullySigned 
+                                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700' 
+                                            : 'border-amber-200 bg-amber-50 text-amber-700'
+                                    }`}
+                                >
+                                    {agr.isFullySigned ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                    {agr.title}: {agr.status}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {!isInvitation && isAccepted && deckhandInfo?.selectedDeckhand && (
                     <div className="mb-6">
@@ -174,7 +202,6 @@ function submitAccept() {
                 )}
 
                 <footer className="flex flex-wrap items-center gap-4">
-   
                     {!isInvitation && (
                         <div className="flex flex-col items-start gap-1.5">
                             <button
@@ -202,6 +229,59 @@ function submitAccept() {
                     )}
 
 
+                    {request.agreements && request.agreements.length > 0 && (
+                        <div  className="flex flex-wrap gap-2 w-full mt-4 pt-4 border-t border-[#e5e7eb]">
+                        {request.agreements.map((agr) => (
+                   agr.type !== 'bareboat' &&  <a
+                                key={`dl-${agr.id}`}
+                                href={agr.downloadUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#35ADD5] bg-[#35ADD5] px-4 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                            >
+                                <Download className="h-4 w-4" />
+                                Download Captain Agreement
+                            </a>
+                        ))}
+                        </div>
+                )}
+                        {!isInvitation && 
+                            isAccepted && 
+                            deckhandInfo?.selectedDeckhand && 
+                            deckhandInfo.selectedDeckhand.selectedByMe && 
+                            deckhandInfo.selectedDeckhand.responseStatus === 'available' && (
+                            <button
+                                type="button"
+                                disabled={isDeckhandAgreementSigned} 
+                                onClick={handleSignDeckhandAgreement}
+                                className={`inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors ${
+                                    isDeckhandAgreementSigned 
+                                        ? 'bg-gray-400 cursor-not-allowed opacity-60' 
+                                        : 'bg-[#35ADD5] cursor-pointer hover:bg-[#2a8fb0]' 
+                                }`}
+                            >
+                                <PenTool className="h-4 w-4" />
+                                {isDeckhandAgreementSigned ? 'Agreement Signed' : 'Sign Deckhand Agreement'}
+                            </button>
+                        )}
+                    {request.agreements?.some(agr => agr.isFullySigned) && (
+                        <div className="mt-4 flex gap-3">
+                            {request.agreements
+                                .filter(agr => agr.isFullySigned)
+                                .map((agr) => (
+                                    <a
+                                        key={`download-${agr.id}`}
+                                        href={agr.downloadUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 rounded-lg border border-[#35ADD5] bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        Download {agr.type === 'bareboat' ? 'Charter' : 'Captain'} Agreement
+                                    </a>
+                                ))}
+                        </div>
+                    )}
                     <button
                         type="button"
                         disabled={isAcceptDisabled}
@@ -211,7 +291,6 @@ function submitAccept() {
                         <Check className="h-4 w-4" />
                         Accept Request
                     </button>
-
 
                     <button
                         type="button"
@@ -239,20 +318,17 @@ function submitAccept() {
             {showDeckhandModal && deckhandInfo && (
                 <DeckhandSelectModal
                     deckhands={deckhandInfo.availableDeckhands}
-                    onSendRequest={(id) => router.post(sendDeckhand().url, { 
-                        charter_event_id: request.charterEventId, 
-                        deckhand_profile_id: id 
-                    })}
-                    onCancelRequest={(id) => router.post(cancelDeckhand().url, { 
-                        charter_event_id: request.charterEventId, 
-                        deckhand_profile_id: id 
-                    })}
-                    onResendRequest={(id) => router.post(sendDeckhand().url, { 
-                        charter_event_id: request.charterEventId, 
-                        deckhand_profile_id: id 
-                    })}
+                    onSendRequest={(id) => router.post(sendDeckhand().url, { charter_event_id: request.charterEventId, deckhand_profile_id: id })}
+                    onCancelRequest={(id) => router.post(cancelDeckhand().url, { charter_event_id: request.charterEventId, deckhand_profile_id: id })}
+                    onResendRequest={(id) => router.post(sendDeckhand().url, { charter_event_id: request.charterEventId, deckhand_profile_id: id })}
                     onCancel={() => setShowDeckhandModal(false)}
                     isSubmitting={isSubmitting}
+                />
+            )}
+            {showDeckhandSignModal && deckhandAgreementId && (
+                <DeckhandAgreementSigningModal 
+                    agreementId={deckhandAgreementId}
+                    onClose={() => setShowDeckhandSignModal(false)}
                 />
             )}
         </>
