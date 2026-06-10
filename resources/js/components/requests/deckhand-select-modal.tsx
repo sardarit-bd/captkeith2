@@ -34,7 +34,6 @@ export function DeckhandSelectModal({
 
     return (
         <>
-         
             <div
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
                 onClick={(e) => {
@@ -96,7 +95,6 @@ export function DeckhandSelectModal({
                                                 )}
                                             </div>
 
-                                        
                                             <div className="shrink-0">
                                                 {d.requestStatus === 'pending' ? (
                                                     <button
@@ -108,7 +106,7 @@ export function DeckhandSelectModal({
                                                         <Ban className="h-3.5 w-3.5" />
                                                         Cancel Request
                                                     </button>
-                                                ) : d.requestStatus === 'declined' ? (
+                                                ) : d.requestStatus === 'unavailable' ? ( // FIX: Changed from 'declined' to 'unavailable'
                                                     <button
                                                         type="button"
                                                         onClick={() => handleResendClick(d.id)}
@@ -122,11 +120,11 @@ export function DeckhandSelectModal({
                                                     <button
                                                         type="button"
                                                         onClick={() => onSendRequest(d.id)}
-                                                        disabled={isSubmitting || d.requestStatus === 'accepted'}
+                                                        disabled={isSubmitting || d.requestStatus === 'available'} 
                                                         className="inline-flex items-center gap-1.5 rounded-md bg-[#111827] px-3 py-1.5 text-[12px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         <Send className="h-3.5 w-3.5" />
-                                                        {d.requestStatus === 'accepted' ? 'Hired' : 'Send Request'}
+                                                        {d.requestStatus === 'available' ? 'Hired' : 'Send Request'} 
                                                     </button>
                                                 )}
                                             </div>
@@ -150,9 +148,8 @@ export function DeckhandSelectModal({
                 </div>
             </div>
 
-         
             {confirmResendId && (
-                <div className="fixed inset-0 z-60   flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
                     <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl">
                         <div className="flex items-center gap-3 text-[#d97706]">
                             <AlertTriangle className="h-6 w-6" />

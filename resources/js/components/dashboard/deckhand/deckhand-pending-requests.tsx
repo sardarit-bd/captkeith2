@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react'; 
 import { Calendar, Check, Clock3, Eye, Ship, X } from 'lucide-react';
 import type { DeckhandDashboardData } from './deckhand-dashboard-types';
 
@@ -56,7 +56,7 @@ export function DeckhandPendingRequests() {
                                                         {request.yachtName}
                                                     </h4>
                                                     <p className="mt-0.5 text-[12px] text-[#6b7280]">
-                                                        Requested by{' '}
+                                                        Requested by
                                                         {request.requestedBy} (
                                                         {request.requesterRole})
                                                     </p>
@@ -105,7 +105,7 @@ export function DeckhandPendingRequests() {
 
                                             <p className="mb-1.5 flex items-center gap-2 text-[13px] text-[#4b5563]">
                                                 <Calendar className="h-4 w-4 text-[#9ca3af]" />
-                                                {request.date} at{' '}
+                                                {request.date} at
                                                 {request.startTime}
                                             </p>
                                             <p className="text-[13px]">
@@ -121,21 +121,36 @@ export function DeckhandPendingRequests() {
                                         <div className="flex w-full flex-wrap gap-2 lg:justify-end">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-[12px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                                                onClick={() => router.visit('/requests')}
+                                                className="inline-flex cursor-pointer! items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-[12px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
                                             >
                                                 <Eye className="h-3.5 w-3.5" />
                                                 View Details
                                             </button>
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center gap-1.5 rounded-lg bg-[#16A34A] px-4 py-2 text-[12px] font-medium text-white shadow-sm transition-colors hover:bg-[#15803d]"
+                                                onClick={() =>
+                                                    router.patch(
+                                                        `/requests/${request.id}/respond`,
+                                                        { response: 'available' },
+                                                        { preserveScroll: true },
+                                                    )
+                                                }
+                                                className="inline-flex items-center cursor-pointer! gap-1.5 rounded-lg bg-[#16A34A] px-4 py-2 text-[12px] font-medium text-white shadow-sm transition-colors hover:bg-[#15803d]"
                                             >
                                                 <Check className="h-4 w-4" />
                                                 Accept
                                             </button>
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-4 py-2 text-[12px] font-medium text-red-500 shadow-sm transition-colors hover:bg-red-50"
+                                                onClick={() =>
+                                                    router.patch(
+                                                        `/requests/${request.id}/respond`,
+                                                        { response: 'unavailable' },
+                                                        { preserveScroll: true },
+                                                    )
+                                                }
+                                                className="inline-flex items-center cursor-pointer! gap-1.5 rounded-lg border border-red-200 bg-white px-4 py-2 text-[12px] font-medium text-red-500 shadow-sm transition-colors hover:bg-red-50"
                                             >
                                                 <X className="h-4 w-4" />
                                                 Decline

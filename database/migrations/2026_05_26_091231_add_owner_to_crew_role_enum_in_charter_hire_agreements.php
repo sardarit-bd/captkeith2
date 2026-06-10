@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,9 +10,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('charter_hire_agreements', function (Blueprint $table) {
-            //
-        });
+        // Modify the ENUM column to include 'owner'
+        DB::statement("ALTER TABLE `charter_hire_agreements` MODIFY COLUMN `crew_role` ENUM('captain', 'deckhand', 'owner') NOT NULL");
     }
 
     /**
@@ -21,8 +19,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('charter_hire_agreements', function (Blueprint $table) {
-            //
-        });
+        // Revert back to the original ENUM values
+        DB::statement("ALTER TABLE `charter_hire_agreements` MODIFY COLUMN `crew_role` ENUM('captain', 'deckhand') NOT NULL");
     }
 };

@@ -519,7 +519,7 @@ class CharterController extends Controller
             ->where('crew_role', 'captain')
             ->firstOrFail();
 
-        // Cannot cancel an accepted captain
+    
         abort_if($response->response === 'available', 403, 'Cannot cancel an accepted captain.');
 
         $response->update([
@@ -585,6 +585,21 @@ class CharterController extends Controller
             }
             $photoPath = $request->file('photo')->store('charterer-photos', 'public');
         }
+
+   
+        if ($profile) {
+            $profile->update([
+                'full_name'  => $full_name,
+                'phone'      => $validated['phone'],
+                'address'    => $validated['address'],
+                'city'       => $validated['city'],
+                'state'      => $validated['state'],
+                'zip_code'   => $validated['zip_code'],
+                'photo_path' => $photoPath,
+            ]);
+        }
+
+        $charterer = $profile;
 
 
         $charterer = $profile;

@@ -1,41 +1,15 @@
-
-export type AvailableDeckhand = {
+export interface CaptainInfo {
     id: string;
+    userId: string; 
     name: string;
     photo?: string | null;
-    experience: string;
-    rate: string;
-    hasServer?: boolean;
-    hasBartend?: boolean;
-    requestStatus?: 'none' | 'pending' | 'accepted' | 'declined';
-    requestId?: string | null;
-};
+    role: string;
+    experience?: string;
+    email?: string;
+    phone?: string;
+}
 
-export type SelectedDeckhandInfo = {
-    id: string;
-    name: string;
-    responseStatus: 'pending' | 'available' | 'unavailable';
-    selectedByMe: boolean;
-};
-
-export type DeckhandInfo = {
-    selectedDeckhand: SelectedDeckhandInfo | null;
-    availableDeckhands: AvailableDeckhand[];
-    mustSelectDeckhand: boolean;
-};
-
-export type AgreementInfo = {
-    id: string;
-    type: 'bareboat' | 'captain_hire' | 'deckhand_hire';
-    title: string;
-    status: string;
-    downloadUrl: string;
-    isSignedByCharterer: boolean;
-    isSignedByCrew: boolean;
-    isFullySigned: boolean;
-};
-
-export type CaptainRequestRecord = {
+export interface CaptainRequestRecord {
     id: string;
     type: 'charter_request' | 'owner_invitation';
     yachtName: string;
@@ -47,8 +21,18 @@ export type CaptainRequestRecord = {
     duration: string;
     specialNotes: string;
     status: 'pending' | 'available' | 'unavailable' | 'accepted' | 'declined';
-    charterEventId: string | null;
-    ownerUserId: string | null;
-    deckhandInfo: DeckhandInfo | null;
-    agreements?: AgreementInfo[]; 
-};
+    charterEventId?: string;
+    vesselId?: string;
+    ownerUserId?: string;
+    captainInfo?: CaptainInfo;
+    deckhandInfo?: {
+        selectedDeckhand?: {
+            name: string;
+            responseStatus: string;
+            selectedByMe: boolean;
+        };
+        availableDeckhands?: any[];
+        mustSelectDeckhand?: boolean;
+        hasQualifiedDeckhands?: boolean;
+    };
+}
