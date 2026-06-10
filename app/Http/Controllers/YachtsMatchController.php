@@ -39,32 +39,33 @@ class YachtsMatchController extends Controller
             ->whereNull('deleted_at');
 
         if ($isCaptain) {
+            // License Type Matching
             if ($profile->license_type !== null) {
                 $qualifyingLicenses = match ($profile->license_type) {
                     'masters' => ['masters', 'oupv'],
                     'oupv'    => ['oupv'],
                     default   => [$profile->license_type],
                 };
-                $query->whereIn('required_license_type', $qualifyingLicenses);
+                $query->where(function ($q) use ($qualifyingLicenses) {
+                    $q->whereIn('required_license_type', $qualifyingLicenses)
+                      ->orWhereNull('required_license_type'); // Include yachts with no license requirement
+                });
+            } else {
+                // If captain has no license, only show yachts that don't require one
+                $query->whereNull('required_license_type');
             }
 
-            if ($profile->endorsement !== null) {
-                $qualifyingEndorsements = match ($profile->endorsement) {
-                    'unlimited'    => ['unlimited', 'near_coastal', 'inland'],
-                    'near_coastal' => ['near_coastal', 'inland'],
-                    'inland'       => ['inland'],
-                    default        => [$profile->endorsement],
-                };
-                $query->whereIn('required_endorsement', $qualifyingEndorsements);
-            }
-
-            if ($profile->tonnage_rating !== null) {
-                $query->where('required_tonnage_rating', '<=', $profile->tonnage_rating);
-            }
-
+            // Years of Experience (YOE) Matching
             if ($profile->years_experience !== null) {
-                $query->where('required_years_experience', '<=', $profile->years_experience);
+                $query->where(function ($q) use ($profile) {
+                    $q->where('required_years_experience', '<=', $profile->years_experience)
+                      ->orWhereNull('required_years_experience'); // Include yachts with no YOE requirement
+                });
+            } else {
+                $query->whereNull('required_years_experience');
             }
+            
+            // Skipping endorsement and tonnage checks as requested
         }
 
         $interestStatuses        = [];

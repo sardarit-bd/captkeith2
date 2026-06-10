@@ -230,8 +230,8 @@ function CancelConfirmModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}    >
                 <div className="mb-4 flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
                         <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -242,7 +242,7 @@ function CancelConfirmModal({
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
                             Are you sure you want to cancel the invitation sent
-                            to{' '}
+                            to
                             <span className="font-medium text-gray-700">
                                 {captain.name}
                             </span>
@@ -408,7 +408,7 @@ export default function CaptainsPage() {
         useState<Captain | null>(null);
     const cancelVesselId = cancelModalCaptain
         ? (Object.entries(invitations[cancelModalCaptain.id] ?? {}).find(
-              ([, status]) => status === 'pending' || status === 'accepted',
+              ([, data]) => data.status === 'pending' || data.status === 'accepted',
           )?.[0] ?? '')
         : '';
 
