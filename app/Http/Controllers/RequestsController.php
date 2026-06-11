@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CaptainProfile;
 use App\Models\CharterCrewResponse;
 use App\Models\DeckhandProfile;
-use App\Models\DeckhandVesselInterest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,89 +51,130 @@ class RequestsController extends Controller
                 $deckhandInfo = null;
                 $agreements = [];
 
-                if ($crewRole === 'captain' && $event) {
-                    $existingDeckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
-                        ->where('crew_role', 'deckhand')
-                        ->where('response', 'available') 
-                        ->with('deckhandProfile')
-                        ->first();
+                if ($event) {
+                    if ($crewRole === 'captain') {
 
-                    $thisCaptainSelected = $existingDeckhandResponse
-                        && $existingDeckhandResponse->selected_by_captain_id === $profile->id;
+                        $selectedDeckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
+                            ->where('crew_role', 'deckhand')
+                            ->where('selected_by_captain_id', $profile->id)
+                            ->whereIn('response', ['pending', 'available'])
+                            ->with('deckhandProfile')
+                            ->first();
 
-                    $approvedInvitations = \App\Models\OwnerDeckhandInvitation::where('vessel_id', $vessel?->id)
-                        ->where('status', 'accepted') 
-                        ->with(['deckhand.user'])
-                        ->get();
+                        $thisCaptainSelected = $selectedDeckhandResponse !== null;
 
-                    $approvedDeckhandIds = $approvedInvitations->pluck('deckhand_id')->toArray();
-                    $hiredDeckhandIds = CharterCrewResponse::where('charter_event_id', $event->id)
-                        ->where('crew_role', 'deckhand')
-                        ->where('response', 'available') 
-                        ->pluck('profile_id')
-                        ->toArray();
+                        $approvedInvitations = \App\Models\OwnerDeckhandInvitation::where('vessel_id', $vessel?->id)
+                            ->where('status', 'accepted') 
+                            ->with(['deckhand.user'])
+                            ->get();
 
-                    $availableDeckhands = \App\Models\DeckhandProfile::query()
-                        ->with('user') 
-                        ->whereIn('deckhand_profiles.id', $approvedDeckhandIds) 
-                        ->leftJoin('charter_crew_responses as ccr', function($join) use ($event, $profile) {
-                            $join->on('ccr.profile_id', '=', 'deckhand_profiles.id')
-                                ->where('ccr.charter_event_id', $event->id)
-                                ->where('ccr.crew_role', 'deckhand')
-                                ->where('ccr.selected_by_captain_id', $profile->id);
-                        })
-                        ->addSelect('deckhand_profiles.*', 'ccr.response as request_status', 'ccr.id as request_id')
-                        ->get()
-                        ->map(function($deckhand) {
-                            return [
-                                'id' => $deckhand->id,
-                                'name' => $deckhand->full_name ?? ($deckhand->user->name ?? 'Unknown'),
-                                'photo' => $deckhand->photo_path ? asset('storage/' . $deckhand->photo_path) : null,
-                                'experience' => ($deckhand->years_experience ?? 0) . ' years',
-                                'rate' => '$' . ($deckhand->hourly_rate ?? 0) . '/day',
-                                'hasServer' => (bool) ($deckhand->has_server_experience ?? false),
-                                'hasBartend' => (bool) ($deckhand->has_bartending_experience ?? false),
-                                'requestStatus' => $deckhand->request_status ?? 'none',
-                                'requestId' => $deckhand->request_id,
-                            ];
-                        });
+                        $approvedDeckhandIds = $approvedInvitations->pluck('deckhand_id')->toArray();
+                        $hiredDeckhandIds = CharterCrewResponse::where('charter_event_id', $event->id)
+                            ->where('crew_role', 'deckhand')
+                            ->where('response', 'available') 
+                            ->pluck('profile_id')
+                            ->toArray();
 
-                    $mustSelectDeckhand = empty($hiredDeckhandIds);
+                        $availableDeckhands = \App\Models\DeckhandProfile::query()
+                            ->with('user') 
+                            ->whereIn('deckhand_profiles.id', $approvedDeckhandIds) 
+                            ->leftJoin('charter_crew_responses as ccr', function($join) use ($event, $profile) {
+                                $join->on('ccr.profile_id', '=', 'deckhand_profiles.id')
+                                    ->where('ccr.charter_event_id', $event->id)
+                                    ->where('ccr.crew_role', 'deckhand')
+                                    ->where('ccr.selected_by_captain_id', $profile->id);
+                            })
+                            ->addSelect('deckhand_profiles.*', 'ccr.response as request_status', 'ccr.id as request_id')
+                            ->get()
+                            ->map(function($deckhand) {
+                                return [
+                                    'id' => $deckhand->id,
+                                    'name' => $deckhand->full_name ?? ($deckhand->user->name ?? 'Unknown'),
+                                    'photo' => $deckhand->photo_path ? asset('storage/' . $deckhand->photo_path) : null,
+                                    'experience' => ($deckhand->years_experience ?? 0) . ' years',
+                                    'rate' => '$' . ($deckhand->hourly_rate ?? 0) . '/day',
+                                    'hasServer' => (bool) ($deckhand->has_server_experience ?? false),
+                                    'hasBartend' => (bool) ($deckhand->has_bartending_experience ?? false),
+                                    'requestStatus' => $deckhand->request_status ?? 'none',
+                                    'requestId' => $deckhand->request_id,
+                                ];
+                            });
 
-                    $deckhandInfo = [
-                        'selectedDeckhand'      => $existingDeckhandResponse ? [
-                            'id'             => $existingDeckhandResponse->deckhandProfile?->id,
-                            'name'           => $existingDeckhandResponse->deckhandProfile?->full_name ?? '—',
-                            'responseStatus' => $existingDeckhandResponse->response,
-                            'selectedByMe'   => $thisCaptainSelected,
-                        ] : null,
-                        'availableDeckhands'    => $availableDeckhands,
-                        'mustSelectDeckhand'    => $mustSelectDeckhand,
-                        'hasQualifiedDeckhands' => count($availableDeckhands) > 0,
-                    ];
-                    
-                    $agreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
-                        ->where(function ($query) use ($profile) {
-                            $query->where('captain_profile_id', $profile->id)
-                                  ->orWhere('agreement_type', 'bareboat');
-                        })
-                        ->get()
-                        ->map(function ($a) use ($profile) {
-                            return [
-                                'id' => $a->id,
-                                'type' => $a->agreement_type,
-                                'title' => $a->agreement_type === 'bareboat' ? 'Bareboat Charter Agreement' : 'Captain Hire Agreement',
-                                'status' => $this->getAgreementStatusLabel($a),
-                                'downloadUrl' => route('requests.agreement.download', ['agreementId' => $a->id]),
-                                'isSignedByCharterer' => !is_null($a->charterer_signed_at),
-                                'isSignedByCrew' => !is_null($a->crew_signed_at),
-                                'isFullySigned' => !is_null($a->fully_signed_at),
-                            ];
-                        });
+                        $mustSelectDeckhand = empty($hiredDeckhandIds);
+
+                        $deckhandInfo = [
+                            'selectedDeckhand'      => $selectedDeckhandResponse ? [
+                                'id'             => $selectedDeckhandResponse->deckhandProfile?->id,
+                                'name'           => $selectedDeckhandResponse->deckhandProfile?->full_name ?? '—',
+                                'responseStatus' => $selectedDeckhandResponse->response,
+                                'selectedByMe'   => true, 
+                            ] : null,
+                            'availableDeckhands'    => $availableDeckhands,
+                            'mustSelectDeckhand'    => $mustSelectDeckhand,
+                            'hasQualifiedDeckhands' => count($availableDeckhands) > 0,
+                        ];
+
+
+                        if ($selectedDeckhandResponse) {
+                            \App\Models\CharterHireAgreement::firstOrCreate(
+                                [
+                                    'charter_event_id' => $event->id,
+                                    'deckhand_profile_id' => $selectedDeckhandResponse->profile_id,
+                                    'agreement_type' => 'deckhand_hire',
+                                ],
+                                [
+                                    'charterer_id' => $event->charterer_id,
+                                    'captain_profile_id' => $profile->id,
+                                    'initiated_by' => 'captain',
+                                    'crew_role' => 'deckhand',
+                                    'sign_status' => 'not_sent',
+                                ]
+                            );
+                        }
+            
+                        $agreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
+                            ->where(function ($query) use ($profile) {
+                                $query->where('captain_profile_id', $profile->id)
+                                      ->orWhere('agreement_type', 'bareboat');
+                            })
+                            ->get()
+                            ->map(function ($a) use ($profile) {
+                                return [
+                                    'id' => $a->id,
+                                    'type' => $a->agreement_type,
+                                    'title' => $a->agreement_type === 'bareboat' ? 'Bareboat Charter Agreement' : ($a->agreement_type === 'deckhand_hire' ? 'Deckhand Hire Agreement' : 'Captain Hire Agreement'),
+                                    'status' => $this->getAgreementStatusLabel($a),
+                                    'downloadUrl' => route('requests.agreement.download', ['agreementId' => $a->id]),
+                                    'isSignedByCharterer' => !is_null($a->charterer_signed_at),
+                                    'isSignedByCrew' => !is_null($a->crew_signed_at),
+                                    'isFullySigned' => !is_null($a->fully_signed_at),
+                                    'deckhandProfileId' => $a->deckhand_profile_id,
+                                ];
+                            });
+                    } elseif ($crewRole === 'deckhand') {
+               
+                        $agreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
+                            ->where('deckhand_profile_id', $profile->id)
+                            ->where('agreement_type', 'deckhand_hire')
+                            ->get()
+                            ->map(function ($a) {
+                                return [
+                                    'id' => $a->id,
+                                    'type' => $a->agreement_type,
+                                    'title' => 'Deckhand Hire Agreement',
+                                    'status' => $this->getAgreementStatusLabel($a),
+                                    'downloadUrl' => route('requests.agreement.download', ['agreementId' => $a->id]),
+                                    'isSignedByCharterer' => !is_null($a->charterer_signed_at),
+                                    'isSignedByCrew' => !is_null($a->crew_signed_at),
+                                    'isFullySigned' => !is_null($a->fully_signed_at),
+                                    'deckhandProfileId' => $a->deckhand_profile_id,
+                                ];
+                            });
+                    }
                 }
                 $captain = $captains->get($crewResponse->selected_by_captain_id);
                 $captainInfo = null;
-                            if ($captain) {
+                if ($captain) {
                     $captainInfo = [
                         'id' => $captain->id,
                         'userId' => $captain->user_id, 
@@ -250,7 +290,6 @@ class RequestsController extends Controller
 
         $event = $crewResponse->charterEvent;
         abort_if(!$event, 422, 'Charter event not found.');
-
 
         $hiredDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
             ->where('crew_role', 'deckhand')
@@ -369,15 +408,17 @@ class RequestsController extends Controller
     public function downloadAgreement(string $agreementId): StreamedResponse
     {
         $user = Auth::user();
-        $agreement = CharterHireAgreement::with(['charterEvent.vessel.owner.user', 'charterer.user', 'captainProfile.user'])
+        $agreement = CharterHireAgreement::with(['charterEvent.vessel.owner.user', 'charterer.user', 'captainProfile.user', 'deckhandProfile.user'])
             ->findOrFail($agreementId);
 
         $isCaptain = $agreement->captainProfile?->user_id === $user->id;
         $isCharterer = $agreement->charterer?->user_id === $user->id;
         $isOwner = $agreement->charterEvent?->vessel?->owner?->user_id === $user->id;
+        $isDeckhand = $agreement->deckhandProfile?->user_id === $user->id; 
         
         $isCoCaptain = false;
-        if (!$isCaptain && !$isCharterer && !$isOwner) {
+    
+        if (!$isCaptain && !$isCharterer && !$isOwner && !$isDeckhand) {
             $captainProfile = CaptainProfile::where('user_id', $user->id)->first();
             if ($captainProfile && $agreement->charterEvent?->vessel_id) {
                 $isCoCaptain = \App\Models\VesselQualifiedCaptain::where('vessel_id', $agreement->charterEvent->vessel_id)
@@ -386,7 +427,7 @@ class RequestsController extends Controller
             }
         }
 
-        if (!$isCaptain && !$isCharterer && !$isOwner && !$isCoCaptain) {
+        if (!$isCaptain && !$isCharterer && !$isOwner && !$isCoCaptain && !$isDeckhand) {
             abort(403, 'Unauthorized.');
         }
 

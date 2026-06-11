@@ -1,3 +1,21 @@
+
+
+
+export interface Agreement {
+    id: string;
+    type: string;
+    title: string;
+    status: string;
+    downloadUrl: string;
+    isSignedByCharterer: boolean;
+    isSignedByCrew: boolean;
+    isFullySigned: boolean;
+    deckhandProfileId?: string | null;
+}
+
+
+
+
 export interface CaptainInfo {
     id: string;
     userId: string; 
@@ -34,5 +52,6 @@ export interface CaptainRequestRecord {
         availableDeckhands?: any[];
         mustSelectDeckhand?: boolean;
         hasQualifiedDeckhands?: boolean;
+    agreements?: Agreement[];
     };
 }

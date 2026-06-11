@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Calendar, Clock, MessageSquare, Check, X, AlertCircle, UserRoundCheck } from 'lucide-react';
+import { User, Calendar, Clock, MessageSquare, Check, X, AlertCircle, UserRoundCheck, Download, FileSignature } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import type { CaptainRequestRecord } from './requests-data';
 
@@ -22,18 +22,17 @@ const statusLabels: Record<CaptainRequestRecord['status'], string> = {
 interface RequestCardProps {
     request: CaptainRequestRecord;
     onSelectDeckhand?: (requestId: string, charterEventId: string) => void;
+    onSignDeckhandAgreement?: (agreementId: string) => void;
 }
 
-export function RequestCard({ request, onSelectDeckhand }: RequestCardProps) {
+export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement }: RequestCardProps) {
     const isPending = request.status === 'pending';
     const isAccepted = request.status === 'available' || request.status === 'accepted';
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     function handleAccept() {
         setIsSubmitting(true);
-        router.patch(`/requests/${request.id}/respond`, {
-            response: 'available',
-        }, {
+        router.patch(`/requests/${request.id}/respond`, { response: 'available' }, {
             preserveScroll: true,
             onFinish: () => setIsSubmitting(false),
         });
@@ -41,9 +40,7 @@ export function RequestCard({ request, onSelectDeckhand }: RequestCardProps) {
 
     function handleDecline() {
         setIsSubmitting(true);
-        router.patch(`/requests/${request.id}/respond`, {
-            response: 'unavailable',
-        }, {
+        router.patch(`/requests/${request.id}/respond`, { response: 'unavailable' }, {
             preserveScroll: true,
             onFinish: () => setIsSubmitting(false),
         });
@@ -56,6 +53,10 @@ export function RequestCard({ request, onSelectDeckhand }: RequestCardProps) {
     }
 
     const fallbackImage = '/images/home/about3.jpg';
+
+    // Extract agreements
+    const chartererAgreement = request.agreements?.find(a => a.type !== 'deckhand_hire');
+    const deckhandAgreement = request.agreements?.find(a => a.type === 'deckhand_hire');
 
     return (
         <article className="rounded-xl border border-[#eef2f6] bg-white p-6 shadow-sm">
@@ -109,7 +110,7 @@ export function RequestCard({ request, onSelectDeckhand }: RequestCardProps) {
                                     className="text-[15px] font-semibold text-[#111827] hover:text-[#35ADD5] hover:underline"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        router.visit(`/captains/${request.captainInfo.id}`);
+                                        router.visit(`/captains/${request?.captainInfo?.id}`);
                                     }}
                                 >
                                     {request.captainInfo.name}
@@ -156,7 +157,7 @@ export function RequestCard({ request, onSelectDeckhand }: RequestCardProps) {
             </section>
 
             <footer className="flex flex-wrap items-center gap-4">
-                {/* Add this Select Deckhand button FIRST */}
+                {/* Select Deckhand Button */}
                 {request.deckhandInfo?.mustSelectDeckhand && request.charterEventId && (
                     <button
                         type="button"
@@ -168,6 +169,53 @@ export function RequestCard({ request, onSelectDeckhand }: RequestCardProps) {
                     </button>
                 )}
 
+                {/* Download Captain-Charterer Agreement */}
+                {chartererAgreement?.isSignedByCharterer && (
+                    <a
+                        href={chartererAgreement.downloadUrl}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                    >
+                        <Download className="h-4 w-4" />
+                        Download Agreement
+                    </a>
+                )}
+
+                {/* Deckhand Agreement Actions (For Captain) */}
+                {request.deckhandInfo?.selectedDeckhand?.selectedByMe && deckhandAgreement && (
+                    <>
+                        {!deckhandAgreement.isSignedByCrew ? (
+                            <button
+                                type="button"
+                                onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                            >
+                                <FileSignature className="h-4 w-4" />
+                                Sign Deckhand Agreement
+                            </button>
+                        ) : (
+                            <a
+                                href={deckhandAgreement.downloadUrl}
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                            >
+                                <Download className="h-4 w-4" />
+                                Download Deckhand Agreement
+                            </a>
+                        )}
+                    </>
+                )}
+
+                {/* Download Deckhand Agreement (For Deckhand viewing their own request) */}
+                {deckhandAgreement?.isSignedByCrew && !request.deckhandInfo?.selectedDeckhand?.selectedByMe && (
+                    <a
+                        href={deckhandAgreement.downloadUrl}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                    >
+                        <Download className="h-4 w-4" />
+                        Download Agreement
+                    </a>
+                )}
+
+                {/* Accept / Decline Buttons */}
                 <button
                     type="button"
                     disabled={!isPending || isSubmitting}
