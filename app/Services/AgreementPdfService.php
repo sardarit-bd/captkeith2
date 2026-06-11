@@ -46,39 +46,41 @@ class AgreementPdfService
         return $this->savePdf($html, $event->id, 'bareboat-charter-agreement');
     }
 
-    /*
-     *
-     * @return string  The private-disk path where the PDF was stored.
-     */
-    public function generateCaptainHireAgreement(CharterEvent $event, CaptainProfile $captain): string
-    {
-        $charterer = $event->charterer;
-        $vessel    = $event->vessel;
 
-        $data = [
-            'agreementDate'      => now()->format('F j, Y'),
-            'chartererName'      => $charterer?->full_name ?? '—',
-            'chartererAddress'   => implode(', ', array_filter([
-                $charterer?->address,
-                $charterer?->city,
-                $charterer?->state,
-                $charterer?->zip_code,
-            ])) ?: '—',
-            'chartererPhone'     => $charterer?->phone ?? '—',
-            'captainName'        => $captain->full_name ?? '—',
-            'captainLicense'     => $captain->license_number ?? '—',
-            'captainPhone'       => $captain->phone ?? '—',
-            'vesselName'         => $vessel->name ?? '—',
-            'charterDates'       => $event->charter_date?->format('F j, Y') ?? '—',
-            'captainFee'         => $captain->hourly_rate
-                ? '$' . number_format($captain->hourly_rate, 2) . '/hr'
-                : '—',
-        ];
+public function generateDeckhandHireAgreement(
+    \App\Models\CharterEvent $event,
+    \App\Models\DeckhandProfile $deckhand
+): string {
+    $charterer = $event->charterer;
+    $vessel    = $event->vessel;
+    $captain   = $event->crewResponses()
+        ->where('crew_role', 'captain')
+        ->where('response', 'available')
+        ->first()?->captainProfile;
 
-        $html = $this->renderCaptainHireHtml($data);
-        $slug = 'captain-hire-' . Str::slug($captain->full_name ?? $captain->id);
-        return $this->savePdf($html, $event->id, $slug);
-    }
+    $data = [
+        'agreementDate'      => now()->format('F j, Y'),
+        'chartererName'      => $charterer?->full_name ?? '—',
+        'chartererAddress'   => implode(', ', array_filter([
+            $charterer?->address,
+            $charterer?->city,
+            $charterer?->state,
+            $charterer?->zip_code,
+        ])) ?: '—',
+        'deckhandName'       => $deckhand->full_name ?? '—',
+        'deckhandPhone'      => $deckhand->phone ?? '—',
+        'captainName'        => $captain?->full_name ?? '—',
+        'vesselName'         => $vessel->name ?? '—',
+        'charterDates'       => $event->charter_date?->format('F j, Y') ?? '—',
+        'deckhandFee'        => $deckhand->hourly_rate
+            ? '$' . number_format($deckhand->hourly_rate, 2) . '/hr'
+            : '—',
+    ];
+
+    $html = $this->renderDeckhandHireHtml($data);
+    $slug = 'deckhand-hire-' . \Illuminate\Support\Str::slug($deckhand->full_name ?? $deckhand->id);
+    return $this->savePdf($html, $event->id, $slug);
+}
 
 
 
@@ -318,7 +320,130 @@ class AgreementPdfService
 </html>
 HTML;
     }
+private function renderDeckhandHireHtml(array $d): string
+{
+    $css = $this->sharedCss();
 
+    return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>{$css}</style>
+</head>
+<body>
+<div class="page">
+
+  <h1 class="doc-title">DECKHAND FOR HIRE AGREEMENT</h1>
+
+  <p class="intro">
+    This Deckhand For Hire Agreement ("Agreement") is entered into on
+    <strong>{$d['agreementDate']}</strong>, by and between:
+  </p>
+
+  <table class="party-table">
+    <tr>
+      <td><strong>Charterer:</strong></td>
+      <td>{$d['chartererName']}</td>
+    </tr>
+    <tr>
+      <td><strong>Address:</strong></td>
+      <td>{$d['chartererAddress']}</td>
+    </tr>
+    <tr><td colspan="2">&nbsp;</td></tr>
+    <tr>
+      <td><strong>Deckhand:</strong></td>
+      <td>{$d['deckhandName']}</td>
+    </tr>
+    <tr>
+      <td><strong>Phone/Email:</strong></td>
+      <td>{$d['deckhandPhone']}</td>
+    </tr>
+    <tr><td colspan="2">&nbsp;</td></tr>
+    <tr>
+      <td><strong>Captain:</strong></td>
+      <td>{$d['captainName']}</td>
+    </tr>
+  </table>
+
+  <h2>1. PURPOSE</h2>
+  <p>
+    This Agreement is entered into in connection with a separately executed Bareboat Charter
+    Agreement for the vessel <strong>{$d['vesselName']}</strong> for charter date(s)
+    <strong>{$d['charterDates']}</strong>. The Charterer has independently selected and
+    hired the Deckhand named above to assist during the charter period.
+  </p>
+
+  <h2>2. INDEPENDENT CONTRACTOR STATUS</h2>
+  <p>
+    The Deckhand is an independent contractor and is not an employee, agent, or representative
+    of the vessel owner or charter company. The Deckhand shall work under the direct supervision
+    of the Captain and shall follow all lawful instructions regarding vessel operations and guest safety.
+  </p>
+
+  <h2>3. DUTIES AND RESPONSIBILITIES</h2>
+  <p>
+    The Deckhand shall perform duties as directed by the Captain, including but not limited to:
+    assisting with docking and anchoring, line handling, guest services, vessel maintenance,
+    cleaning, and any other tasks necessary for the safe and enjoyable operation of the vessel.
+  </p>
+
+  <h2>4. COMPENSATION</h2>
+  <table class="party-table">
+    <tr>
+      <td><strong>Deckhand's Fee:</strong></td>
+      <td>{$d['deckhandFee']}</td>
+    </tr>
+    <tr>
+      <td><strong>Payment Terms:</strong></td>
+      <td>As specified in the booking arrangement</td>
+    </tr>
+    <tr>
+      <td><strong>Recommended Gratuity:</strong></td>
+      <td>15–20%</td>
+    </tr>
+  </table>
+
+  <h2>5. SAFETY COMPLIANCE</h2>
+  <p>
+    The Deckhand agrees to comply with all safety regulations, maritime laws, and instructions
+    from the Captain. The Deckhand shall maintain professional conduct at all times and prioritize
+    the safety and comfort of all persons aboard.
+  </p>
+
+  <h2>6. HOLD HARMLESS</h2>
+  <p>
+    The Charterer agrees to hold harmless and indemnify the Deckhand from claims arising from
+    the actions of the Charterer or guests aboard, except in cases of gross negligence or
+    willful misconduct by the Deckhand.
+  </p>
+
+  <h2>7. ENTIRE AGREEMENT</h2>
+  <p>
+    This Agreement constitutes the entire understanding between the parties regarding the
+    Deckhand's services and may only be modified in writing signed by both parties.
+  </p>
+
+  <div class="signature-section">
+    <div class="sig-row">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <p class="sig-label">CHARTERER: {$d['chartererName']}</p>
+        <p class="sig-label">Date: ___________________________</p>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <p class="sig-label">DECKHAND: {$d['deckhandName']}</p>
+        <p class="sig-label">Date: ___________________________</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
+HTML;
+}
     private function renderCaptainHireHtml(array $d): string
     {
         $css = $this->sharedCss();

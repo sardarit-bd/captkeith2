@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use App\Notifications\InvitationResponseNotification;
 class OwnerCaptainInvitationController extends Controller
 {
     public function store(Request $request, CaptainProfile $captain): RedirectResponse
@@ -67,7 +67,12 @@ class OwnerCaptainInvitationController extends Controller
         abort_if($invitation->status !== 'pending', 422);
 
         $invitation->update(['status' => $validated['status']]);
-
+        $invitation->owner->user->notify(new InvitationResponseNotification(
+        $request->user(),
+        $invitation->vessel,
+        $validated['status'],
+        'captain'
+    ));
         return back()->with('success', 'Response submitted.');
     }
 

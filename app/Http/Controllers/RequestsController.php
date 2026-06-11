@@ -496,23 +496,68 @@ class RequestsController extends Controller
         return 'Pending Signature';
     }
 
-    public function confirmSignDeckhandAgreement(string $agreementId): RedirectResponse
-    {
-        $user = Auth::user();
-        $profile = CaptainProfile::where('user_id', $user->id)->firstOrFail();
+    public function confirmSignDeckhandAgreement(
+        string $agreementId,
+        AgreementPdfService $pdfService
+    ): \Illuminate\Http\RedirectResponse {
+        $user = auth()->user();
         
-        $agreement = CharterHireAgreement::findOrFail($agreementId);
+        $agreement = \App\Models\CharterHireAgreement::with([
+            'charterEvent.vessel.owner.user',
+            'charterer.user',
+            'captainProfile.user',
+            'deckhandProfile.user',
+        ])->findOrFail($agreementId);
+
+
+        $isCaptain = $agreement->captainProfile?->user_id === $user->id;
+        $isDeckhand = $agreement->deckhandProfile?->user_id === $user->id;
         
-        abort_if($agreement->captain_profile_id !== $profile->id, 403, 'You are not authorized to sign this agreement.');
-        
-        $agreement->update([
-            'crew_signed_at' => now(),
-        ]);
-        
-        if ($agreement->charterer_signed_at && !$agreement->fully_signed_at) {
-            $agreement->update(['fully_signed_at' => now()]);
+        if (! $isCaptain && ! $isDeckhand) {
+            abort(403, 'You are not authorized to sign this agreement.');
         }
 
-        return back()->with('success', 'Deckhand agreement signed successfully!');
+
+        if (empty($agreement->pdf_path)) {
+            try {
+                $pdfPath = $pdfService->generateDeckhandHireAgreement(
+                    $agreement->charterEvent,
+                    $agreement->deckhandProfile
+                );
+                
+                $agreement->update([
+                    'pdf_path' => $pdfPath,
+                ]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Deckhand agreement PDF generation failed', [
+                    'agreement_id' => $agreement->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return back()->with('error', 'Failed to generate agreement document. Please try again.');
+            }
+        }
+
+
+        $now = now();
+        $updateData = [
+            'sign_status' => 'partially_signed',
+        ];
+
+        if ($isCaptain) {
+            $updateData['captain_signed_at'] = $now;
+        } elseif ($isDeckhand) {
+            $updateData['deckhand_signed_at'] = $now;
+        }
+
+
+        if ($agreement->captain_signed_at && $agreement->deckhand_signed_at) {
+            $updateData['sign_status'] = 'fully_signed';
+            $updateData['fully_signed_at'] = $now;
+        }
+
+        $agreement->update($updateData);
+
+        return back()->with('success', 'Agreement signed successfully.');
     }
 }

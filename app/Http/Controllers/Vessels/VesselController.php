@@ -14,7 +14,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
 use App\Services\VesselMatchingService;
-
+use App\Notifications\YachtListedNotification;
 class VesselController extends Controller
 {
     public function store(StoreVesselRequest $request): RedirectResponse
@@ -64,6 +64,7 @@ class VesselController extends Controller
         });
 
         if ($vessel) {
+            $owner->user->notify(new YachtListedNotification($vessel));
             (new VesselMatchingService())->matchForVessel($vessel);
         }
 

@@ -7,7 +7,7 @@ use App\Models\OwnerDeckhandInvitation;
 use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-
+use App\Notifications\VesselInterestNotification;
 class VesselInterestController extends Controller
 {
     public function store(Request $request, Vessel $vessel): RedirectResponse
@@ -46,7 +46,11 @@ class VesselInterestController extends Controller
                 ]
             );
         }
-
+    $vessel->owner->user->notify(new VesselInterestNotification(
+        $vessel,
+        $user,
+        $role
+    ));
         return back()->with('success', 'Interest sent to the owner.');
     }
 

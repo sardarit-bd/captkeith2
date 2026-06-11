@@ -157,7 +157,7 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
             </section>
 
             <footer className="flex flex-wrap items-center gap-4">
-                {/* Select Deckhand Button */}
+       
                 {request.deckhandInfo?.mustSelectDeckhand && request.charterEventId && (
                     <button
                         type="button"
@@ -169,7 +169,7 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                     </button>
                 )}
 
-                {/* Download Captain-Charterer Agreement */}
+
                 {chartererAgreement?.isSignedByCharterer && (
                     <a
                         href={chartererAgreement.downloadUrl}
@@ -180,10 +180,9 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                     </a>
                 )}
 
-                {/* Deckhand Agreement Actions (For Captain) */}
                 {request.deckhandInfo?.selectedDeckhand?.selectedByMe && deckhandAgreement && (
                     <>
-                        {!deckhandAgreement.isSignedByCrew ? (
+                        {!deckhandAgreement.isFullySigned ? (
                             <button
                                 type="button"
                                 onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
@@ -204,7 +203,7 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                     </>
                 )}
 
-                {/* Download Deckhand Agreement (For Deckhand viewing their own request) */}
+     
                 {deckhandAgreement?.isSignedByCrew && !request.deckhandInfo?.selectedDeckhand?.selectedByMe && (
                     <a
                         href={deckhandAgreement.downloadUrl}
@@ -215,7 +214,7 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                     </a>
                 )}
 
-                {/* Accept / Decline Buttons */}
+       
                 <button
                     type="button"
                     disabled={!isPending || isSubmitting}

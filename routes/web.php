@@ -3,7 +3,7 @@
     use App\Http\Controllers\DashboardController;
     use Illuminate\Support\Facades\Route;
     use Laravel\Fortify\Features;
-
+    use Inertia\Inertia;
     Route::inertia('/', 'welcome', [
         'canRegister' => Features::enabled(Features::registration()),
     ])->name('home');
@@ -24,6 +24,33 @@
             Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
         });
 
+        Route::get('/notifications', function () {
+            return Inertia::render('notifications', [
+                'notifications' => auth()->user()
+                    ->notifications()
+                    ->latest()
+                    ->paginate(20),
+            ]);
+        })->name('notifications');
+    
+
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/api/notifications/count', function (Request $request) {
+        return response()->json([
+            'unreadCount' => $request->user()->unreadNotifications()->count(),
+        ]);
+        })->name('api.notifications.count');
+    });
+
+    Route::post('/notifications/{id}/read', function (Request $request, $id) {
+        $request->user()->unreadNotifications->where('id', $id)->markAsRead();
+        return back();
+    })->name('notifications.read');
+    
+    Route::post('/notifications/read-all', function (Request $request) {
+        $request->user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('notifications.read-all');
         Route::middleware('role:owner')->group(function () {
             Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
             Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');

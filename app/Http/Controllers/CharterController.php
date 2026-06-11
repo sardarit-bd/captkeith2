@@ -15,7 +15,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\CharterCrewResponse;
 use App\Services\AgreementPdfService;
-
+use App\Notifications\AgreementSignedNotification;
+// use App\Notifications\PaymentCompleteNotification;
 class CharterController extends Controller
 {
     public function index(): Response
@@ -149,10 +150,6 @@ class CharterController extends Controller
             ->route('charterers')
             ->with('success', 'Charter created successfully.');
     }
-
-    /**
-     * CHANGED: Added explicit 404 abort with a clear message if the token is invalid/deleted.
-     */
     public function join(string $token): RedirectResponse
     {
         $event = CharterEvent::where('invite_token', $token)
@@ -181,10 +178,7 @@ class CharterController extends Controller
         return redirect()->route('charterer.request', ['id' => $event->id]);
     }
 
-    /**
-     * CHANGED: Now aborts with a 404 page instead of rendering a null event (which caused the broken UI).
-     * Also added 'deleted' to the status exclusion list.
-     */
+
     public function request($id): Response
     {
         $charterer = ChartererProfile::where('user_id', auth()->id())->first();
@@ -332,9 +326,7 @@ class CharterController extends Controller
         ]);
     }
 
-    /**
-     * CHANGED: Updates the status to 'deleted' before soft-deleting the record.
-     */
+
     public function destroy(CharterEvent $charterEvent): RedirectResponse
     {
         $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
@@ -753,10 +745,10 @@ class CharterController extends Controller
         ]);
     }
 
-    public function signAgreements(
-        \Illuminate\Http\Request $request,
-        AgreementPdfService $pdfService
-    ): \Illuminate\Http\RedirectResponse {
+public function signAgreements(
+    \Illuminate\Http\Request $request,
+    AgreementPdfService $pdfService
+): \Illuminate\Http\RedirectResponse {
         $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->firstOrFail();
 
         $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
@@ -821,6 +813,11 @@ class CharterController extends Controller
                         'payor'        => 'charterer',
                     ]
                 );
+
+        $agreement->charterEvent->vessel->owner->user->notify(
+            new AgreementSignedNotification($agreement, $charterer->user)
+    
+        );
             }
 
             if (in_array($event->status, ['awaiting_responses', 'draft'])) {
