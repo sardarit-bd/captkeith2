@@ -130,16 +130,25 @@ export default function MessagesPage() {
 
     useEffect(() => {
         if (!auth?.user?.id) {
+            console.log('❌ No user ID for Echo');
             return;
         }
 
         if (!window.Echo) {
+            console.log('❌ Echo not initialized');
             return;
         }
 
-        const channel = window.Echo.private(`messages.${auth.user.id}`);
+        console.log('✅ Setting up Echo for user:', auth.user.id);
+        const channelName = `messages.${auth.user.id}`;
+        console.log('📡 Subscribing to channel:', channelName);
 
+        const channel = window.Echo.private(channelName);
+
+        console.log('👂 Listening for .message.sent event');
         channel.listen('.message.sent', (payload: BroadcastPayload) => {
+            console.log('📨 Received message event:', payload);
+            
             const isRelevant =
                 (payload.sender_id === selectedUserId &&
                     payload.receiver_id === auth.user.id) ||
@@ -167,10 +176,23 @@ export default function MessagesPage() {
             });
         });
 
+        // ✅ Corrected method name:
+        channel.subscribed(() => {
+            console.log('✅ Successfully subscribed to channel');
+        });
+
+        channel.error((error: any) => {
+            console.error('❌ Channel error:', error);
+        });
+
         return () => {
+            console.log('🧹 Cleaning up Echo listener');
             channel.stopListening('.message.sent');
         };
-    }, [auth?.user?.id, selectedUserId]);
+    }, [auth?.user?.id, selectedUserId]);   
+
+
+
 
     const filteredConversations = useMemo(() => {
         const value = search.toLowerCase();

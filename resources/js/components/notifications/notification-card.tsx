@@ -1,107 +1,74 @@
-import {
-    AlertCircle,
-    Calendar,
-    CheckCircle2,
-    DollarSign,
-    FileText,
-    MessageSquare,
-    Ship,
-    User,
-    UserPlus,
-    Users,
-} from 'lucide-react';
-import type { NotificationRecord } from './notifications-data';
+import { router } from '@inertiajs/react';
+import { Bell, Briefcase, MessageSquare, Ship, UserCheck } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const iconMap = {
-    'alert-circle': AlertCircle,
-    'check-circle-2': CheckCircle2,
-    'file-text': FileText,
-    'dollar-sign': DollarSign,
-    user: User,
-    calendar: Calendar,
-    'user-plus': UserPlus,
-    ship: Ship,
-    'message-square': MessageSquare,
-    users: Users,
+type NotificationRecord = {
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    icon: string;
+    url: string;
+    read_at: string | null;
+    created_at: string;
 };
 
-const colorMap: Record<NotificationRecord['tone'], { bg: string; icon: string }> = {
-    success: {
-        bg: '#f0fdf4',
-        icon: '#22c55e',
-    },
-    info: {
-        bg: '#eff6ff',
-        icon: '#3b82f6',
-    },
-    warning: {
-        bg: '#fff7ed',
-        icon: '#f97316',
-    },
-    accent: {
-        bg: '#faf5ff',
-        icon: '#a855f7',
-    },
-    neutral: {
-        bg: '#f8fafc',
-        icon: '#475569',
-    },
+const iconMap: Record<string, React.ElementType> = {
+    bell: Bell,
+    message: MessageSquare,
+    yacht: Ship,
+    invitation: UserCheck,
+    request: Briefcase,
 };
 
 export function NotificationCard({ notification }: { notification: NotificationRecord }) {
-    const Icon = iconMap[notification.icon];
-    const colors = colorMap[notification.tone];
+    const IconComponent = iconMap[notification.icon] || Bell;
+    const isUnread = !notification.read_at;
+
+    const handleClick = () => {
+        if (isUnread) {
+            // Mark as read via backend, then navigate to the URL
+            router.post(route('notifications.read', { id: notification.id }), {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    if (notification.url && notification.url !== '#') {
+                        router.visit(notification.url);
+                    }
+                },
+            });
+        } else {
+            if (notification.url && notification.url !== '#') {
+                router.visit(notification.url);
+            }
+        }
+    };
 
     return (
-        <article
-            className={`group relative flex cursor-pointer gap-4 overflow-hidden rounded-xl border bg-white p-5 transition-colors hover:bg-gray-50 sm:gap-5 sm:p-6 ${
-                notification.unread
-                    ? 'border-blue-300 shadow-[0_4px_12px_rgba(59,130,246,0.08)]'
-                    : 'border-gray-200 shadow-sm'
-            }`}
+        <button
+            onClick={handleClick}
+            className={cn(
+                'flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-all hover:bg-gray-50',
+                isUnread ? 'border-blue-200 bg-blue-50/50' : 'border-gray-200 bg-white'
+            )}
         >
-            {notification.unread ? (
-                <span className="absolute inset-y-0 left-0 hidden w-1 bg-blue-400 sm:block" />
-            ) : null}
-            <span
-                className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-                style={{
-                    backgroundColor: colors.bg,
-                    color: colors.icon,
-                }}
-            >
-                <Icon className="h-6 w-6" />
-            </span>
-
-            <div className="min-w-0 flex-1">
-                <header className="mb-1.5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <h4 className="text-[16px] font-bold leading-tight text-[#111827]">
-                        {notification.title}
-                    </h4>
-
-                    <div className="flex shrink-0 items-center gap-3">
-                        {notification.unread ? (
-                            <span className="w-fit rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-blue-700 sm:ml-auto">
-                                New
-                            </span>
-                        ) : null}
-                    </div>
-                </header>
-
-                <p className="text-[14px] text-[#4b5563]">{notification.message}</p>
-                <p className="mt-2 text-[12px] font-medium text-gray-400">
-                    {notification.timestamp}
-                </p>
-
-                {notification.action ? (
-                    <button
-                        type="button"
-                        className="mt-4 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
-                    >
-                        {notification.action.label}
-                    </button>
-                ) : null}
+            <div className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                isUnread ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+            )}>
+                <IconComponent className="h-5 w-5" />
             </div>
-        </article>
+            <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                    <p className={cn('text-sm font-semibold', isUnread ? 'text-gray-900' : 'text-gray-700')}>
+                        {notification.title}
+                    </p>
+                    <span className="text-xs text-gray-500">
+                        {new Date(notification.created_at).toLocaleDateString()}
+                    </span>
+                </div>
+                <p className="text-sm text-gray-600">{notification.message}</p>
+            </div>
+        </button>
     );
 }

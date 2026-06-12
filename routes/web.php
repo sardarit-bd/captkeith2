@@ -1,7 +1,9 @@
     <?php
 
     use App\Http\Controllers\DashboardController;
+    use App\Http\Controllers\NotificationController;
     use Illuminate\Support\Facades\Route;
+    use Illuminate\Http\Request;
     use Laravel\Fortify\Features;
     use Inertia\Inertia;
     Route::inertia('/', 'welcome', [
@@ -35,10 +37,10 @@
     
 
     Route::middleware(['auth'])->group(function () {
-    Route::get('/api/notifications/count', function (Request $request) {
-        return response()->json([
-            'unreadCount' => $request->user()->unreadNotifications()->count(),
-        ]);
+        Route::get('/api/notifications/count', function (Request $request) {
+            return response()->json([
+                'unreadCount' => $request->user()->unreadNotifications()->count(),
+            ]);
         })->name('api.notifications.count');
     });
 

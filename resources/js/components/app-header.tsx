@@ -1,5 +1,8 @@
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { Bell } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useNotificationsPoll } from '@/hooks/use-notifications-poll';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -65,6 +68,8 @@ const activeItemStyles =
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
+    const { notificationsUnreadCount } = usePage<{ notificationsUnreadCount: number }>().props;
+        useNotificationsPoll();
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
@@ -200,6 +205,21 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="group h-9 w-9 cursor-pointer relative"
+                                onClick={() => router.visit(route('notifications'))}
+                            >
+                                <Bell className="!size-5 opacity-80 group-hover:opacity-100" />
+                                {notificationsUnreadCount > 0 && (
+                                    <Badge className="absolute -right-1 -top-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] bg-red-500 hover:bg-red-600">
+                                        {notificationsUnreadCount > 9 ? '9+' : notificationsUnreadCount}
+                                    </Badge>
+                                )}
+                            </Button>
+                            {/* ----------------------------------- */}
+
                             <Button
                                 variant="ghost"
                                 size="icon"
