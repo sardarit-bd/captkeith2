@@ -68,7 +68,7 @@ export function DeckhandStatsCards() {
                     {item.actionLabel ? (
                         <button
                             type="button"
-                            className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[#0f172a] transition-colors hover:text-[#0A273F]"
+                            className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[#0f172a] transition-colors hover:text-[#35ADD5]"
                         >
                             {item.actionLabel}
                         </button>

@@ -27,7 +27,7 @@ export function ChartererRequestAvailableCaptainsCard({
 
             <Link
                 href="/charterer/captain-select"
-                className="w-full rounded-lg bg-[#0A273F] px-6 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] sm:w-auto"
+                className="w-full rounded-lg bg-[#35ADD5] px-6 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 sm:w-auto"
             >
                 Choose Your Captain
             </Link>

@@ -6,7 +6,7 @@ export function CharterersInviteActions() {
         <div className="flex flex-wrap items-center gap-3">
             <button
                 type="button"
-                className="rounded-lg bg-[#0A273F] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                className="rounded-lg bg-[#35ADD5] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70"
             >
                 View Charter Page
             </button>

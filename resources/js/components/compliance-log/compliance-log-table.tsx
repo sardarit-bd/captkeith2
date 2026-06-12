@@ -50,7 +50,7 @@ export function ComplianceLogTable() {
                     </button>
                     <button
                         type="button"
-                        className="rounded-lg border border-[#e6ebf1] bg-white px-3 py-1.5 font-medium text-[#11395d] transition-colors hover:bg-slate-100"
+                        className="rounded-lg border border-[#e6ebf1] bg-white px-3 py-1.5 font-medium text-[#35ADD5] transition-colors hover:bg-slate-100"
                     >
                         Next
                     </button>

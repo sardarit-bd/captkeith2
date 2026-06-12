@@ -67,7 +67,7 @@ export function CaptainMatchedYachtsList() {
 
                 <Link
                     href={yachtsMatch()}
-                    className="mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#0D314D] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#0a273f]"
+                    className="mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#35ADD5] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#35ADD5]/70"
                 >
                     View All Yachts
                 </Link>

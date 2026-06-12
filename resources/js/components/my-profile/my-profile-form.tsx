@@ -143,7 +143,7 @@ export function MyProfileForm() {
                 <button
                     type="submit"
                     disabled={processing}
-                    className="cursor-pointer rounded-lg bg-[#0a273f] px-6 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="0 cursor-pointer rounded-lg bg-[#35ADD5] px-6 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {processing ? 'Saving…' : 'Save Changes'}
                 </button>

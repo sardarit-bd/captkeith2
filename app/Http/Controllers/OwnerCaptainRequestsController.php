@@ -28,6 +28,7 @@ class OwnerCaptainRequestsController extends Controller
                 'captain.user',
                 'vessel.photos' => fn($q) => $q->orderBy('display_order'),
             ])
+            ->where('initiated_by', 'captain')
             ->latest()
             ->get()
             ->map(function (OwnerCaptainInvitation $interest) {

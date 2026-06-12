@@ -1,3 +1,4 @@
+
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     Award,
@@ -16,7 +17,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { captains } from '@/routes';
-
 interface Captain {
     id: string;
     user_id: string;
@@ -42,16 +42,20 @@ interface Filters {
     min_experience?: string;
 }
 
+interface InvitationData {
+    status: string;
+    initiated_by: string;
+}
+
 interface PageProps {
     captains: Captain[];
     filters: Filters;
     vessels: VesselOption[];
-    invitations: Record<string, Record<string, string>>;
-    acceptedCaptainIds: string[];
+    invitations: Record<string, Record<string, InvitationData>>;
+    acceptedCaptainIds: Record<string, string[]>; 
     acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
 }
-
 const LICENSE_OPTIONS = [
     { value: '', label: 'All Licenses' },
     { value: 'oupv', label: 'OUPV (6-Pack)' },
@@ -78,14 +82,13 @@ function InviteModal({
 }: {
     captain: Captain;
     vessels: VesselOption[];
-    existingInvitations: Record<string, string>;
+    existingInvitations: Record<string, InvitationData>;
     onClose: () => void;
-}) {
+}){
     const [selectedVessel, setSelectedVessel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
     const currentStatus = selectedVessel
-        ? existingInvitations[selectedVessel]
+        ? existingInvitations[selectedVessel]?.status
         : undefined;
 
     function handleSend() {
@@ -138,7 +141,7 @@ function InviteModal({
                         <select
                             value={selectedVessel}
                             onChange={(e) => setSelectedVessel(e.target.value)}
-                            className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
+                            className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#35ADD5] focus:outline-none"
                         >
                             <option value="" disabled>
                                 Choose a vessel…
@@ -181,7 +184,7 @@ function InviteModal({
                             isLoading ||
                             currentStatus === 'accepted'
                         }
-                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -227,8 +230,8 @@ function CancelConfirmModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}    >
                 <div className="mb-4 flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
                         <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -239,7 +242,7 @@ function CancelConfirmModal({
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
                             Are you sure you want to cancel the invitation sent
-                            to{' '}
+                            to
                             <span className="font-medium text-gray-700">
                                 {captain.name}
                             </span>
@@ -282,31 +285,41 @@ function InviteButton({
     acceptedCaptainIds,
     acceptedViaInterestIds,
     interestedCaptainIds,
+    vessels,
     onOpenInvite,
     onOpenCancel,
     onOpenRevokeAcceptance,
+    onAcceptRequest,
 }: {
     captain: Captain;
-    invitations: Record<string, Record<string, string>>;
-    acceptedCaptainIds: string[];
+    invitations: Record<string, Record<string, InvitationData>>;
+    acceptedCaptainIds: Record<string, string[]>;
     acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
+    vessels: VesselOption[];
     onOpenInvite: () => void;
     onOpenCancel: () => void;
     onOpenRevokeAcceptance: () => void;
+    onAcceptRequest: () => void;
 }) {
     const captainInvites = invitations[captain.id] ?? {};
-    const statuses = Object.values(captainInvites);
+    const statuses = Object.values(captainInvites).map(inv => inv.status);
+
+    // Check if captain requested owner (initiated_by === 'captain' and status is 'pending')
+    const hasCaptainRequest = Object.values(captainInvites).some(
+        (data) => data.status === 'pending' && data.initiated_by === 'captain'
+    );
+
+    const acceptedVessels = acceptedCaptainIds[captain.id] ?? [];
+
+    const isAcceptedForAllVessels =
+        vessels.length > 0 &&
+        acceptedVessels.length === vessels.length &&
+        vessels.every((v) => acceptedVessels.includes(v.value));
 
     const isAcceptedViaInterest = acceptedViaInterestIds.includes(captain.id);
-    const isAcceptedViaInvitation =
-        statuses.includes('accepted') ||
-        (acceptedCaptainIds.includes(captain.id) && !isAcceptedViaInterest);
-    const isAccepted = acceptedCaptainIds.includes(captain.id);
-    const hasPendingInterest =
-        interestedCaptainIds.includes(captain.id) && !isAccepted;
 
-    if (isAccepted) {
+    if (isAcceptedForAllVessels) {
         return (
             <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
@@ -329,7 +342,7 @@ function InviteButton({
         );
     }
 
-    if (statuses.includes('pending')) {
+    if (statuses.includes('pending') && !hasCaptainRequest) {
         return (
             <button
                 type="button"
@@ -342,12 +355,16 @@ function InviteButton({
         );
     }
 
-    if (hasPendingInterest) {
+    if (hasCaptainRequest) {
         return (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+            <button
+                type="button"
+                onClick={onAcceptRequest}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
+            >
                 <Check className="h-3.5 w-3.5" />
-                Requested You
-            </span>
+                Accept Request
+            </button>
         );
     }
 
@@ -355,7 +372,7 @@ function InviteButton({
         <button
             type="button"
             onClick={onOpenInvite}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#0A273F] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#123651]"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#35ADD5] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#35ADD5]/70"
         >
             <Send className="h-3.5 w-3.5" />
             Send Invitation
@@ -387,10 +404,11 @@ export default function CaptainsPage() {
         useState<Captain | null>(null);
     const [revokeModalCaptain, setRevokeModalCaptain] =
         useState<Captain | null>(null);
-
+    const [acceptRequestModalCaptain, setAcceptRequestModalCaptain] =
+        useState<Captain | null>(null);
     const cancelVesselId = cancelModalCaptain
         ? (Object.entries(invitations[cancelModalCaptain.id] ?? {}).find(
-              ([, status]) => status === 'pending' || status === 'accepted',
+              ([, data]) => data.status === 'pending' || data.status === 'accepted',
           )?.[0] ?? '')
         : '';
 
@@ -410,11 +428,25 @@ export default function CaptainsPage() {
         );
     };
 
-    const handleClearFilters = () => {
-        setLicenseType('');
-        setMinExperience('');
-        router.get('/captains', {}, { preserveState: false });
+    const handleAcceptRequest = (captainId: string) => {
+        router.post(
+            `/captains/${captainId}/accept-request`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setAcceptRequestModalCaptain(null);
+                },
+            },
+        );
     };
+
+        const handleClearFilters = () => {
+            router.get(captains().url, {}, { 
+                preserveState: true, 
+                replace: true 
+            });
+        };
 
     const hasActiveFilters = licenseType !== '' || minExperience !== '';
 
@@ -460,12 +492,13 @@ export default function CaptainsPage() {
                                         onChange={(e) =>
                                             setLicenseType(e.target.value)
                                         }
-                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
+                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700  focus:outline-none"
                                     >
                                         {LICENSE_OPTIONS.map((o) => (
                                             <option
                                                 key={o.value}
                                                 value={o.value}
+                                                className={"hover:bg-red-500! cursor-pointer!"}
                                             >
                                                 {o.label}
                                             </option>
@@ -485,7 +518,7 @@ export default function CaptainsPage() {
                                         onChange={(e) =>
                                             setMinExperience(e.target.value)
                                         }
-                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
+                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#35ADD5] focus:outline-none"
                                     >
                                         {EXPERIENCE_OPTIONS.map((o) => (
                                             <option
@@ -507,7 +540,7 @@ export default function CaptainsPage() {
                                     type="button"
                                     onClick={handleSearch}
                                     disabled={isSearching}
-                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     <Search className="h-4 w-4" />
                                     {isSearching ? 'Searching…' : 'Search'}
@@ -576,7 +609,7 @@ export default function CaptainsPage() {
                             <button
                                 type="button"
                                 onClick={handleClearFilters}
-                                className="mt-5 cursor-pointer rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#123651]"
+                                className="mt-5 cursor-pointer rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#35ADD5]/70"
                             >
                                 Clear all filters
                             </button>
@@ -589,7 +622,7 @@ export default function CaptainsPage() {
                                     className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-8"
                                 >
                                     <div className="mb-4 flex items-start justify-between gap-4">
-                                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                                        <div className="flex flex-row items-start gap-4  sm:items-center">
                                             <div className="relative h-16 w-16 shrink-0">
                                                 {captain.photo ? (
                                                     <img
@@ -610,14 +643,14 @@ export default function CaptainsPage() {
                                             </div>
                                             <div>
                                                 <h3
-                                                    className="cursor-pointer text-xl leading-tight font-bold text-gray-900 hover:text-[#0A273F] hover:underline"
+                                                    className="cursor-pointer text-xl leading-tight font-bold text-gray-900 hover:text-[#35ADD5] hover:underline"
                                                     onClick={() =>
                                                         router.get(
                                                             `/captains/${captain.id}`,
                                                         )
                                                     }
                                                 >
-                                                    {captain.name}
+                                                    {captain.name} 
                                                 </h3>
                                                 <div className="mt-2 space-y-1">
                                                     {captain.location && (
@@ -687,34 +720,18 @@ export default function CaptainsPage() {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <InviteButton
-                                                captain={captain}
-                                                invitations={invitations}
-                                                acceptedCaptainIds={
-                                                    acceptedCaptainIds
-                                                }
-                                                acceptedViaInterestIds={
-                                                    acceptedViaInterestIds
-                                                }
-                                                interestedCaptainIds={
-                                                    interestedCaptainIds
-                                                }
-                                                onOpenInvite={() =>
-                                                    setInviteModalCaptain(
-                                                        captain,
-                                                    )
-                                                }
-                                                onOpenCancel={() =>
-                                                    setCancelModalCaptain(
-                                                        captain,
-                                                    )
-                                                }
-                                                onOpenRevokeAcceptance={() =>
-                                                    setRevokeModalCaptain(
-                                                        captain,
-                                                    )
-                                                }
-                                            />
+                                    <InviteButton
+                                        captain={captain}
+                                        invitations={invitations}
+                                        acceptedCaptainIds={acceptedCaptainIds}
+                                        acceptedViaInterestIds={acceptedViaInterestIds}
+                                        interestedCaptainIds={interestedCaptainIds}
+                                        vessels={vessels}
+                                        onOpenInvite={() => setInviteModalCaptain(captain)}
+                                        onOpenCancel={() => setCancelModalCaptain(captain)}
+                                        onOpenRevokeAcceptance={() => setRevokeModalCaptain(captain)}
+                                        onAcceptRequest={() => handleAcceptRequest(captain.id)}
+                                    />
                                             <button
                                                 type="button"
                                                 onClick={() =>

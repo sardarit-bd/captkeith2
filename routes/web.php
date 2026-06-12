@@ -3,7 +3,7 @@
     use App\Http\Controllers\DashboardController;
     use Illuminate\Support\Facades\Route;
     use Laravel\Fortify\Features;
-
+    use Inertia\Inertia;
     Route::inertia('/', 'welcome', [
         'canRegister' => Features::enabled(Features::registration()),
     ])->name('home');
@@ -17,17 +17,46 @@
         Route::get('dashboard', DashboardController::class)->name('dashboard');
         Route::get('messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
         Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
+        Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
         Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
             Route::inertia('notifications', 'notifications')->name('notifications');
             Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
             Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
         });
 
+        Route::get('/notifications', function () {
+            return Inertia::render('notifications', [
+                'notifications' => auth()->user()
+                    ->notifications()
+                    ->latest()
+                    ->paginate(20),
+            ]);
+        })->name('notifications');
+    
+
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/api/notifications/count', function (Request $request) {
+        return response()->json([
+            'unreadCount' => $request->user()->unreadNotifications()->count(),
+        ]);
+        })->name('api.notifications.count');
+    });
+
+    Route::post('/notifications/{id}/read', function (Request $request, $id) {
+        $request->user()->unreadNotifications->where('id', $id)->markAsRead();
+        return back();
+    })->name('notifications.read');
+    
+    Route::post('/notifications/read-all', function (Request $request) {
+        $request->user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('notifications.read-all');
         Route::middleware('role:owner')->group(function () {
             Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
             Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
             Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
             Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
+            Route::get('owner/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('owner.agreement.download');
             Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
             Route::delete('charterers/{charterEvent}', [\App\Http\Controllers\CharterController::class, 'destroy'])->name('charterers.destroy');
             Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
@@ -41,6 +70,26 @@
                 ->name('owner-settings.preferences');
             Route::patch('owner/settings/deactivate', [\App\Http\Controllers\OwnerSettingsController::class, 'deactivate'])
                 ->name('owner-settings.deactivate');
+                // Deckhands routes
+            Route::get('deckhands', [\App\Http\Controllers\DeckhandController::class, 'index'])->name('deckhands');
+            Route::post('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'store'])
+                ->name('deckhands.invite.store');
+            Route::delete('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'destroy'])
+                ->name('deckhands.invite.destroy');
+            Route::delete(
+                'deckhands/{deckhand}/revoke-acceptance',
+                [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'revokeAcceptance']
+            )->name('deckhands.revoke-acceptance');
+
+            Route::get(
+                'deckhand-requests',
+                [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'index']
+            )->name('deckhand-requests');
+
+            Route::patch(
+                'deckhand-requests/{interest}/respond',
+                [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'respond']
+            )->name('deckhand-requests.respond');
             Route::delete('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'destroy'])
                 ->name('owner-settings.destroy');
             Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
@@ -84,6 +133,7 @@
                 ->name('yachts-match');
             Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
             Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
+            Route::patch('/requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');
             Route::get('account-preferences', [\App\Http\Controllers\AccountPreferencesController::class, 'index'])
                 ->name('account-preferences');
 
@@ -111,11 +161,25 @@
                 [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'respond']
             )->name('invitations.respond');
             Route::get('invitations', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'index'])->name('invitations');
+            Route::patch(
+            'deckhand-invitations/{invitation}/respond',
+            [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
+            )->name('deckhand-invitations.respond');
+            Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
+            Route::post('/requests/deckhand/send', [\App\Http\Controllers\RequestsController::class, 'sendDeckhandRequest'])
+                ->name('requests.send-deckhand');
+            Route::post('/requests/deckhand-agreement/{agreementId}/sign', [\App\Http\Controllers\RequestsController::class, 'confirmSignDeckhandAgreement'])
+    ->name('requests.deckhand-agreement.sign');
+            Route::post('/requests/deckhand/cancel', [\App\Http\Controllers\RequestsController::class, 'cancelDeckhandRequest'])
+                ->name('requests.cancel-deckhand');
+                Route::get('requests/{crewResponse}/agreement-details', [\App\Http\Controllers\RequestsController::class, 'getAgreementDetails'])->name('requests.agreement-details');
+                Route::get('requests/agreement/{agreementId}/download', [\App\Http\Controllers\RequestsController::class, 'downloadAgreement'])->name('requests.agreement.download');
+                Route::post('requests/{crewResponse}/sign-deckhand-agreement', [\App\Http\Controllers\RequestsController::class, 'signDeckhandAgreement'])->name('requests.sign-deckhand-agreement');
         });
 
         Route::middleware('role:charterer')->group(function () {
             Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
-            Route::get('charterer/request', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
+           Route::get('charterer/request/{id}', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
             Route::get('/charterer/captain-select', [\App\Http\Controllers\CharterController::class, 'captainSelect'])->name('charterer.captain-select');
             Route::post('/charterer/captain-requests/{responseId}/cancel', [\App\Http\Controllers\CharterController::class, 'cancelCaptainRequest'])
                 ->name('charterer.captain-request.cancel');
@@ -123,8 +187,11 @@
             Route::get('/charterer/captain-request-status', [\App\Http\Controllers\CharterController::class, 'captainRequestStatus'])->name('charterer.captain-request-status');
             Route::get('charterer/information', [\App\Http\Controllers\CharterController::class, 'information'])->name('charterer.information');
             Route::post('charterer/information', [\App\Http\Controllers\CharterController::class, 'saveInformation'])->name('charterer.information.save');
-            Route::inertia('charterer/agreement', 'charterer/agreement')->name('charterer.agreement');
-            Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
+            Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
+            Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
+            // Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
+            Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
+            Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
             Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
             Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');
             Route::patch('charterer/settings/preferences', [\App\Http\Controllers\ChartererSettingsController::class, 'updatePreferences'])->name('charterer-settings.preferences');

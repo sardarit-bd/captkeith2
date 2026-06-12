@@ -72,7 +72,7 @@ export function OwnerCaptainMatches() {
 
             <Link
                 href={captains()}
-                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#0D314D] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#0a273f]"
+                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#35ADD5] text-[15px] font-medium text-[#FFFFFF] transition-colors hover:bg-[#35ADD5]/70"
             >
                 View All Captains
             </Link>

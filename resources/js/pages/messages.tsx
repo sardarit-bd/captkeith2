@@ -77,7 +77,7 @@ function Avatar({
 
     return (
         <span
-            className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0d314d] font-semibold text-white ${dim}`}
+            className={`relative inline-flex shrink-0 cursor-pointer! items-center justify-center overflow-hidden rounded-full bg-[#35ADD5] font-semibold text-white ${dim}`}
         >
             {photo ? (
                 <img
@@ -265,7 +265,7 @@ export default function MessagesPage() {
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search by name or role"
-                                    className="w-full rounded-xl border border-[#d7e5ee] bg-[#f9fcfe] py-2 pr-3 pl-9 text-sm text-[#234560] placeholder:text-[#92a4b3] focus:border-[#0d314d] focus:ring-2 focus:ring-[#b9d3e5] focus:outline-none"
+                                    className="w-full rounded-xl border border-[#d7e5ee] bg-[#f9fcfe] py-2 pr-3 pl-9 text-sm text-[#234560] placeholder:text-[#92a4b3] focus:border-[#35ADD5] focus:ring-2 focus:ring-[#b9d3e5] focus:outline-none"
                                 />
                             </div>
                         </div>
@@ -284,7 +284,7 @@ export default function MessagesPage() {
                                                 conversation.id,
                                             )
                                         }
-                                        className={`mb-1.5 flex w-full items-start gap-3 rounded-2xl p-2.5 text-left transition-colors sm:mb-2 sm:p-3 cursor-pointer${
+                                        className={`mb-1.5 flex w-full cursor-pointer! items-start gap-3 rounded-2xl p-2.5 text-left transition-colors sm:mb-2 sm:p-3 ${
                                             isActive
                                                 ? 'bg-[#eaf4fb]'
                                                 : 'hover:bg-[#f4f9fc]'
@@ -314,7 +314,7 @@ export default function MessagesPage() {
                                         </span>
 
                                         {conversation.unread > 0 && (
-                                            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#0d314d] px-1.5 text-[11px] font-semibold text-white">
+                                            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#35ADD5] px-1.5 text-[11px] font-semibold text-white">
                                                 {conversation.unread}
                                             </span>
                                         )}
@@ -381,7 +381,7 @@ export default function MessagesPage() {
                                     <button
                                         type="button"
                                         onClick={() => setSidebarOpen(true)}
-                                        className="mt-1 rounded-xl bg-[#0d314d] px-4 py-2 text-xs font-medium text-white hover:bg-[#123c5e] md:hidden"
+                                        className="mt-1 rounded-xl bg-[#35ADD5] px-4 py-2 text-xs font-medium text-white hover:bg-[#123c5e] md:hidden"
                                     >
                                         Open Conversations
                                     </button>
@@ -403,7 +403,7 @@ export default function MessagesPage() {
                                             <article
                                                 className={`max-w-[78%] rounded-2xl px-3 py-2.5 shadow-sm sm:max-w-[65%] sm:px-4 sm:py-3 ${
                                                     chat.fromMe
-                                                        ? 'rounded-br-md bg-[#0d314d] text-white'
+                                                        ? 'rounded-br-md bg-[#35ADD5] text-white'
                                                         : 'rounded-bl-md border border-[#dbe9f1] bg-white text-[#28465f]'
                                                 }`}
                                             >
@@ -453,7 +453,7 @@ export default function MessagesPage() {
                                         !selectedUser ||
                                         processing
                                     }
-                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-[#0d314d] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#123c5e] disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:text-sm"
+                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-[#35ADD5] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#123c5e] disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:text-sm"
                                 >
                                     {processing ? 'Sending…' : 'Send'}
                                     <SendHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

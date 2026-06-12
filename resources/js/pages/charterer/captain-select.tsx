@@ -22,18 +22,21 @@ export interface Captain {
 }
 
 interface PageProps {
+    charterEventId: string;
     captains: Captain[];
     acceptedCount: number;
     slotsNeeded: number;
 }
 
 export default function ChartererCaptainSelectPage() {
-    const { captains, acceptedCount, slotsNeeded } = usePage<PageProps>().props;
+     const { charterEventId, captains, acceptedCount, slotsNeeded } = usePage<PageProps>().props;
+
 
     return (
         <>
             <Head title="Select Your Captain" />
             <ChartererCaptainSelectPageContent
+                charterEventId={charterEventId}
                 captains={captains}
                 acceptedCount={acceptedCount}
                 slotsNeeded={slotsNeeded}

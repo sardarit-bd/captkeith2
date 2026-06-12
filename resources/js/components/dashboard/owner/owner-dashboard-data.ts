@@ -55,7 +55,7 @@ export const ownerQuickActions: OwnerQuickAction[] = [
         title: 'Add New Vessel',
         description: 'Register a new yacht to your fleet',
         icon: Ship,
-        iconColor: '#0f3d66',
+        iconColor: '#35ADD5',
         iconBg: '#e8eef7',
         href: '/my-yachts/create',
     },

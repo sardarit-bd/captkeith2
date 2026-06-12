@@ -56,7 +56,7 @@ export function ChartererInsuranceMainCard() {
 
             <Link
                 href={confirmed()}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0A273F] px-6 py-3.5 text-sm font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#123651]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#35ADD5] px-6 py-3.5 text-sm font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#35ADD5]/70"
             >
                 <Shield className="h-4 w-4" />
                 Purchase Insurance Coverage
@@ -86,7 +86,7 @@ function SummaryRow({
             <p
                 className={
                     emphasized
-                        ? 'text-[22px] font-bold text-[#0A273F]'
+                        ? 'text-[22px] font-bold text-[#35ADD5]'
                         : 'text-sm font-medium text-[#1f2937]'
                 }
             >

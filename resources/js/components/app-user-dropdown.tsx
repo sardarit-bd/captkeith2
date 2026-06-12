@@ -144,7 +144,7 @@ export function AppUserDropdown({
                         className="inline-flex items-center gap-2 rounded-xl px-2 py-1 transition-colors hover:bg-[#e9edf2] sm:gap-3"
                         aria-label="User menu"
                     >
-                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#0f3d66] text-sm font-semibold text-white">
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#35ADD5] text-sm font-semibold text-white">
                             {initials || 'U'}
                         </span>
                         <span className="hidden text-left sm:block">

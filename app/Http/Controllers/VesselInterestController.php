@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\OwnerCaptainInvitation;
-use App\Models\DeckhandVesselInterest;
+use App\Models\OwnerDeckhandInvitation;
 use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-
+use App\Notifications\VesselInterestNotification;
 class VesselInterestController extends Controller
 {
     public function store(Request $request, Vessel $vessel): RedirectResponse
@@ -33,12 +33,24 @@ class VesselInterestController extends Controller
             $profile = $user->deckhandProfile;
             abort_if($profile === null, 403, 'No deckhand profile found.');
 
-            DeckhandVesselInterest::firstOrCreate([
-                'deckhand_id' => $profile->id,
-                'vessel_id'   => $vessel->id,
-            ]);
-        }
 
+            OwnerDeckhandInvitation::firstOrCreate(
+                [
+                    'owner_id'    => $vessel->owner_id,
+                    'deckhand_id' => $profile->id,
+                    'vessel_id'   => $vessel->id,
+                ],
+                [
+                    'status'       => 'pending',
+                    'initiated_by' => 'deckhand',
+                ]
+            );
+        }
+    $vessel->owner->user->notify(new VesselInterestNotification(
+        $vessel,
+        $user,
+        $role
+    ));
         return back()->with('success', 'Interest sent to the owner.');
     }
 
@@ -58,7 +70,9 @@ class VesselInterestController extends Controller
             $profile = $user->deckhandProfile;
             abort_if($profile === null, 403, 'No deckhand profile found.');
 
-            DeckhandVesselInterest::where('deckhand_id', $profile->id)
+           
+            OwnerDeckhandInvitation::where('owner_id', $vessel->owner_id)
+                ->where('deckhand_id', $profile->id)
                 ->where('vessel_id', $vessel->id)
                 ->delete();
         }

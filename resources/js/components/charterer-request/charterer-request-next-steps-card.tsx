@@ -13,7 +13,7 @@ export function ChartererRequestNextStepsCard() {
                         <div
                             className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold shadow-sm ${
                                 step.active
-                                    ? 'bg-[#0A273F] text-white'
+                                    ? 'bg-[#35ADD5] text-white'
                                     : 'border border-[#e5e7eb] bg-white text-[#4b5563]'
                             }`}
                         >

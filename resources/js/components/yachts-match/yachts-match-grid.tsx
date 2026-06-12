@@ -36,7 +36,7 @@ export function YachtsMatchGrid() {
                 </p>
                 <Link
                     href={myProfile()}
-                    className="inline-flex items-center rounded-lg bg-[#0D314D] px-6 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f]"
+                    className="inline-flex items-center rounded-lg bg-[#35ADD5] px-6 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]"
                 >
                     Set Up Profile
                 </Link>

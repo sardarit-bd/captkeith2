@@ -63,7 +63,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <Head title="Login - CaptMatch" />
 
             <div className="captmatch-home flex h-screen overflow-hidden bg-white text-gray-800">
-                <div className="relative hidden flex-col justify-between bg-[#0D314D] p-10 md:flex md:w-5/12 lg:w-1/2 lg:p-14">
+                <div className="relative hidden flex-col justify-between bg-[#35ADD5] p-10 md:flex md:w-5/12 lg:w-1/2 lg:p-14">
                     <img
                         src="/images/home/cta.jpg"
                         alt=""
@@ -124,7 +124,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#EFF8FD]">
                                 <LogIn className="h-5 w-5 text-[#3DB3DE]" />
                             </div>
-                            <h1 className="mb-2 text-[32px] font-bold text-[#0D314D]">
+                            <h1 className="mb-2 text-[32px] font-bold text-[#35ADD5]">
                                 Sign In
                             </h1>
                             <p className="text-[15px] text-gray-500">

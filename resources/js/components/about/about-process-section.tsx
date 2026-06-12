@@ -5,7 +5,7 @@ export function AboutProcessSection() {
     return (
         <section className="w-full bg-[#F9FCFF] py-12 sm:py-16 md:py-24">
             <div className="mx-auto max-w-392 px-6 md:px-10">
-                <h2 className="mb-12 text-center text-[32px] font-bold text-[#0D314D] sm:mb-16 sm:text-[40px] md:mb-20 md:text-[48px]">
+                <h2 className="mb-12 text-center text-[32px] font-bold text-[#35ADD5] sm:mb-16 sm:text-[40px] md:mb-20 md:text-[48px]">
                     How It Works
                 </h2>
 
@@ -27,7 +27,7 @@ export function AboutProcessSection() {
                                     </div>
                                 )}
 
-                                <div className="relative z-10 mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-r from-[#015291] to-[#0D314D] text-[24px] font-bold text-white sm:mb-6 sm:h-20 sm:w-20 sm:text-[28px]">
+                                <div className="relative z-10 mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-r from-[#015291] to-[#35ADD5] text-[24px] font-bold text-white sm:mb-6 sm:h-20 sm:w-20 sm:text-[28px]">
                                     {stepNumber}
                                 </div>
                                 <h3 className="mb-2 text-[18px] font-bold text-[#2D3748] sm:mb-3 sm:text-[20px]">

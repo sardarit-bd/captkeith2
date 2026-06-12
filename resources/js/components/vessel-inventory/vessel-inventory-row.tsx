@@ -67,7 +67,7 @@ export function VesselInventoryRow({ vessel }: { vessel: VesselInventoryRecord }
                             className={`text-base font-semibold ${
                                 vessel.status === 'Flagged'
                                     ? 'text-slate-600'
-                                    : 'text-[#11395d]'
+                                    : 'text-[#35ADD5]'
                             }`}
                         >
                             {vessel.vesselName}
@@ -194,7 +194,7 @@ export function VesselInventoryRow({ vessel }: { vessel: VesselInventoryRecord }
                 {vessel.status === 'Pending Approval' ? (
                     <button
                         type="button"
-                        className="rounded-lg bg-[#11395d] px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+                        className="rounded-lg bg-[#35ADD5] px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
                     >
                         Review Listing
                     </button>
@@ -220,7 +220,7 @@ export function VesselInventoryRow({ vessel }: { vessel: VesselInventoryRecord }
                         <button
                             type="button"
                             title="Edit Compliance"
-                            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#11395d]"
+                            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#35ADD5]"
                         >
                             <Edit3 className="h-4 w-4" />
                         </button>

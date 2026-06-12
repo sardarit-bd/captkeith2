@@ -1,6 +1,6 @@
+import { useState } from 'react';
+import { User, Calendar, Clock, MessageSquare, Check, X, AlertCircle, UserRoundCheck, Download, FileSignature } from 'lucide-react';
 import { router } from '@inertiajs/react';
-import { Check, MessageSquare, Ship, X } from 'lucide-react';
-import { respond } from '@/routes/requests';
 import type { CaptainRequestRecord } from './requests-data';
 
 const statusStyles: Record<CaptainRequestRecord['status'], string> = {
@@ -8,7 +8,7 @@ const statusStyles: Record<CaptainRequestRecord['status'], string> = {
     available: 'bg-[#14532d] text-white',
     unavailable: 'bg-[#7f1d1d] text-white',
     accepted: 'bg-[#14532d] text-white',
-    declined: 'bg-[#7f1d1d] text-white',
+    declined: 'bg-red-100 text-white',
 };
 
 const statusLabels: Record<CaptainRequestRecord['status'], string> = {
@@ -19,147 +19,222 @@ const statusLabels: Record<CaptainRequestRecord['status'], string> = {
     declined: 'Declined',
 };
 
-export function RequestCard({ request }: { request: CaptainRequestRecord }) {
+interface RequestCardProps {
+    request: CaptainRequestRecord;
+    onSelectDeckhand?: (requestId: string, charterEventId: string) => void;
+    onSignDeckhandAgreement?: (agreementId: string) => void;
+}
+
+export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement }: RequestCardProps) {
     const isPending = request.status === 'pending';
-    const isInvitation = request.type === 'owner_invitation';
+    const isAccepted = request.status === 'available' || request.status === 'accepted';
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     function handleAccept() {
-        if (isInvitation) {
-            router.patch(
-                `/invitations/${request.id}/respond`,
-                { status: 'accepted' },
-                { preserveScroll: true },
-            );
-        } else {
-            router.patch(
-                respond({ crewResponse: request.id }).url,
-                { response: 'available' },
-                { preserveScroll: true },
-            );
-        }
+        setIsSubmitting(true);
+        router.patch(`/requests/${request.id}/respond`, { response: 'available' }, {
+            preserveScroll: true,
+            onFinish: () => setIsSubmitting(false),
+        });
     }
 
     function handleDecline() {
-        if (isInvitation) {
-            router.patch(
-                `/invitations/${request.id}/respond`,
-                { status: 'declined' },
-                { preserveScroll: true },
-            );
-        } else {
-            router.patch(
-                respond({ crewResponse: request.id }).url,
-                { response: 'unavailable' },
-                { preserveScroll: true },
-            );
+        setIsSubmitting(true);
+        router.patch(`/requests/${request.id}/respond`, { response: 'unavailable' }, {
+            preserveScroll: true,
+            onFinish: () => setIsSubmitting(false),
+        });
+    }
+
+    function handleMessage() {
+        if (request.captainInfo?.userId) {
+            router.visit(`/messages?with=${request.captainInfo.userId}`);
         }
     }
 
     const fallbackImage = '/images/home/about3.jpg';
 
+    // Extract agreements
+    const chartererAgreement = request.agreements?.find(a => a.type !== 'deckhand_hire');
+    const deckhandAgreement = request.agreements?.find(a => a.type === 'deckhand_hire');
+
     return (
         <article className="rounded-xl border border-[#eef2f6] bg-white p-6 shadow-sm">
-            {isInvitation && (
-                <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#EFF6FF] px-3 py-1 text-[11px] font-semibold text-[#2563eb]">
-                    <Ship className="h-3.5 w-3.5" />
-                    Owner Invitation
-                </div>
-            )}
-
             <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-4">
-                    <img
-                        src={request.image ?? fallbackImage}
-                        alt={request.yachtName}
-                        className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover"
+                    <img 
+                        src={request.image ?? fallbackImage} 
+                        alt={request.yachtName} 
+                        className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover" 
                     />
                     <div>
-                        <h3 className="text-[15px] font-bold text-[#111827]">
+                        <a
+                            href={request.vesselId ? `/vessels/${request.vesselId}` : '#'}
+                            className={`text-[15px] font-bold text-[#111827] ${request.vesselId ? 'cursor-pointer hover:text-[#35ADD5] hover:underline' : ''}`}
+                            onClick={(e) => {
+                                if (request.vesselId) {
+                                    e.preventDefault();
+                                    router.visit(`/vessels/${request.vesselId}`);
+                                }
+                            }}
+                        >
                             {request.yachtName}
-                        </h3>
-                        <p className="text-[13px] text-[#6b7280]">
-                            {request.yachtSpec}
-                        </p>
-                        <p className="text-[13px] text-[#6b7280]">
-                            {request.marina}
-                        </p>
+                        </a>
+                        <p className="text-[13px] text-[#6b7280]">{request.yachtSpec}</p>
+                        <p className="text-[13px] text-[#6b7280]">{request.marina}</p>
                     </div>
                 </div>
-                <span
-                    className={`inline-flex self-start rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${statusStyles[request.status]}`}
-                >
+                <span className={`inline-flex self-start rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${statusStyles[request.status]}`}>
                     {statusLabels[request.status]}
                 </span>
             </header>
 
-            {!isInvitation && (
-                <>
-                    <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                        <RequestInfoItem label="Date" value={request.date} />
-                        <RequestInfoItem label="Time" value={request.time} />
-                        <RequestInfoItem
-                            label="Duration"
-                            value={request.duration}
-                        />
+            {request.captainInfo && (
+                <div className="mb-6 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            {request.captainInfo.photo ? (
+                                <img
+                                    src={request.captainInfo.photo}
+                                    alt={request.captainInfo.name}
+                                    className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-[#e5e7eb]"
+                                />
+                            ) : (
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#35ADD5]">
+                                    <User className="h-6 w-6 text-white" />
+                                </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                                <a 
+                                    href={`/captains/${request.captainInfo.id}`}
+                                    className="text-[15px] font-semibold text-[#111827] hover:text-[#35ADD5] hover:underline"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.visit(`/captains/${request?.captainInfo?.id}`);
+                                    }}
+                                >
+                                    {request.captainInfo.name}
+                                </a>
+                                <p className="text-[12px] text-[#6b7280]">{request.captainInfo.role}</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleMessage}
+                            className="inline-flex items-center justify-center rounded-full bg-[#35ADD5] p-2.5 text-white transition-colors hover:bg-[#2a8fb0]"
+                            title="Message Captain"
+                        >
+                            <MessageSquare className="h-5 w-5" />
+                        </button>
                     </div>
-                    <section className="mb-6">
-                        <p className="mb-1 text-[12px] font-medium text-[#6b7280]">
-                            Special Notes
-                        </p>
-                        <p className="text-[14px] text-[#1f2937]">
-                            {request.specialNotes || '—'}
-                        </p>
-                    </section>
-                </>
+                </div>
             )}
 
-            <footer className="flex flex-wrap items-center gap-3">
+            <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+                <div>
+                    <div className="mb-1 flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-[#9ca3af]" />
+                        <p className="text-[12px] font-medium text-[#6b7280]">Date</p>
+                    </div>
+                    <p className="text-[15px] font-bold text-[#111827]">{request.date}</p>
+                </div>
+                <div>
+                    <div className="mb-1 flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-[#9ca3af]" />
+                        <p className="text-[12px] font-medium text-[#6b7280]">Time</p>
+                    </div>
+                    <p className="text-[15px] font-bold text-[#111827]">{request.time}</p>
+                </div>
+                <div>
+                    <p className="mb-1 text-[12px] font-medium text-[#6b7280]">Duration</p>
+                    <p className="text-[15px] font-bold text-[#111827]">{request.duration}</p>
+                </div>
+            </div>
+
+            <section className="mb-6">
+                <p className="mb-1 text-[12px] font-medium text-[#6b7280]">Special Notes</p>
+                <p className="text-[14px] text-[#1f2937]">{request.specialNotes || '—'}</p>
+            </section>
+
+            <footer className="flex flex-wrap items-center gap-4">
+       
+                {request.deckhandInfo?.mustSelectDeckhand && request.charterEventId && (
+                    <button
+                        type="button"
+                        onClick={() => onSelectDeckhand?.(request.id, request.charterEventId)}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                    >
+                        <UserRoundCheck className="h-4 w-4" />
+                        Select Deckhand
+                    </button>
+                )}
+
+
+                {chartererAgreement?.isSignedByCharterer && (
+                    <a
+                        href={chartererAgreement.downloadUrl}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                    >
+                        <Download className="h-4 w-4" />
+                        Download Agreement
+                    </a>
+                )}
+
+                {request.deckhandInfo?.selectedDeckhand?.selectedByMe && deckhandAgreement && (
+                    <>
+                        {!deckhandAgreement.isFullySigned ? (
+                            <button
+                                type="button"
+                                onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                            >
+                                <FileSignature className="h-4 w-4" />
+                                Sign Deckhand Agreement
+                            </button>
+                        ) : (
+                            <a
+                                href={deckhandAgreement.downloadUrl}
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                            >
+                                <Download className="h-4 w-4" />
+                                Download Deckhand Agreement
+                            </a>
+                        )}
+                    </>
+                )}
+
+     
+                {deckhandAgreement?.isSignedByCrew && !request.deckhandInfo?.selectedDeckhand?.selectedByMe && (
+                    <a
+                        href={deckhandAgreement.downloadUrl}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                    >
+                        <Download className="h-4 w-4" />
+                        Download Agreement
+                    </a>
+                )}
+
+       
                 <button
                     type="button"
-                    disabled={!isPending}
+                    disabled={!isPending || isSubmitting}
                     onClick={handleAccept}
                     className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     <Check className="h-4 w-4" />
-                    {isInvitation ? 'Accept Invitation' : 'Accept Request'}
+                    Accept Request
                 </button>
 
                 <button
                     type="button"
-                    disabled={!isPending}
+                    disabled={!isPending || isSubmitting}
                     onClick={handleDecline}
                     className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     <X className="h-4 w-4" />
                     Decline
                 </button>
-
-                {request.ownerUserId && (
-                    <button
-                        type="button"
-                        onClick={() =>
-                            router.get('/messages', {
-                                with: request.ownerUserId,
-                            })
-                        }
-                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
-                    >
-                        <MessageSquare className="h-4 w-4" />
-                        Message Owner
-                    </button>
-                )}
             </footer>
         </article>
-    );
-}
-
-function RequestInfoItem({ label, value }: { label: string; value: string }) {
-    return (
-        <div>
-            <p className="mb-1 text-[12px] font-medium text-[#6b7280]">
-                {label}
-            </p>
-            <p className="text-[15px] font-bold text-[#111827]">{value}</p>
-        </div>
     );
 }

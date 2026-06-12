@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('deckhand_vessel_interests', function (Blueprint $table) { // plural
+        Schema::create('deckhand_vessel_interests', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('deckhand_id')->constrained('deckhand_profiles');
             $table->foreignUuid('vessel_id')->constrained('vessels');
-            $table->enum('status', ['pending', 'accepted', 'declined'])->default('pending'); // add this
+            $table->enum('status', ['pending', 'accepted', 'declined'])->default('pending');
             $table->timestamp('created_at')->useCurrent();
 
             $table->unique(['deckhand_id', 'vessel_id']);
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('deckhand_vessel_interests'); // plural
+        Schema::dropIfExists('deckhand_vessel_interests');
     }
 };

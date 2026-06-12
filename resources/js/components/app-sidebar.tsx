@@ -5,6 +5,7 @@ import {
     ClipboardList,
     LayoutGrid,
     LogOut,
+    Mail,
     MessageCircle,
     Settings,
     ShieldCheck,
@@ -31,6 +32,8 @@ import {
     charterers,
     complianceLog,
     dashboard,
+    deckhandRequests,
+    deckhands,
     logout,
     messages,
     myBooking,
@@ -42,11 +45,10 @@ import {
     vesselInventory,
     yachtsMatch,
 } from '@/routes';
-import { request as chartererRequest } from '@/routes/charterer';
 import type { NavItem } from '@/types';
 
 function resolveNavItems(role: string | null | undefined): NavItem[] {
-    console.log(chartererRequest().url);
+  
     const sharedItems: NavItem[] = [
         {
             title: 'Dashboard',
@@ -103,7 +105,17 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 title: 'Captain Requests',
                 href: '/captain-requests',
                 icon: ClipboardList,
+            },  {
+                title: 'Deckhands',
+                href: deckhands(),
+                icon: User,
             },
+                {
+                title: 'Deckhand Requests',
+                href: '/deckhand-requests',
+                icon: Mail, 
+            },
+        
             {
                 title: 'Charterers',
                 href: charterers(),
@@ -153,31 +165,31 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
                 href: requests(),
                 icon: ClipboardList,
             },
+                {
+                title: 'Invitations',
+                href: '/deckhand-invitations',
+                icon: Mail, 
+            },
             sharedItems[1],
         ];
     }
 
-    if (role === 'charterer') {
-        return [
-            sharedItems[0],
-            {
-                title: 'My Booking',
-                href: myBooking(),
-                icon: CalendarDays,
-            },
-            {
-                title: 'Request',
-                href: chartererRequest().url,
-                icon: ClipboardList,
-            },
-            {
-                title: 'Notifications',
-                href: notifications(),
-                icon: Bell,
-            },
-            sharedItems[1],
-        ];
-    }
+        if (role === 'charterer') {
+            return [
+                sharedItems[0],
+                {
+                    title: 'My Booking',
+                    href: myBooking(),
+                    icon: CalendarDays,
+                },
+                {
+                    title: 'Notifications',
+                    href: notifications(),
+                    icon: Bell,
+                },
+                sharedItems[1],
+            ];
+        }
 
     return sharedItems;
 }
@@ -218,7 +230,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            className="h-11 rounded-xl px-4 text-[15px] text-[#334155] hover:bg-[#e8edf3] hover:text-[#11395d]"
+                            className="h-11 cursor-pointer! rounded-xl px-4 text-[15px] text-[#334155] hover:bg-[#e8edf3] hover:text-[#35ADD5]"
                         >
                             <Link
                                 href={logout()}

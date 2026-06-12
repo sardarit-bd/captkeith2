@@ -70,7 +70,7 @@ export function CaptainRequestCard({
 
                     <div>
                         <h3
-                            className="cursor-pointer text-[15px] font-bold text-[#111827] hover:text-[#0A273F] hover:underline"
+                            className="cursor-pointer text-[15px] font-bold text-[#111827] hover:text-[#35ADD5] hover:underline"
                             onClick={() =>
                                 router.get(`/captains/${interest.captainId}`)
                             }
@@ -144,7 +144,7 @@ export function CaptainRequestCard({
                     type="button"
                     disabled={!isPending || isLoading !== null}
                     onClick={() => handleRespond('accepted')}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0D314D] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     {isLoading === 'accept' ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

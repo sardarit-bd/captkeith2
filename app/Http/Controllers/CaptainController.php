@@ -52,26 +52,31 @@ class CaptainController extends Controller
             ->pluck('id')
             : collect();
 
-        // All invitations grouped by captain_id → vessel_id → status
-        $invitations = $owner
-            ? OwnerCaptainInvitation::where('owner_id', $owner->id)
-            ->get()
-            ->groupBy('captain_id')
-            ->map(fn($group) => $group->pluck('status', 'vessel_id')->toArray())
-            ->toArray()
-            : [];
+       
 
-        // Accepted captains — now single source of truth
+            $invitations = $owner
+                ? OwnerCaptainInvitation::where('owner_id', $owner->id)
+                ->get()
+                ->groupBy('captain_id')
+                ->map(fn($group) => $group->mapWithKeys(fn($invitation) => [
+                    $invitation->vessel_id => [
+                        'status' => $invitation->status,
+                        'initiated_by' => $invitation->initiated_by,
+                    ]
+                ])->toArray())
+                ->toArray()
+                : [];
+      
         $acceptedCaptainIds = $owner
             ? OwnerCaptainInvitation::where('owner_id', $owner->id)
             ->where('status', 'accepted')
-            ->pluck('captain_id')
-            ->unique()
-            ->values()
+            ->get()
+            ->groupBy('captain_id')
+            ->map(fn($group) => $group->pluck('vessel_id')->unique()->values()->toArray())
             ->toArray()
             : [];
 
-        // Interested captains = pending or accepted in owner_captain_invitations
+    
         $interestedCaptainIds = $owner
             ? OwnerCaptainInvitation::whereIn('vessel_id', $vesselIds)
             ->whereIn('status', ['pending', 'accepted'])
@@ -226,4 +231,27 @@ class CaptainController extends Controller
             'matchedVessels' => $matchedVessels,
         ]);
     }
+
+    public function acceptRequest(Request $request, CaptainProfile $captain)
+{
+    $owner = OwnerProfile::where('user_id', $request->user()->id)->first();
+    
+    if (!$owner) {
+        return back()->with('error', 'Owner profile not found.');
+    }
+
+
+    $invitations = OwnerCaptainInvitation::where('owner_id', $owner->id)
+        ->where('captain_id', $captain->id)
+        ->where('status', 'pending')
+        ->where('initiated_by', 'captain')
+        ->get();
+
+  
+    foreach ($invitations as $invitation) {
+        $invitation->update(['status' => 'accepted']);
+    }
+
+    return back()->with('success', 'Captain request accepted successfully.');
+}
 }

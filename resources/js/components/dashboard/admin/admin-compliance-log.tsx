@@ -5,7 +5,7 @@ export function AdminComplianceLog() {
     return (
         <section className="rounded-2xl border border-[#e6ebf1] bg-white p-6 shadow-sm">
             <header className="mb-4 flex items-center justify-between gap-4">
-                <div className="flex items-center text-[#11395d]">
+                <div className="flex items-center text-[#35ADD5]">
                     <ShieldCheck className="mr-2 h-5 w-5 text-emerald-500" />
                     <h3 className="font-semibold">Recent Compliance Events</h3>
                 </div>

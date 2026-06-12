@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use App\Notifications\NewMessageNotification;
 class MessageController extends Controller
 {
     public function index(Request $request): Response
@@ -56,7 +56,7 @@ class MessageController extends Controller
                     'preview' => $latest?->body ?? '',
                     'time'    => $latest ? $latest->created_at->diffForHumans(short: true) : '',
                     'unread'  => $unread,
-                    'online'  => false, // extend with presence later
+                    'online'  => false, 
                     'photo' => $this->resolvePhoto($user),
                 ];
             })
@@ -124,10 +124,10 @@ class MessageController extends Controller
             'receiver_id' => $validated['receiver_id'],
             'body'        => $validated['body'],
         ]);
-
+        $receiver = User::find($validated['receiver_id']);
+        $receiver->notify(new NewMessageNotification($message, Auth::user()));
         broadcast(new MessageSent($message));
-
-        return back();
+        return back()->with('success', 'Message sent');
     }
 
     private function resolvePhoto(User $user): ?string
@@ -153,7 +153,7 @@ class MessageController extends Controller
             return trim($profile->full_name);
         }
 
-        // Fallback: derive from email
+       
         return ucwords(str_replace(['.', '_', '-'], ' ', explode('@', $user->email)[0]));
     }
     private function resolveRole(User $user): string

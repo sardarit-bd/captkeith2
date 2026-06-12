@@ -1,12 +1,12 @@
+import { show as showVessel } from '@/routes/vessels';
 import { Link, router } from '@inertiajs/react';
-import { AlertTriangle, Edit2, Ship, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Edit2, Ship, Trash2, X } from 'lucide-react'; 
 import { useState } from 'react';
 import type { YachtRecord, YachtTab } from './my-yachts-data';
 import {
     edit as editVessel,
     destroy as destroyVessel,
 } from '@/routes/my-yachts';
-import { show as showVessel } from '@/routes/vessels';
 
 const tabLabels: Record<YachtTab, string> = {
     details: 'Vessel Details',
@@ -28,24 +28,24 @@ function SectionLabel({ label, value }: { label: string; value: string }) {
 function DetailsPanel({ yacht }: { yacht: YachtRecord }) {
     return (
         <div>
-            <h4 className="mb-5 text-[14px] font-bold text-[#0D314D]">
+            <h4 className="mb-5 text-[14px] font-bold text-[#35ADD5]">
                 Vessel Specifications
             </h4>
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 md:grid-cols-3">
-                <SectionLabel label="Type" value={yacht.specs.type} />
-                <SectionLabel label="Length" value={yacht.specs.length} />
-                <SectionLabel label="Draft" value={yacht.specs.draft} />
+                <SectionLabel label="Type" value={yacht.specs?.type ?? ''} />
+                <SectionLabel label="Length" value={yacht.specs?.length ?? ''} />
+                <SectionLabel label="Draft" value={yacht.specs?.draft ?? ''} />
                 <SectionLabel
                     label="Mooring Location"
-                    value={yacht.specs.mooringLocation}
+                    value={yacht.specs?.mooringLocation ?? ''}
                 />
                 <SectionLabel
                     label="Operating Area"
-                    value={yacht.specs.operatingArea}
+                    value={yacht.specs?.operatingArea ?? ''}
                 />
                 <SectionLabel
                     label="Deckhand Required"
-                    value={yacht.specs.deckhandRequired}
+                    value={yacht.specs?.deckhandRequired ?? ''}
                 />
             </div>
         </div>
@@ -68,7 +68,7 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
 
     return (
         <div className="flex flex-col">
-            <h4 className="mb-1 text-[14px] font-bold text-[#0D314D]">
+            <h4 className="mb-1 text-[14px] font-bold text-[#35ADD5]">
                 Captain Qualification Requirements
             </h4>
             <p className="mb-5 text-[13px] text-[#9ca3af]">
@@ -125,7 +125,7 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
 
             <Link
                 href={captainsUrl}
-                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#0D314D] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#123651] hover:shadow-md"
+                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
             >
                 Find Matching Captains
             </Link>
@@ -138,7 +138,7 @@ function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
 
     return (
         <div className="flex h-full min-h-48 w-full flex-col items-start">
-            <h4 className="mb-1 text-[14px] font-bold text-[#0D314D]">
+            <h4 className="mb-1 text-[14px] font-bold text-[#35ADD5]">
                 Charter History
             </h4>
             <p className="mb-5 text-[13px] text-[#9ca3af]">
@@ -159,7 +159,7 @@ function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
 
             <Link
                 href={createCharterUrl}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0D314D] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#123651] hover:shadow-md"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
             >
                 Create Charter
             </Link>
@@ -189,6 +189,9 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
     const [activeTab, setActiveTab] = useState<YachtTab>(yacht.defaultTab);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
+
+  
+    const bareboatAgreements = yacht.agreements?.filter((a) => a.type === 'Bareboat') ?? [];
 
     const handleDelete = () => {
         setDeleting(true);
@@ -227,7 +230,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                                 <p className="text-[13px] leading-relaxed text-red-700">
                                     This action cannot be undone. This will
-                                    permanently delete{' '}
+                                    permanently delete
                                     <strong>{yacht.name}</strong> and all its
                                     photos.
                                 </p>
@@ -285,11 +288,11 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
             )}
 
             <article className="overflow-hidden rounded-2xl border border-[#edf0f7] bg-white shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex items-center justify-between border-b border-[#f1f5f9] bg-linear-to-r from-[#f8faff] to-white px-5 py-4 sm:px-6">
+                <div className="flex flex-col-reverse lg:flex-row lg:items-center lg:justify-between border-b border-[#f1f5f9] bg-linear-to-r from-[#f8faff] to-white px-5 py-4 sm:px-6">
                     <div>
                         <Link
                             href={showVessel.url(yacht.id)}
-                            className="text-[20px] font-bold text-[#0D314D] transition-colors hover:text-[#3DB3DE]"
+                            className="text-[20px] font-bold text-[#35ADD5] transition-colors hover:text-[#3DB3DE]"
                         >
                             {yacht.name}
                         </Link>
@@ -297,7 +300,10 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                             {yacht.registrationNo}
                         </p>
                     </div>
+
                     <div className="flex gap-2">
+                      
+     
                         <Link
                             href={editVessel({ vessel: yacht.id }).url}
                             className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#e5e7eb] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#374151] shadow-sm transition-all hover:border-[#3DB3DE] hover:text-[#3DB3DE]"
@@ -314,7 +320,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                             Delete
                         </button>
                     </div>
-                </div>
+                </div> 
 
                 <div className="flex flex-col lg:flex-row">
                     <div className="relative h-64 w-full shrink-0 lg:h-auto lg:w-96 xl:w-105">
@@ -351,7 +357,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                                             onClick={() => setActiveTab(tab)}
                                             className={`flex-1 cursor-pointer rounded-lg px-4 py-2 text-[13px] font-semibold transition-all sm:flex-none sm:px-5 ${
                                                 isActive
-                                                    ? 'bg-white text-[#0D314D] shadow-sm'
+                                                    ? 'bg-white text-[#35ADD5] shadow-sm'
                                                     : 'text-[#6b7280] hover:text-[#374151]'
                                             }`}
                                         >

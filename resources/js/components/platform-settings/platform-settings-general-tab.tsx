@@ -4,7 +4,7 @@ export function PlatformSettingsGeneralTab() {
     return (
         <div className="space-y-6">
             <div className="border-b border-[#e6ebf1] pb-4">
-                <h3 className="text-xl font-semibold text-[#11395d]">
+                <h3 className="text-xl font-semibold text-[#35ADD5]">
                     General Preferences
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
@@ -75,7 +75,7 @@ export function PlatformSettingsGeneralTab() {
                             defaultValue={50}
                             className="w-full accent-[#35ADD5] md:w-64"
                         />
-                        <span className="w-12 text-sm font-semibold text-[#11395d]">
+                        <span className="w-12 text-sm font-semibold text-[#35ADD5]">
                             50 mi
                         </span>
                     </div>
@@ -88,7 +88,7 @@ export function PlatformSettingsGeneralTab() {
 
             <section className="flex items-center justify-between rounded-2xl border border-[#e6ebf1] bg-white p-6 shadow-sm">
                 <div>
-                    <h4 className="text-sm font-semibold text-[#11395d]">
+                    <h4 className="text-sm font-semibold text-[#35ADD5]">
                         Maintenance Mode
                     </h4>
                     <p className="mt-1 text-xs text-slate-500">

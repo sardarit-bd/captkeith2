@@ -79,7 +79,7 @@ function RowAction({ user }: { user: AdminUserRecord }) {
                 type="button"
                 title={`View ${user.name}`}
                 aria-label={`View ${user.name}`}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#1d4f73] transition-all hover:bg-[#eaf6fb] hover:text-[#11395d] focus-visible:ring-2 focus-visible:ring-[#35ADD5]/40 focus-visible:outline-none"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#1d4f73] transition-all hover:bg-[#eaf6fb] hover:text-[#35ADD5] focus-visible:ring-2 focus-visible:ring-[#35ADD5]/40 focus-visible:outline-none"
             >
                 <Eye className="h-4 w-4" />
             </button>
@@ -166,7 +166,7 @@ export function AdminUsersTable() {
                                         <div className="flex items-center">
                                             <UserAvatar user={user} />
                                             <div>
-                                                <p className="font-medium text-[#11395d]">
+                                                <p className="font-medium text-[#35ADD5]">
                                                     {user.name}
                                                 </p>
                                                 <p className="text-xs text-slate-500">
@@ -197,7 +197,7 @@ export function AdminUsersTable() {
                                     </td>
 
                                     <td className="px-6 py-4">
-                                        <p className="flex items-center text-xs font-medium text-[#11395d]">
+                                        <p className="flex items-center text-xs font-medium text-[#35ADD5]">
                                             {user.status === 'Pending Review' ? (
                                                 <FileText className="mr-1 h-3 w-3 text-orange-500" />
                                             ) : null}
@@ -241,7 +241,7 @@ export function AdminUsersTable() {
                                 Rows per page
                             </span>
                             <Select defaultValue={String(rowsPerPageOptions[0])}>
-                                <SelectTrigger className="h-8 w-[4.75rem] border-slate-200 bg-slate-50 text-xs font-semibold text-[#11395d] shadow-none focus-visible:ring-[#35ADD5]/35">
+                                <SelectTrigger className="h-8 w-[4.75rem] border-slate-200 bg-slate-50 text-xs font-semibold text-[#35ADD5] shadow-none focus-visible:ring-[#35ADD5]/35">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent
@@ -272,7 +272,7 @@ export function AdminUsersTable() {
                         </button>
                         <button
                             type="button"
-                            className="rounded-lg border border-[#e6ebf1] bg-white px-3 py-1 font-medium text-[#11395d] transition-colors hover:bg-slate-100"
+                            className="rounded-lg border border-[#e6ebf1] bg-white px-3 py-1 font-medium text-[#35ADD5] transition-colors hover:bg-slate-100"
                         >
                             Next
                         </button>

@@ -24,7 +24,7 @@ export function AboutWhyChooseSection() {
     return (
         <section className="w-full bg-white py-12 sm:py-16 md:py-24">
             <div className="mx-auto max-w-392 px-6 md:px-10">
-                <h2 className="mb-10 text-center text-[32px] font-bold text-[#0D314D] sm:mb-12 sm:text-[40px] md:mb-16 md:text-[48px]">
+                <h2 className="mb-10 text-center text-[32px] font-bold text-[#35ADD5] sm:mb-12 sm:text-[40px] md:mb-16 md:text-[48px]">
                     Why Choose Us?
                 </h2>
 
@@ -34,7 +34,7 @@ export function AboutWhyChooseSection() {
                             key={card.title}
                             className="rounded-2xl border border-[#E2E8F0] bg-white p-6 transition-shadow duration-300 hover:shadow-md md:p-8"
                         >
-                            <div className="mb-5 flex h-[36px] w-[36px] items-center justify-center rounded-[8px] bg-linear-to-r from-[#015291] to-[#0D314D] sm:mb-6 sm:h-[40px] sm:w-[40px]">
+                            <div className="mb-5 flex h-[36px] w-[36px] items-center justify-center rounded-[8px] bg-linear-to-r from-[#015291] to-[#35ADD5] sm:mb-6 sm:h-[40px] sm:w-[40px]">
                                 {card.title === 'Premium Insurance' ? (
                                     <PremiumInsuranceIcon />
                                 ) : (

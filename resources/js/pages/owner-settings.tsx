@@ -63,12 +63,12 @@ function ToggleSwitch({
                 onChange={(e) => onChange(e.target.checked)}
                 className="peer sr-only"
             />
-            <div className="h-6 w-11 rounded-full bg-[#e5e7eb] peer-checked:bg-[#0A273F] after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-[#d1d5db] after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white" />
+            <div className="h-6 w-11 rounded-full bg-[#e5e7eb] peer-checked:bg-[#35ADD5] after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-[#d1d5db] after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white" />
         </label>
     );
 }
 
-// ── Payment Methods ───────────────────────────────────────────────────────────
+
 
 type CardBrand = 'visa' | 'mastercard';
 
@@ -167,7 +167,7 @@ function AddCardForm({ onAdd, onCancel }: AddCardFormProps) {
         name.trim().length > 0;
 
     const inputClass =
-        'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-[13px] text-[#111827] placeholder:text-[#9ca3af] focus:border-[#0A273F] focus:outline-none focus:ring-1 focus:ring-[#0A273F]/20 transition-colors';
+        'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-[13px] text-[#111827] placeholder:text-[#9ca3af] focus:border-[#35ADD5] focus:outline-none focus:ring-1 focus:ring-[#35ADD5]/20 transition-colors';
 
     return (
         <div className="mb-5 rounded-xl border border-[#f1f5f9] bg-[#f8fafc] p-5">
@@ -258,14 +258,14 @@ function AddCardForm({ onAdd, onCancel }: AddCardFormProps) {
                         type="button"
                         onClick={handleSubmit}
                         disabled={!isValid}
-                        className="flex-1 rounded-lg bg-[#0A273F] py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex-1 rounded-lg bg-[#35ADD5] py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70 cursor-pointer! disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         Add Card
                     </button>
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 rounded-lg border border-[#e5e7eb] bg-white py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                        className="flex-1 rounded-lg border border-[#e5e7eb] bg-white py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] cursor-pointer"
                     >
                         Cancel
                     </button>
@@ -290,7 +290,7 @@ function PaymentMethodsSection() {
 
     function handleRemove(id: string) {
         setRemovingId(id);
-        // TODO: router.delete(`/owner/settings/payment-methods/${id}`)
+
         setTimeout(() => {
             setCards((prev) => prev.filter((c) => c.id !== id));
             setRemovingId(null);
@@ -365,7 +365,7 @@ function PaymentMethodsSection() {
                 <button
                     type="button"
                     onClick={() => setShowForm(true)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb]"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] cursor-pointer shadow-sm transition-colors hover:bg-[#f9fafb]"
                 >
                     <Plus className="h-4 w-4" />
                     Add Payment Method
@@ -374,8 +374,6 @@ function PaymentMethodsSection() {
         </SettingsSection>
     );
 }
-
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function OwnerSettingsPage() {
     const { preferences: initialPrefs, twoFactorEnabled } =
@@ -481,7 +479,7 @@ export default function OwnerSettingsPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowDeleteConfirm(false)}
-                                className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -489,7 +487,7 @@ export default function OwnerSettingsPage() {
                                 type="button"
                                 onClick={handleDelete}
                                 disabled={deleting}
-                                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 cursor-pointer! disabled:cursor-not-allowed"
                             >
                                 {deleting ? 'Deleting…' : 'Yes, Delete'}
                             </button>
@@ -540,7 +538,7 @@ export default function OwnerSettingsPage() {
                                 type="button"
                                 onClick={savePreferences}
                                 disabled={savingPrefs}
-                                className="mt-6 rounded-lg bg-[#0A273F] px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#123651] disabled:opacity-50"
+                                className="mt-6 rounded-lg bg-[#35ADD5]! px-5 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70! cursor-pointer! disabled:opacity-50"
                             >
                                 {savingPrefs ? 'Saving…' : 'Save Preferences'}
                             </button>

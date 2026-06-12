@@ -16,9 +16,7 @@ import {
     Navigation,
 } from 'lucide-react';
 import { useState } from 'react';
-
 import { captains } from '@/routes';
-
 interface VesselOption {
     value: string;
     label: string;
@@ -117,7 +115,7 @@ function InviteModal({
                         <select
                             value={selectedVessel}
                             onChange={(e) => setSelectedVessel(e.target.value)}
-                            className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#0A273F] focus:outline-none"
+                            className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#35ADD5] focus:outline-none"
                         >
                             <option value="" disabled>
                                 Choose a vessel…
@@ -157,7 +155,8 @@ function InviteModal({
                             isLoading ||
                             currentStatus === 'accepted'
                         }
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#0A273F] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#123651] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#35ADD5]/70 cursor-pointer
+                         disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -232,7 +231,7 @@ export default function CaptainShowPage() {
             <button
                 type="button"
                 onClick={() => setShowInviteModal(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0A273F] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#123651]"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#35ADD5] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#35ADD5]/70 cursor-pointer!"
             >
                 <Send className="h-4 w-4" /> Send Invitation
             </button>
@@ -292,7 +291,7 @@ export default function CaptainShowPage() {
                                             {captain.location}
                                         </p>
                                     )}
-                                    <p className="mt-2 text-xl font-bold text-[#0A273F]">
+                                    <p className="mt-2 text-xl font-bold text-[#35ADD5]">
                                         {captain.hourly_rate}
                                     </p>
                                 </div>
@@ -307,9 +306,9 @@ export default function CaptainShowPage() {
                                             with: captain.user_id,
                                         })
                                     }
-                                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                    className="inline-flex items-center gap-2 cursor-pointer rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                 >
-                                    <MessageSquare className="h-4 w-4" />{' '}
+                                    <MessageSquare className="h-4 w-4" />
                                     Message
                                 </button>
                             </div>
@@ -409,7 +408,7 @@ export default function CaptainShowPage() {
                                             href={captain.license_doc_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 rounded-xl border border-[#0A273F]/20 bg-[#0A273F]/5 px-4 py-2.5 text-sm font-medium text-[#0A273F] transition-colors hover:bg-[#0A273F]/10"
+                                            className="inline-flex items-center gap-2 rounded-xl border border-[#35ADD5]/20 bg-[#35ADD5]/5 px-4 py-2.5 text-sm font-medium text-[#35ADD5] transition-colors hover:bg-[#35ADD5]/10"
                                         >
                                             <Award className="h-4 w-4" />
                                             View License Document

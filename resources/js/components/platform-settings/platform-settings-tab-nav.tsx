@@ -20,8 +20,8 @@ export function PlatformSettingsTabNav({
                         onClick={() => onTabChange(tab.id)}
                         className={`relative flex min-w-[220px] items-center rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition-colors lg:min-w-0 ${
                             isActive
-                                ? 'border-[#e6ebf1] bg-white text-[#11395d] shadow-sm'
-                                : 'border-transparent text-slate-600 hover:bg-slate-100 hover:text-[#11395d]'
+                                ? 'border-[#e6ebf1] bg-white text-[#35ADD5] shadow-sm'
+                                : 'border-transparent text-slate-600 hover:bg-slate-100 hover:text-[#35ADD5]'
                         }`}
                     >
                         <span

@@ -36,8 +36,8 @@ export function CtaSection({ ownerHref, captainHref }: { ownerHref: string; capt
                                 href={captainHref}
                                 className="group flex w-full items-center justify-center gap-2 rounded-[4px] border border-white/30 px-10 py-5 text-[16px] font-semibold text-white transition hover:bg-white sm:w-auto"
                             >
-                                <span className="group-hover:text-[#0D314D]">Join as Captain</span>
-                                <HomeIcon name="arrow-right" className="h-5 w-5 transition-transform group-hover:translate-x-1 group-hover:text-[#0D314D]" />
+                                <span className="group-hover:text-[#35ADD5]">Join as Captain</span>
+                                <HomeIcon name="arrow-right" className="h-5 w-5 transition-transform group-hover:translate-x-1 group-hover:text-[#35ADD5]" />
                             </Link>
                         </div>
                     </div>

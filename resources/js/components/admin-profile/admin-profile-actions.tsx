@@ -11,7 +11,7 @@ export function AdminProfileActions() {
             </button>
             <button
                 type="button"
-                className="inline-flex w-full items-center justify-center rounded-lg bg-[#11395d] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-lg bg-[#35ADD5] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 sm:w-auto"
             >
                 <Save className="mr-2 h-4 w-4" />
                 Update Profile

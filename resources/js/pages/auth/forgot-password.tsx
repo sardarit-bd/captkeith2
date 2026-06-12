@@ -10,7 +10,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
             <Head title="Forgot Password - CaptMatch" />
 
             <div className="captmatch-home flex h-screen overflow-hidden bg-white text-gray-800">
-                <div className="relative hidden flex-col justify-between bg-[#0D314D] p-10 md:flex md:w-5/12 lg:w-1/2 lg:p-14">
+                <div className="relative hidden flex-col justify-between bg-[#35ADD5] p-10 md:flex md:w-5/12 lg:w-1/2 lg:p-14">
                     <img src="/images/home/cta.jpg" alt="" className="absolute inset-0 h-full w-full -scale-x-100 object-cover opacity-40 mix-blend-overlay" aria-hidden="true" />
                     <div className="absolute inset-0 bg-gradient-to-br from-[#015291E6] to-[#041728F2]" />
 
@@ -32,7 +32,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </div>
 
                 <div className="relative flex w-full flex-col overflow-y-auto bg-white md:w-7/12 lg:w-1/2">
-                    <Link href={login()} className="absolute top-6 left-6 z-10 flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#0D314D] sm:top-8 sm:left-10">
+                    <Link href={login()} className="absolute top-6 left-6 z-10 flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#35ADD5] sm:top-8 sm:left-10">
                         <ArrowLeft className="h-4 w-4" />
                         Back to Login
                     </Link>
@@ -45,7 +45,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                         </div>
 
                         <div className="mb-10">
-                            <h1 className="mb-2 text-[32px] font-bold text-[#0D314D]">Forgot Password</h1>
+                            <h1 className="mb-2 text-[32px] font-bold text-[#35ADD5]">Forgot Password</h1>
                             <p className="text-[15px] text-gray-500">Enter your registered email address and we will send you a link to reset your password.</p>
                         </div>
 
@@ -84,7 +84,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                         <p className="mt-8 text-center text-sm text-gray-500">
                             Remember your password?{' '}
-                            <Link href={login()} className="font-semibold text-[#0D314D] transition-colors hover:text-[#3DB3DE]">
+                            <Link href={login()} className="font-semibold text-[#35ADD5] transition-colors hover:text-[#3DB3DE]">
                                 Sign in here
                             </Link>
                         </p>

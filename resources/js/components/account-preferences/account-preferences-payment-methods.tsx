@@ -123,7 +123,7 @@ function AddCardForm({ onAdd, onCancel }: AddCardFormProps) {
         name.trim().length > 0;
 
     const inputClass =
-        'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-[13px] text-[#111827] placeholder:text-[#9ca3af] focus:border-[#0D314D] focus:outline-none focus:ring-1 focus:ring-[#0D314D]/20 transition-colors';
+        'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 text-[13px] text-[#111827] placeholder:text-[#9ca3af] focus:border-[#35ADD5] focus:outline-none focus:ring-1 focus:ring-[#35ADD5]/20 transition-colors';
 
     return (
         <div className="space-y-3">
@@ -209,7 +209,7 @@ function AddCardForm({ onAdd, onCancel }: AddCardFormProps) {
                     type="button"
                     onClick={handleSubmit}
                     disabled={!isValid}
-                    className="flex-1 rounded-lg bg-[#0D314D] py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#0a273f] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex-1 rounded-lg bg-[#35ADD5] py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     Add Card
                 </button>
@@ -255,7 +255,7 @@ export function AccountPreferencesPaymentMethods() {
             <div className="flex items-center justify-between border-b border-[#f3f4f6] px-6 py-4">
                 <div className="flex items-center gap-3">
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF]">
-                        <CreditCard className="h-4 w-4 text-[#0D314D]" />
+                        <CreditCard className="h-4 w-4 text-[#35ADD5]" />
                     </span>
                     <div>
                         <h2 className="text-[14px] font-semibold text-[#111827]">

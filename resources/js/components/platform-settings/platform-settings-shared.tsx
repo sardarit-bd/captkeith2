@@ -34,7 +34,7 @@ export function SettingsSectionCard({
     return (
         <section className="overflow-hidden rounded-2xl border border-[#e6ebf1] bg-white shadow-sm">
             <header className="border-b border-[#e6ebf1] bg-slate-50/60 px-6 py-4">
-                <h4 className="text-sm font-semibold text-[#11395d]">{title}</h4>
+                <h4 className="text-sm font-semibold text-[#35ADD5]">{title}</h4>
             </header>
             <div className="p-6">{children}</div>
         </section>

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeckhandVesselInterest;
 use App\Models\OwnerCaptainInvitation;
+use App\Models\OwnerDeckhandInvitation; 
 use App\Models\User;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
@@ -23,9 +23,9 @@ class YachtsMatchController extends Controller
 
         if (! $profile) {
             return Inertia::render('yachts-match', [
-                'vessels'          => [],
-                'profileMissing'   => true,
-                'interestStatuses' => [],
+                'vessels'                 => [],
+                'profileMissing'          => true,
+                'interestStatuses'        => [],
                 'ownerInvitationStatuses' => [],
             ]);
         }
@@ -39,38 +39,63 @@ class YachtsMatchController extends Controller
             ->whereNull('deleted_at');
 
         if ($isCaptain) {
+            // License Type Matching
             if ($profile->license_type !== null) {
                 $qualifyingLicenses = match ($profile->license_type) {
                     'masters' => ['masters', 'oupv'],
                     'oupv'    => ['oupv'],
                     default   => [$profile->license_type],
                 };
-                $query->whereIn('required_license_type', $qualifyingLicenses);
+                $query->where(function ($q) use ($qualifyingLicenses) {
+                    $q->whereIn('required_license_type', $qualifyingLicenses)
+                      ->orWhereNull('required_license_type'); // Include yachts with no license requirement
+                });
+            } else {
+                // If captain has no license, only show yachts that don't require one
+                $query->whereNull('required_license_type');
             }
 
-            if ($profile->endorsement !== null) {
-                $qualifyingEndorsements = match ($profile->endorsement) {
-                    'unlimited'    => ['unlimited', 'near_coastal', 'inland'],
-                    'near_coastal' => ['near_coastal', 'inland'],
-                    'inland'       => ['inland'],
-                    default        => [$profile->endorsement],
-                };
-                $query->whereIn('required_endorsement', $qualifyingEndorsements);
-            }
-
-            if ($profile->tonnage_rating !== null) {
-                $query->where('required_tonnage_rating', '<=', $profile->tonnage_rating);
-            }
-
+            // Years of Experience (YOE) Matching
             if ($profile->years_experience !== null) {
-                $query->where('required_years_experience', '<=', $profile->years_experience);
+                $query->where(function ($q) use ($profile) {
+                    $q->where('required_years_experience', '<=', $profile->years_experience)
+                      ->orWhereNull('required_years_experience'); // Include yachts with no YOE requirement
+                });
+            } else {
+                $query->whereNull('required_years_experience');
             }
+            
+            // Skipping endorsement and tonnage checks as requested
         }
 
+        $interestStatuses        = [];
+        $ownerInvitationStatuses = [];
+
+        if ($isCaptain && $user->captainProfile) {
+            $invitations = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)->get();
+            foreach ($invitations as $inv) {
+                if ($inv->initiated_by === 'captain') {
+                    $interestStatuses[$inv->vessel_id] = $inv->status;
+                } else {
+                    $ownerInvitationStatuses[$inv->vessel_id] = $inv->status;
+                }
+            }
+        } elseif ($isDeckhand && $user->deckhandProfile) {
+                        $invitations = OwnerDeckhandInvitation::where('deckhand_id', $user->deckhandProfile->id)->get();
+                        foreach ($invitations as $inv) {
+                            if ($inv->initiated_by === 'deckhand') {
+                                $interestStatuses[$inv->vessel_id] = $inv->status;
+                            } else {
+                                $ownerInvitationStatuses[$inv->vessel_id] = $inv->status;
+                            }
+                        }
+                    }
+
+ 
         $vessels = $query
             ->latest()
             ->get()
-            ->map(function (Vessel $vessel) {
+            ->map(function (Vessel $vessel) use ($interestStatuses, $ownerInvitationStatuses) {
                 $photo          = $vessel->photos->first();
                 $qualifications = [];
 
@@ -102,40 +127,24 @@ class YachtsMatchController extends Controller
                 }
 
                 return [
-                    'id'             => $vessel->id,
-                    'name'           => $vessel->name,
-                    'registrationNo' => $vessel->official_number,
-                    'type'           => ucfirst($vessel->vessel_type ?? ''),
-                    'length'         => $vessel->length_ft ? $vessel->length_ft . ' ft' : null,
-                    'marina'         => $vessel->marina_name,
-                    'city'           => $vessel->marina_city,
-                    'state'          => $vessel->marina_state,
-                    'operatingArea'  => $vessel->operating_area,
-                    'qualifications' => $qualifications,
-                    'image'          => $photo?->image_path
+                    'id'                    => $vessel->id,
+                    'name'                  => $vessel->name,
+                    'registrationNo'        => $vessel->official_number,
+                    'type'                  => ucfirst($vessel->vessel_type ?? ''),
+                    'length'                => $vessel->length_ft ? $vessel->length_ft . ' ft' : null,
+                    'marina'                => $vessel->marina_name,
+                    'city'                  => $vessel->marina_city,
+                    'state'                 => $vessel->marina_state,
+                    'operatingArea'         => $vessel->operating_area,
+                    'qualifications'        => $qualifications,
+                    'image'                 => $photo?->image_path
                         ? Storage::url($photo->image_path)
                         : null,
-                    'ownerUserId'    => $vessel->owner?->user_id,
+                    'ownerUserId'           => $vessel->owner?->user_id,
+                    'interestStatus'        => $interestStatuses[$vessel->id] ?? null, 
+                    'ownerInvitationStatus' => $ownerInvitationStatuses[$vessel->id] ?? null,
                 ];
             });
-
-        $interestStatuses        = [];
-        $ownerInvitationStatuses = [];
-
-        if ($isCaptain && $user->captainProfile) {
-            // Single source of truth — OwnerCaptainInvitation covers both
-            // captain-initiated interest and owner-initiated invitations
-            $ownerInvitationStatuses = OwnerCaptainInvitation::where('captain_id', $user->captainProfile->id)
-                ->pluck('status', 'vessel_id')
-                ->toArray();
-
-            // For captains, interestStatuses mirrors ownerInvitationStatuses
-            $interestStatuses = $ownerInvitationStatuses;
-        } elseif ($isDeckhand && $user->deckhandProfile) {
-            $interestStatuses = DeckhandVesselInterest::where('deckhand_id', $user->deckhandProfile->id)
-                ->pluck('status', 'vessel_id')
-                ->toArray();
-        }
 
         return Inertia::render('yachts-match', [
             'vessels'                 => $vessels,

@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'latitude',
     'longitude',
     'operating_area',
+    'passenger_capacity', 
     'requires_deckhand',
     'required_license_type',
     'required_endorsement',
@@ -38,59 +39,46 @@ class Vessel extends Model
 {
     use HasUuids, SoftDeletes;
 
-
     public function owner(): BelongsTo
     {
         return $this->belongsTo(OwnerProfile::class, 'owner_id');
     }
-
 
     public function photos(): HasMany
     {
         return $this->hasMany(VesselPhoto::class)->orderBy('display_order');
     }
 
-
     public function qualifiedCaptains(): HasMany
     {
         return $this->hasMany(VesselQualifiedCaptain::class);
     }
-
 
     public function qualifiedDeckhands(): HasMany
     {
         return $this->hasMany(VesselQualifiedDeckhand::class);
     }
 
-
     public function matches(): HasMany
     {
         return $this->hasMany(VesselMatch::class, 'vessel_id');
     }
-
 
     public function captainInvitations(): HasMany
     {
         return $this->hasMany(OwnerCaptainInvitation::class);
     }
 
-
     public function deckhandInterests(): HasMany
     {
         return $this->hasMany(DeckhandVesselInterest::class);
     }
 
-
-    public function charterEvents(): HasMany
+    public function charterEvents()
     {
         return $this->hasMany(CharterEvent::class);
     }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [

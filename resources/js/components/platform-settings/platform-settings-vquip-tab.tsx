@@ -5,7 +5,7 @@ export function PlatformSettingsVquipTab() {
     return (
         <div className="space-y-6">
             <div className="border-b border-[#e6ebf1] pb-4">
-                <h3 className="text-xl font-semibold text-[#11395d]">
+                <h3 className="text-xl font-semibold text-[#35ADD5]">
                     VQUIP Integration
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
@@ -71,7 +71,7 @@ export function PlatformSettingsVquipTab() {
 
             <section className="flex flex-col justify-between gap-4 rounded-2xl border border-[#e6ebf1] bg-white p-6 shadow-sm md:flex-row md:items-center">
                 <div>
-                    <h4 className="flex items-center text-sm font-semibold text-[#11395d]">
+                    <h4 className="flex items-center text-sm font-semibold text-[#35ADD5]">
                         <ShieldAlert className="mr-2 h-4 w-4 text-orange-500" />
                         Strict Insurance Enforcement
                     </h4>

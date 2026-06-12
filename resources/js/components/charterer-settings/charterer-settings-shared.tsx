@@ -120,7 +120,7 @@ export function PreferenceRow({
                 aria-checked={enabled}
                 onClick={() => onChange?.(!enabled)}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
-                    enabled ? 'bg-[#0A273F]' : 'bg-[#d1d5db]'
+                    enabled ? 'bg-[#35ADD5]' : 'bg-[#d1d5db]'
                 }`}
             >
                 <span

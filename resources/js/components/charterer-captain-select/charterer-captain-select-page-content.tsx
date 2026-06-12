@@ -5,12 +5,14 @@ import type { Captain } from '@/pages/charterer/captain-select';
 import { request as requestRoute, information } from '@/routes/charterer';
 
 interface Props {
+    charterEventId: string;
     captains: Captain[];
     acceptedCount: number;
     slotsNeeded: number;
 }
 
 export function ChartererCaptainSelectPageContent({
+    charterEventId,
     captains,
     acceptedCount,
     slotsNeeded,
@@ -34,8 +36,8 @@ export function ChartererCaptainSelectPageContent({
                     <p className="text-xs text-gray-400">
                         Please contact the vessel owner for assistance.
                     </p>
-                    <Link
-                        href={requestRoute()}
+                        <Link
+                        href={requestRoute({ id: charterEventId })}
                         className="mt-2 rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
                     >
                         Back to Request
@@ -49,7 +51,7 @@ export function ChartererCaptainSelectPageContent({
         <div className="flex h-full flex-1 flex-col bg-[#F6FDFF]">
             <div className="border-b border-[#e5e7eb] bg-white px-4 py-3 sm:px-6 lg:px-8">
                 <div className="mx-auto flex max-w-4xl items-center gap-3">
-                    <Users className="h-4 w-4 shrink-0 text-[#0A273F]" />
+                    <Users className="h-4 w-4 shrink-0 text-[#35ADD5]" />
                     {canProceed ? (
                         <p className="text-[13px] font-semibold text-emerald-700">
                             ✓ 2 captains have accepted — you can proceed!
@@ -84,12 +86,12 @@ export function ChartererCaptainSelectPageContent({
 
             <div className="border-t border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8">
                 <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
-                    <Link
-                        href={requestRoute()}
-                        className="rounded-lg border border-[#e5e7eb] bg-white px-5 py-2 text-sm font-medium text-[#1f2937] shadow-sm transition-colors hover:bg-[#f9fafb]"
-                    >
-                        Back
-                    </Link>
+                <Link
+                    href={requestRoute({ id: charterEventId })} 
+                    className="mt-2 rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+                >
+                    Back to Request
+                </Link>
 
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 text-[13px] text-[#6b7280]">
@@ -114,18 +116,17 @@ export function ChartererCaptainSelectPageContent({
                         {canProceed ? (
                             <Link
                                 href={information()}
-                                className="rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#123651]"
+                                className="rounded-lg bg-[#35ADD5] px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#35ADD5]/70"
                             >
                                 Continue
                             </Link>
                         ) : (
-                            <button
-                                type="button"
-                                disabled
-                                className="cursor-not-allowed rounded-lg bg-[#0A273F] px-5 py-2 text-sm font-medium text-white opacity-40"
+                            <Link
+                                href={requestRoute({ id: charterEventId })} 
+                                className="rounded-lg border border-[#e5e7eb] bg-white px-5 py-2 text-sm font-medium text-[#1f2937] shadow-sm transition-colors hover:bg-[#f9fafb]"
                             >
-                                Continue
-                            </button>
+                                Back
+                            </Link>
                         )}
                     </div>
                 </div>
