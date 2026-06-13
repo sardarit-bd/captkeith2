@@ -10,7 +10,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request): Response
     {
-        // Fetch latest 50 notifications and map them to the format the frontend expects
+   
         $notifications = $request->user()
             ->notifications()
             ->latest()
@@ -40,7 +40,7 @@ class NotificationController extends Controller
         if ($notification) {
             $notification->markAsRead();
         }
-        return back();
+        return redirect()->route('notifications');
     }
 
     public function markAllAsRead(Request $request)

@@ -20,13 +20,13 @@ export function NavMain({ items }: { items: NavItem[] }) {
           const isActive = url === itemHref || (itemHref !== '/dashboard' && url.startsWith(itemHref))
           const hasBadge = item.title === 'Messages' && unreadNotificationsCount > 0
 
-          return (
+           return (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 isActive={isActive}
                 tooltip={item.title}
-                className="h-11 text-base" 
+                className="h-11 text-base data-[active=true]:bg-gray-200" // <--- UPDATED CLASSNAME
             >
                 <Link href={itemHref}>
                     <item.icon />

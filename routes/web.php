@@ -48,7 +48,9 @@
         $request->user()->unreadNotifications->where('id', $id)->markAsRead();
         return back();
     })->name('notifications.read');
-    
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::post('/notifications/read-all', function (Request $request) {
         $request->user()->unreadNotifications->markAsRead();
         return back();

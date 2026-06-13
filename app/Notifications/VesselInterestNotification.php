@@ -4,14 +4,10 @@ namespace App\Notifications;
 
 use App\Models\Vessel;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class VesselInterestNotification extends Notification implements ShouldQueue
+class VesselInterestNotification extends Notification
 {
-    use Queueable;
-
     public function __construct(
         public Vessel $vessel,
         public User $interestedUser,
@@ -27,12 +23,16 @@ class VesselInterestNotification extends Notification implements ShouldQueue
     {
         $roleTitle = ucfirst($this->role);
         
+        // Safely get the user's name from their specific profile, fallback to email
+        $profileRelation = $this->role . 'Profile';
+        $userName = $this->interestedUser->{$profileRelation}?->full_name ?? $this->interestedUser->email;
+        
         return [
             'type' => 'vessel_interest',
             'title' => "New {$roleTitle} Interest",
-            'message' => "{$this->interestedUser->name} is interested in your vessel '{$this->vessel->name}'",
+            'message' => "{$userName} is interested in your vessel '{$this->vessel->name}'",
             'icon' => 'interest',
-            'url' => route('my-yachts'),
+            'url' => url('/my-yachts'), // Changed from route() to prevent RouteNotFoundException
             'vessel_id' => $this->vessel->id,
             'interested_user_id' => $this->interestedUser->id,
             'role' => $this->role,

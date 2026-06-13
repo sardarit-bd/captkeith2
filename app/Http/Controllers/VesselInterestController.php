@@ -15,6 +15,7 @@ class VesselInterestController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('captain')) {
+            $role = 'captain'; 
             $profile = $user->captainProfile;
             abort_if($profile === null, 403, 'No captain profile found.');
 
@@ -30,9 +31,9 @@ class VesselInterestController extends Controller
                 ]
             );
         } else {
+            $role = 'deckhand'; 
             $profile = $user->deckhandProfile;
             abort_if($profile === null, 403, 'No deckhand profile found.');
-
 
             OwnerDeckhandInvitation::firstOrCreate(
                 [
@@ -46,14 +47,18 @@ class VesselInterestController extends Controller
                 ]
             );
         }
-    $vessel->owner->user->notify(new VesselInterestNotification(
-        $vessel,
-        $user,
-        $role
-    ));
+        \Illuminate\Support\Facades\Log::info('Attempting to notify owner.', [
+            'vessel_id' => $vessel->id, 
+            'owner_user_id' => $vessel->owner?->user?->id
+        ]);
+        $vessel->owner->user->notify(new VesselInterestNotification(
+            $vessel,
+            $user,
+            $role
+        ));
+
         return back()->with('success', 'Interest sent to the owner.');
     }
-
     public function destroy(Request $request, Vessel $vessel): RedirectResponse
     {
         $user = $request->user();

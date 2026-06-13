@@ -111,13 +111,21 @@ class OwnerCaptainRequestsController extends Controller
 
         $interest->update(['status' => $validated['status']]);
 
+        // --- ADD THIS BLOCK TO NOTIFY THE CAPTAIN ---
+        $interest->load('vessel'); // Ensure the vessel relationship is loaded for the notification
+        $captainUser = $interest->captain?->user;
+        
+        if ($captainUser) {
+            $captainUser->notify(new \App\Notifications\OwnerResponseNotification($interest));
+        }
+        // ---------------------------------------------
+
         $message = $validated['status'] === 'accepted'
             ? 'Captain request accepted.'
             : 'Captain request declined.';
 
         return back()->with('success', $message);
     }
-
     public function revokeAcceptance(Request $request, CaptainProfile $captain): RedirectResponse
     {
         $ownerProfile = OwnerProfile::where('user_id', $request->user()->id)->firstOrFail();
