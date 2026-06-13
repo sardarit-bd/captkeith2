@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 export function useNotificationsPoll(interval = 30000) { 
-  const { props } = usePage();
-  
   useEffect(() => {
     const pollNotifications = () => {
+      // Reload only the globally shared unread count prop
       router.reload({
-        only: ['notifications'],
+        only: ['notificationsUnreadCount'],
         preserveScroll: true,
         preserveState: true,
       });

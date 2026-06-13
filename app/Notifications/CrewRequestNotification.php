@@ -8,14 +8,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class InvitationResponseNotification extends Notification implements ShouldQueue
+class CrewRequestNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
-        public User $responder,
+        public User $requester,
         public Vessel $vessel,
-        public string $status,
         public string $role 
     ) {}
 
@@ -26,17 +25,18 @@ class InvitationResponseNotification extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
-        $action = $this->status === 'accepted' ? 'accepted' : 'declined';
         $roleName = ucfirst($this->role);
+       
+        $routeName = $this->role === 'captain' ? 'captain-requests' : 'deckhand-requests';
 
         return [
-            'type' => 'invitation_response',
-            'title' => "Invitation {$action}",
-            'message' => "{$this->responder->name} has {$action} your invitation for '{$this->vessel->name}'.",
-            'icon' => 'invitation',
-            'url' => route('invitations'), 
+            'type' => 'crew_request',
+            'title' => "New {$roleName} Request",
+            'message' => "{$this->requester->name} has requested to join '{$this->vessel->name}'.",
+            'icon' => 'request',
+            'url' => route($routeName),
             'vessel_id' => $this->vessel->id,
-            'status' => $this->status,
+            'requester_id' => $this->requester->id,
             'role' => $this->role,
         ];
     }

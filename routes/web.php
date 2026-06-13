@@ -1,7 +1,9 @@
     <?php
 
     use App\Http\Controllers\DashboardController;
+    use App\Http\Controllers\NotificationController;
     use Illuminate\Support\Facades\Route;
+    use Illuminate\Http\Request;
     use Laravel\Fortify\Features;
     use Inertia\Inertia;
     Route::inertia('/', 'welcome', [
@@ -35,10 +37,10 @@
     
 
     Route::middleware(['auth'])->group(function () {
-    Route::get('/api/notifications/count', function (Request $request) {
-        return response()->json([
-            'unreadCount' => $request->user()->unreadNotifications()->count(),
-        ]);
+        Route::get('/api/notifications/count', function (Request $request) {
+            return response()->json([
+                'unreadCount' => $request->user()->unreadNotifications()->count(),
+            ]);
         })->name('api.notifications.count');
     });
 
@@ -46,7 +48,9 @@
         $request->user()->unreadNotifications->where('id', $id)->markAsRead();
         return back();
     })->name('notifications.read');
-    
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::post('/notifications/read-all', function (Request $request) {
         $request->user()->unreadNotifications->markAsRead();
         return back();

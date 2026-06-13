@@ -636,7 +636,12 @@ export default function OwnerSettingsPage() {
 }
 
 OwnerSettingsPage.layout = {
-    breadcrumbs: [{ title: 'Settings', href: '/owner/settings' }],
+    breadcrumbs: [
+        {
+            title: 'Settings',
+            href: '/owner/settings',
+        },
+    ],
     pageHeader: {
         title: 'Settings',
         description: 'Manage your account preferences.',
