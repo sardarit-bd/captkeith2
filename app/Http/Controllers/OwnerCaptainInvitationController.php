@@ -27,14 +27,16 @@ class OwnerCaptainInvitationController extends Controller
             403
         );
 
-        OwnerCaptainInvitation::firstOrCreate(
+OwnerCaptainInvitation::updateOrCreate(
             [
                 'owner_id'   => $owner->id,
                 'captain_id' => $captain->id,
                 'vessel_id'  => $validated['vessel_id'],
-                'initiated_by' => 'owner',
             ],
-            ['status' => 'pending']
+            [
+                'initiated_by' => 'owner',
+                'status'       => 'pending',
+            ]
         );
 
         return back()->with('success', 'Invitation sent.');

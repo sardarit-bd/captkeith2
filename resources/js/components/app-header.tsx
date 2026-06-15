@@ -1,6 +1,5 @@
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
-import { Bell } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useNotificationsPoll } from '@/hooks/use-notifications-poll';
 import AppLogo from '@/components/app-logo';
@@ -35,7 +34,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
+import { dashboard, notifications } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -68,36 +67,26 @@ const activeItemStyles =
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
-
-    const notificationsUnreadCount = (usePage().props as any).notificationsUnreadCount || 0;
-        useNotificationsPoll();
-    const { auth } = page.props;
+    const { auth, notificationsUnreadCount = 0 } = page.props as any;
+    
+    useNotificationsPoll();
+    
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
-    const userLabel =
-        (auth.user as any)?.ownerProfile?.full_name ??
-        auth.user?.email?.split('@')[0] ??
-        '';
-    const { auth } = page.props;
-    const role = (auth as any).role;
-    const user = auth.user as any;
+    
+    const role = auth?.role;
+    const user = auth?.user;
 
     const profile =
-        role === 'owner'
-            ? user?.ownerProfile
-            : role === 'captain'
-              ? user?.captainProfile
-              : role === 'deckhand'
-                ? user?.deckhandProfile
-                : role === 'charterer'
-                  ? user?.chartererProfile
-                  : null;
+        role === 'owner' ? user?.ownerProfile
+        : role === 'captain' ? user?.captainProfile
+        : role === 'deckhand' ? user?.deckhandProfile
+        : role === 'charterer' ? user?.chartererProfile
+        : null;
 
-    const userLabel =
-        profile?.full_name ?? auth.user?.email?.split('@')[0] ?? '';
-    const avatarPath = profile?.avatar_path
-        ? `/storage/${profile.avatar_path}`
-        : undefined;
+    const userLabel = profile?.full_name ?? user?.email?.split('@')[0] ?? '';
+    const avatarPath = profile?.avatar_path ? `/storage/${profile.avatar_path}` : undefined;
+
     return (
         <>
             <div className="border-b border-sidebar-border/80">
@@ -105,22 +94,13 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     <div className="lg:hidden">
                         <Sheet>
                             <SheetTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="mr-2 h-[34px] w-[34px]"
-                                >
+                                <Button variant="ghost" size="icon" className="mr-2 h-[34px] w-[34px]">
                                     <Menu className="h-5 w-5" />
                                     X
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent
-                                side="left"
-                                className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
-                            >
-                                <SheetTitle className="sr-only">
-                                    Navigation menu
-                                </SheetTitle>
+                            <SheetContent side="left" className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar">
+                                <SheetTitle className="sr-only">Navigation menu</SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
                                 </SheetHeader>
@@ -128,33 +108,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map((item) => (
-                                                <Link
-                                                    key={item.title}
-                                                    href={item.href}
-                                                    className="flex items-center space-x-2 font-medium"
-                                                >
-                                                    {item.icon && (
-                                                        <item.icon className="h-5 w-5" />
-                                                    )}
+                                                <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
+                                                    {item.icon && <item.icon className="h-5 w-5" />}
                                                     <span>{item.title}</span>
                                                 </Link>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex flex-col space-y-4">
-                                            {rightNavItems.map((item) => (
-                                                <a
-                                                    key={item.title}
-                                                    href={toUrl(item.href)}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center space-x-2 font-medium"
-                                                >
-                                                    {item.icon && (
-                                                        <item.icon className="h-5 w-5" />
-                                                    )}
-                                                    <span>{item.title}</span>
-                                                </a>
                                             ))}
                                         </div>
                                     </div>
@@ -163,11 +120,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         </Sheet>
                     </div>
 
-                    <Link
-                        href={dashboard()}
-                        prefetch
-                        className="flex items-center space-x-2"
-                    >
+                    <Link href={dashboard()} prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
@@ -175,24 +128,16 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {mainNavItems.map((item, index) => (
-                                    <NavigationMenuItem
-                                        key={index}
-                                        className="relative flex h-full items-center"
-                                    >
+                                    <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                         <Link
                                             href={item.href}
                                             className={cn(
                                                 navigationMenuTriggerStyle(),
-                                                whenCurrentUrl(
-                                                    item.href,
-                                                    activeItemStyles,
-                                                ),
+                                                whenCurrentUrl(item.href, activeItemStyles),
                                                 'h-9 cursor-pointer px-3',
                                             )}
                                         >
-                                            {item.icon && (
-                                                <item.icon className="mr-2 h-4 w-4" />
-                                            )}
+                                            {item.icon && <item.icon className="mr-2 h-4 w-4" />}
                                             {item.title}
                                         </Link>
                                         {isCurrentUrl(item.href) && (
@@ -206,64 +151,29 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="group h-9 w-9 cursor-pointer relative"
-                            onClick={() => router.visit(route('notifications'))}
-                        >
-                            <Bell className="size-5! opacity-80 group-hover:opacity-100" />
-                            {notificationsUnreadCount > 0 && (
-                                <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] bg-red-500 hover:bg-red-600 border-2 border-white">
-                                    {notificationsUnreadCount > 9 ? '9+' : notificationsUnreadCount}
-                                </Badge>
-                            )}
-                        </Button>
-                
-
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="group h-9 w-9 cursor-pointer"
+                                className="group h-9 w-9 cursor-pointer relative"
+                                onClick={() => router.visit('/notifications')}
                             >
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                                <Bell className="size-5 opacity-80 group-hover:opacity-100" />
+                                {notificationsUnreadCount > 0 && (
+                                    <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] bg-red-500 hover:bg-red-600 border-2 border-white text-white">
+                                        {notificationsUnreadCount > 9 ? '9+' : notificationsUnreadCount}
+                                    </Badge>
+                                )}
                             </Button>
-                            <div className="ml-1 hidden gap-1 lg:flex">
-                                {rightNavItems.map((item) => (
-                                    <Tooltip key={item.title}>
-                                        <TooltipTrigger>
-                                            <a
-                                                href={toUrl(item.href)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="group inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium text-accent-foreground ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-                                            >
-                                                <span className="sr-only">
-                                                    {item.title}
-                                                </span>
-                                                {item.icon && (
-                                                    <item.icon className="size-5 opacity-80 group-hover:opacity-100" />
-                                                )}
-                                            </a>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{item.title}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ))}
-                            </div>
+
+                            <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
+                                <Search className="size-5 opacity-80 group-hover:opacity-100" />
+                            </Button>
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className="size-10 rounded-full p-1"
-                                >
+                                <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage
-                                            src={avatarPath}
-                                            alt={userLabel}
-                                        />
+                                        <AvatarImage src={avatarPath} alt={userLabel} />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(userLabel)}
                                         </AvatarFallback>
@@ -271,9 +181,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end">
-                                {auth.user && (
-                                    <UserMenuContent user={auth.user} />
-                                )}
+                                {auth?.user && <UserMenuContent user={auth.user} />}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
