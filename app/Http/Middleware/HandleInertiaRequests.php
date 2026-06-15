@@ -29,13 +29,14 @@ class HandleInertiaRequests extends Middleware
                 'role' => $request->user()?->getRoleNames()->first(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->values() ?? [],
             ],
-            'notificationsUnreadCount' => fn () => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+            'unreadNotificationsCount' => fn () => $request->user() 
+                ? $request->user()->unreadNotifications()->count() 
+                : 0,
             
-            // Added strict 'initiated_by' check here to prevent owner-sent invites from inflating the sidebar badge
-            'pendingCaptainRequestsCount' => fn () => ($request->user() && $request->user()->hasRole('owner') && $request->user()->ownerProfile) 
-                ? \App\Models\OwnerCaptainInvitation::where('owner_id', $request->user()->ownerProfile->id)
+            'pendingOwnerInvitationsCount' => fn () => ($request->user() && $request->user()->hasRole('captain') && $request->user()->captainProfile) 
+                ? \App\Models\OwnerCaptainInvitation::where('captain_id', $request->user()->captainProfile->id)
                     ->where('status', 'pending')
-                    ->where('initiated_by', 'captain') 
+                    ->where('initiated_by', 'owner') 
                     ->count() 
                 : 0,
                 

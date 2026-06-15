@@ -21,13 +21,12 @@ class OwnerCaptainInvitationController extends Controller
 
         $owner = OwnerProfile::where('user_id', $request->user()->id)->firstOrFail();
 
-
         abort_unless(
             $owner->vessels()->where('id', $validated['vessel_id'])->exists(),
             403
         );
 
-OwnerCaptainInvitation::updateOrCreate(
+        $invitation = OwnerCaptainInvitation::updateOrCreate(
             [
                 'owner_id'   => $owner->id,
                 'captain_id' => $captain->id,
@@ -38,6 +37,10 @@ OwnerCaptainInvitation::updateOrCreate(
                 'status'       => 'pending',
             ]
         );
+
+        if (($invitation->wasRecentlyCreated || $invitation->wasChanged()) && $captain->user) {
+            $captain->user->notify(new \App\Notifications\OwnerInvitationNotification($invitation));
+        }
 
         return back()->with('success', 'Invitation sent.');
     }

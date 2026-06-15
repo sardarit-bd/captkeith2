@@ -47,7 +47,7 @@ import {
 } from '@/routes';
 import type { NavItem } from '@/types';
 
-function resolveNavItems(role: string | null | undefined, pendingCaptainCount: number = 0): NavItem[] {
+function resolveNavItems(role: string | null | undefined, pendingCaptainCount: number = 0, pendingOwnerInvitationsCount: number = 0): NavItem[] {
     const sharedItems: NavItem[] = [
         { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
         { title: 'Messages', href: messages(), icon: MessageCircle },
@@ -86,7 +86,7 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
             sharedItems[0],
             { title: 'Yachts Match', href: yachtsMatch(), icon: Ship },
             { title: 'Charterer Requests', href: requests(), icon: ClipboardList },
-            { title: 'Owner Invitations', href: '/invitations', icon: Bell },
+            { title: 'Owner Invitations', href: '/invitations', icon: Bell, badge: pendingOwnerInvitationsCount },
             sharedItems[1],
         ];
     }
@@ -113,13 +113,13 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
 
     return sharedItems;
 }
-
 export function AppSidebar() {
-    const page = usePage<{ auth?: { role?: string | null }, pendingCaptainRequestsCount?: number }>();
+    const page = usePage<{ auth?: { role?: string | null }, pendingCaptainRequestsCount?: number, pendingOwnerInvitationsCount?: number }>();
     const cleanup = useMobileNavigation();
     
     const pendingCaptainCount = page.props.pendingCaptainRequestsCount || 0;
-    const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount);
+    const pendingOwnerInvitationsCount = page.props.pendingOwnerInvitationsCount || 0;
+    const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount, pendingOwnerInvitationsCount);
 
     const handleLogout = () => {
         cleanup();
@@ -128,7 +128,7 @@ export function AppSidebar() {
 
     return (
         <Sidebar
-            collapsible="icon"
+
             variant="sidebar"
             className="border-r border-[#e5e7eb] bg-[#f6f7f9]"
         >

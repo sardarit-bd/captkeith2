@@ -21,7 +21,6 @@
         Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
         Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
         Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
-            Route::inertia('notifications', 'notifications')->name('notifications');
             Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
             Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
         });
@@ -36,25 +35,19 @@
         })->name('notifications');
     
 
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/api/notifications/count', function (Request $request) {
-            return response()->json([
-                'unreadCount' => $request->user()->unreadNotifications()->count(),
-            ]);
-        })->name('api.notifications.count');
-    });
+        Route::middleware(['auth'])->group(function () {
+            Route::get('/api/notifications/count', function (Request $request) {
+                return response()->json([
+                    'unreadCount' => $request->user()->unreadNotifications()->count(),
+                ]);
+            })->name('api.notifications.count');
 
-    Route::post('/notifications/{id}/read', function (Request $request, $id) {
-        $request->user()->unreadNotifications->where('id', $id)->markAsRead();
-        return back();
-    })->name('notifications.read');
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-    Route::post('/notifications/read-all', function (Request $request) {
-        $request->user()->unreadNotifications->markAsRead();
-        return back();
-    })->name('notifications.read-all');
+            Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+            Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+            Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        });
+
+
         Route::middleware('role:owner')->group(function () {
             Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
             Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');

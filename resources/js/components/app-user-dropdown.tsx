@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { InertiaLinkProps } from '@inertiajs/react';
 import {
     Bell,
@@ -15,6 +15,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import type { PageProps } from '@/types';
 import { accountPreferences } from '@/routes';
 import { adminMyProfile } from '@/routes';
 import { chartererSettings } from '@/routes';
@@ -120,6 +122,11 @@ export function AppUserDropdown({
             : 'unknown';
 
     const menuItems = menuByRole[normalizedRole];
+    
+    // Get unread notification count from shared props
+    const unreadCount =
+        (usePage<PageProps & { unreadNotificationsCount?: number }>().props
+            .unreadNotificationsCount) || 0;
 
     return (
         <div
@@ -132,7 +139,14 @@ export function AppUserDropdown({
                 aria-label="Notifications"
             >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#ef4444]" />
+                {unreadCount > 0 && (
+                    <Badge
+                        variant="destructive"
+                        className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] font-medium rounded-full min-w-[1.25rem]"
+                    >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                )}
             </Link>
 
             <div className="hidden h-10 w-px bg-[#e5e7eb] sm:block" />
