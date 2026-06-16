@@ -16,6 +16,8 @@ use Inertia\Response;
 use App\Models\CharterCrewResponse;
 use App\Services\AgreementPdfService;
 use App\Notifications\AgreementSignedNotification;
+use App\Models\CaptainProfile;
+use App\Notifications\CrewRequestNotification;
 // use App\Notifications\PaymentCompleteNotification;
 class CharterController extends Controller
 {
@@ -361,7 +363,6 @@ class CharterController extends Controller
             'captain_ids.*' => ['required', 'uuid', 'exists:captain_profiles,id'],
         ]);
 
-
         $acceptedCount = CharterCrewResponse::where('charter_event_id', $event->id)
             ->where('crew_role', 'captain')
             ->where('response', 'available')
@@ -373,19 +374,27 @@ class CharterController extends Controller
             return back()->with('error', 'You already have 2 captains accepted. You can proceed.');
         }
 
-
         $captainIds = array_slice($validated['captain_ids'], 0, $slotsNeeded);
 
-        foreach ($captainIds as $captainId) {
+        // Fetch requester and vessel once to avoid N+1 queries inside the loop
+        $requesterUser = auth()->user();
+        $vessel = $event->vessel;
 
+        foreach ($captainIds as $captainId) {
+            // Fetch the captain profile and their associated user
+            $captainProfile = CaptainProfile::find($captainId);
+            if (!$captainProfile || !$captainProfile->user) {
+                continue;
+            }
 
             $existing = CharterCrewResponse::where('charter_event_id', $event->id)
                 ->where('profile_id', $captainId)
                 ->where('crew_role', 'captain')
                 ->first();
 
-            if ($existing) {
+            $shouldNotify = false;
 
+            if ($existing) {
                 if (
                     $existing->response === 'unavailable' ||
                     ($existing->expires_at && $existing->expires_at->isPast())
@@ -395,19 +404,24 @@ class CharterController extends Controller
                         'responded_at' => null,
                         'expires_at'   => now()->addHours(24),
                     ]);
+                    $shouldNotify = true; // Notify if re-sending an expired/declined request
                 }
-                continue;
+            } else {
+                CharterCrewResponse::create([
+                    'charter_event_id' => $event->id,
+                    'profile_id'       => $captainId,
+                    'crew_role'        => 'captain',
+                    'response'         => 'pending',
+                    'expires_at'       => now()->addHours(24),
+                ]);
+                $shouldNotify = true; // Notify on a brand new request
             }
 
-            CharterCrewResponse::create([
-                'charter_event_id' => $event->id,
-                'profile_id'       => $captainId,
-                'crew_role'        => 'captain',
-                'response'         => 'pending',
-                'expires_at'       => now()->addHours(24),
-            ]);
+            // Dispatch the notification to the captain's user model
+            if ($shouldNotify) {
+                $captainProfile->user->notify(new CrewRequestNotification($requesterUser, $vessel, 'captain'));
+            }
         }
-
 
         if ($event->status === 'draft') {
             $event->update(['status' => 'awaiting_responses']);

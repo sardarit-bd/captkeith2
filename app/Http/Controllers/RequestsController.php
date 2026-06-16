@@ -14,7 +14,7 @@ use Inertia\Response;
 use App\Models\CharterHireAgreement;
 use App\Services\AgreementPdfService;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
+use App\Notifications\CharterCrewAcceptedNotification;
 class RequestsController extends Controller
 {
     public function index(): Response
@@ -246,14 +246,20 @@ class RequestsController extends Controller
                 'charter_event_id' => $validated['charter_event_id'],
                 'profile_id' => $validated['deckhand_profile_id'],
                 'crew_role' => 'deckhand',
-                'selected_by_captain_id' => $captainProfileId,
             ],
             [
                 'response' => 'pending',
                 'responded_at' => null,
                 'expires_at' => now()->addDays(3),
+                'selected_by_captain_id' => $captainProfileId, 
             ]
         );
+
+
+        $deckhandProfile = \App\Models\DeckhandProfile::with('user')->find($validated['deckhand_profile_id']);
+        if ($deckhandProfile && $deckhandProfile->user && $event->vessel) {
+            $deckhandProfile->user->notify(new \App\Notifications\CrewRequestNotification(auth()->user(), $event->vessel, 'deckhand'));
+        }
 
         return back()->with('success', 'Request sent successfully!');
     }
@@ -362,10 +368,12 @@ class RequestsController extends Controller
             }
         }
 
-        $crewResponse->update([
-            'response'     => $validated['response'],
-            'responded_at' => now(),
-        ]);
+        if ($validated['response'] === 'available') {
+            $event = $crewResponse->charterEvent;
+            if ($event && $event->charterer && $event->charterer->user) {
+                $event->charterer->user->notify(new CharterCrewAcceptedNotification($crewResponse));
+            }
+        }
 
         return back()->with('success', 'Response submitted successfully.');
     }

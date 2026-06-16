@@ -7,11 +7,11 @@ use App\Models\Vessel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-
+use Illuminate\Queue\SerializesModels;
 class InvitationResponseNotification extends Notification implements ShouldQueue
 {
     use Queueable;
-
+    use SerializesModels;
     public function __construct(
         public User $responder,
         public Vessel $vessel,
