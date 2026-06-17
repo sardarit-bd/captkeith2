@@ -54,10 +54,24 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
 
     const fallbackImage = '/images/home/about3.jpg';
 
-    // Extract agreements
+    // Update the logic around line 70-80 where agreements are extracted
     const chartererAgreement = request.agreements?.find(a => a.type !== 'deckhand_hire');
     const deckhandAgreement = request.agreements?.find(a => a.type === 'deckhand_hire');
 
+    // Check if deckhand has been selected and has accepted
+    const deckhandSelected = request.deckhandInfo?.selectedDeckhand?.selectedByMe;
+    const deckhandAccepted = request.deckhandInfo?.selectedDeckhand?.responseStatus === 'available';
+
+    // Check if agreement needs to be signed (deckhand accepted but agreement not fully signed)
+    const needsDeckhandAgreement = deckhandSelected && deckhandAccepted && deckhandAgreement && !deckhandAgreement.isFullySigned;
+
+    // Captain can only accept if:
+    // 1. No deckhand is selected, OR
+    // 2. Deckhand is selected AND accepted AND agreement is fully signed
+    const canAcceptRequest = !deckhandSelected || (deckhandAccepted && (deckhandAgreement?.isFullySigned ?? false));
+
+    // Check if we should show the sign agreement button
+    const showSignAgreementButton = deckhandSelected && deckhandAccepted && deckhandAgreement && !deckhandAgreement.isFullySigned;
     return (
         <article className="rounded-xl border border-[#eef2f6] bg-white p-6 shadow-sm">
             <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -180,28 +194,28 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                     </a>
                 )}
 
-                {request.deckhandInfo?.selectedDeckhand?.selectedByMe && deckhandAgreement && (
-                    <>
-                        {!deckhandAgreement.isFullySigned ? (
-                            <button
-                                type="button"
-                                onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
-                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
-                            >
-                                <FileSignature className="h-4 w-4" />
-                                Sign Deckhand Agreement
-                            </button>
-                        ) : (
-                            <a
-                                href={deckhandAgreement.downloadUrl}
-                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
-                            >
-                                <Download className="h-4 w-4" />
-                                Download Deckhand Agreement
-                            </a>
-                        )}
-                    </>
-                )}
+                    {request.deckhandInfo?.selectedDeckhand?.selectedByMe && deckhandAgreement && (
+                        <>
+                            {!deckhandAgreement.isFullySigned ? (
+                                <button
+                                    type="button"
+                                    onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                                >
+                                    <FileSignature className="h-4 w-4" />
+                                    Sign Deckhand Agreement
+                                </button>
+                            ) : (
+                                <a
+                                    href={deckhandAgreement.downloadUrl}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Download Agreement
+                                </a>
+                            )}
+                        </>
+                    )}
 
      
                 {deckhandAgreement?.isSignedByCrew && !request.deckhandInfo?.selectedDeckhand?.selectedByMe && (
@@ -215,15 +229,16 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                 )}
 
        
-                <button
-                    type="button"
-                    disabled={!isPending || isSubmitting}
-                    onClick={handleAccept}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    <Check className="h-4 w-4" />
-                    Accept Request
-                </button>
+
+                    <button
+                        type="button"
+                        disabled={!isPending || isSubmitting || !canAcceptRequest}
+                        onClick={handleAccept}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#111827] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <Check className="h-4 w-4" />
+                        Accept Request
+                    </button>
 
                 <button
                     type="button"

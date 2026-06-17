@@ -368,6 +368,13 @@ class RequestsController extends Controller
             }
         }
 
+
+        $crewResponse->update([
+            'response' => $validated['response'],
+            'responded_at' => now(),
+        ]);
+
+
         if ($validated['response'] === 'available') {
             $event = $crewResponse->charterEvent;
             if ($event && $event->charterer && $event->charterer->user) {
