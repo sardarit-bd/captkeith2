@@ -8,6 +8,7 @@ interface RequestsPageProps {
     requests: CaptainRequestRecord[];
 }
 
+
 export default function RequestsPage({
     requests: requestRecords,
 }: RequestsPageProps) {

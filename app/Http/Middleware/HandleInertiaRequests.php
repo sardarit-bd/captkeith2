@@ -7,32 +7,13 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
-    /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
-     * @return array<string, mixed>
-     */
     public function share(Request $request): array
     {
         return [
@@ -48,9 +29,73 @@ class HandleInertiaRequests extends Middleware
                 'role' => $request->user()?->getRoleNames()->first(),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->values() ?? [],
             ],
-            'notificationsUnreadCount' => fn () => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+            'unreadNotificationsCount' => fn () => $request->user()
+                ? $request->user()->unreadNotifications()->count()
+                : 0,
+
+
+            // pending owner invitations for captain prifile
+            'pendingOwnerInvitationsCount' => fn () => ($request->user() && $request->user()->hasRole('captain') && $request->user()->captainProfile)
+                ? \App\Models\OwnerCaptainInvitation::where('captain_id', $request->user()->captainProfile->id)
+                    ->where('status', 'pending')
+                    ->where('initiated_by', 'owner')
+                    ->count()
+                : 0,
+                // pending charter invitations for captain prifile
+                'pendingCharterInvitationsCount' => fn () => ($request->user() && $request->user()->hasRole('captain') && $request->user()->captainProfile)
+                    ? \App\Models\CharterCrewResponse::where('profile_id', $request->user()->captainProfile->id)
+                        ->where('crew_role', 'captain')
+                        ->where('response', 'pending')
+                        ->count()
+                    : 5,
+
+            // pending captain requests for owner prifile
+            'pendingCaptainRequestsCount' => fn () => ($request->user() && $request->user()->hasRole('owner') && $request->user()->ownerProfile)
+                ? \App\Models\OwnerCaptainInvitation::where('owner_id', $request->user()->ownerProfile->id)
+                    ->where('status', 'pending')
+                    ->where('initiated_by', 'captain')
+                    ->count()
+                : 0,
+                
+
+                // pending deckhand requests for owner prifile
+                'pendingDeckhandRequestsCount' => fn () => ($request->user() && $request->user()->hasRole('owner') && $request->user()->ownerProfile)
+                ? \App\Models\OwnerDeckhandInvitation::where('owner_id', $request->user()->ownerProfile->id)
+                    ->where('status', 'pending')
+                    ->where('initiated_by', 'deckhand')
+                    ->count()
+                : 0,
+
+                // pending charterer requests for captain prifile
+                'pendingChartererRequestsCount' => fn () => ($request->user() && $request->user()->hasRole('owner') && $request->user()->ownerProfile)
+                ? \App\Models\OwnerDeckhandInvitation::where('owner_id', $request->user()->ownerProfile->id)
+                    ->where('status', 'pending')
+                    ->where('initiated_by', 'deckhand')
+                    ->count()
+                : 0,
+                // pending charterer requests for captain prifile
+                'pendingownerRequestsCount' => fn () => ($request->user() && $request->user()->hasRole('owner') && $request->user()->ownerProfile)
+                ? \App\Models\OwnerDeckhandInvitation::where('owner_id', $request->user()->ownerProfile->id)
+                    ->where('status', 'pending')
+                    ->where('initiated_by', 'deckhand')
+                    ->count()
+                : 0,
+                // pending charterer requests for captain prifile
+                'pendingOwnerInvitationsCountForDeckhand' => fn () => ($request->user() && $request->user()->hasRole('deckhand') && $request->user()->deckhandProfile)
+                ? \App\Models\OwnerDeckhandInvitation::where('deckhand_id', $request->user()->deckhandProfile->id)
+                    ->where('status', 'pending')
+                    ->where('initiated_by', 'owner')
+                    ->count()
+                : 0,
+                // pending charterer requests for captain prifile
+                'pendingCaptainInvitationsCountForDeckhand' => fn () => ($request->user() && $request->user()->hasRole('deckhand') && $request->user()->deckhandProfile)
+                ? \App\Models\CharterCrewResponse::where('profile_id', $request->user()->deckhandProfile->id)
+            ->where('crew_role', 'deckhand')
+            ->where('response', 'pending')
+            ->count()
+                : 3,
+
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
 }
-    

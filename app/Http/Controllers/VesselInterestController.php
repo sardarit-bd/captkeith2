@@ -8,9 +8,10 @@ use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Notifications\VesselInterestNotification;
+
 class VesselInterestController extends Controller
 {
-    public function store(Request $request, Vessel $vessel): RedirectResponse
+public function store(Request $request, Vessel $vessel): RedirectResponse
     {
         $user = $request->user();
 
@@ -47,18 +48,22 @@ class VesselInterestController extends Controller
                 ]
             );
         }
-        \Illuminate\Support\Facades\Log::info('Attempting to notify owner.', [
-            'vessel_id' => $vessel->id, 
-            'owner_user_id' => $vessel->owner?->user?->id
-        ]);
-        $vessel->owner->user->notify(new VesselInterestNotification(
-            $vessel,
-            $user,
-            $role
-        ));
+
+    
+        $vessel->loadMissing('owner.user');
+
+  
+        if ($vessel->owner && $vessel->owner->user) {
+            $vessel->owner->user->notify(new VesselInterestNotification(
+                $vessel,
+                $user,
+                $role
+            ));
+        }
 
         return back()->with('success', 'Interest sent to the owner.');
     }
+
     public function destroy(Request $request, Vessel $vessel): RedirectResponse
     {
         $user = $request->user();
@@ -75,7 +80,6 @@ class VesselInterestController extends Controller
             $profile = $user->deckhandProfile;
             abort_if($profile === null, 403, 'No deckhand profile found.');
 
-           
             OwnerDeckhandInvitation::where('owner_id', $vessel->owner_id)
                 ->where('deckhand_id', $profile->id)
                 ->where('vessel_id', $vessel->id)

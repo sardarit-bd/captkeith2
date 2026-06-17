@@ -10,42 +10,51 @@ class NotificationController extends Controller
 {
     public function index(Request $request): Response
     {
-   
-        $notifications = $request->user()
-            ->notifications()
-            ->latest()
-            ->take(50)
-            ->get()
-            ->map(function ($notification) {
-                return [
-                    'id' => $notification->id,
-                    'type' => $notification->data['type'] ?? 'default',
-                    'title' => $notification->data['title'] ?? 'Notification',
-                    'message' => $notification->data['message'] ?? '',
-                    'icon' => $notification->data['icon'] ?? 'bell',
-                    'url' => $notification->data['url'] ?? '#',
-                    'read_at' => $notification->read_at,
-                    'created_at' => $notification->created_at->toISOString(),
-                ];
-            });
+        $user = $request->user();
+        
+        $notifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $formattedNotifications = $notifications->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'type' => $notification->data['type'] ?? 'unknown',
+                'title' => $notification->data['title'] ?? 'Notification',
+                'message' => $notification->data['message'] ?? '',
+                'icon' => $notification->data['icon'] ?? 'bell',
+                'url' => $notification->data['url'] ?? '#',
+                'read_at' => $notification->read_at,
+                'created_at' => $notification->created_at->toIso8601String(),
+                'data' => $notification->data,
+            ];
+        });
 
         return Inertia::render('notifications', [
-            'notifications' => $notifications,
+            'notifications' => $formattedNotifications,
+            'unreadCount' => $user->unreadNotifications()->count(),
         ]);
     }
 
     public function markAsRead(Request $request, string $id)
     {
-        $notification = $request->user()->notifications()->where('id', $id)->first();
-        if ($notification) {
-            $notification->markAsRead();
-        }
-        return redirect()->route('notifications');
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        return back();
     }
 
     public function markAllAsRead(Request $request)
     {
         $request->user()->unreadNotifications->markAsRead();
+
+        return back();
+    }
+
+    public function destroy(Request $request, string $id)
+    {
+        $request->user()->notifications()->findOrFail($id)->delete();
+
         return back();
     }
 }

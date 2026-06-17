@@ -47,80 +47,39 @@ import {
 } from '@/routes';
 import type { NavItem } from '@/types';
 
-function resolveNavItems(role: string | null | undefined): NavItem[] {
-  
+function resolveNavItems(role: string | null | undefined, pendingCaptainCount: number = 0, pendingOwnerInvitationsCount: number = 0 , pendingDeckhandRequestsCount: number = 0 , pendingCharterInvitationsCount: number = 0 , pendingOwnerInvitationsCountForDeckhand: number = 0 , pendingCaptainInvitationsCountForDeckhand: number = 0): NavItem[] {
     const sharedItems: NavItem[] = [
-        {
-            title: 'Dashboard',
-            href: dashboard(),
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Messages',
-            href: messages(),
-            icon: MessageCircle,
-        },
+        { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+        { title: 'Messages', href: messages(), icon: MessageCircle },
     ];
 
     if (role === 'admin') {
         return [
             sharedItems[0],
-            {
-                title: 'Users',
-                href: adminUsers(),
-                icon: Users,
-            },
-            {
-                title: 'Vessel Inventory',
-                href: vesselInventory(),
-                icon: Ship,
-            },
-            {
-                title: 'Compliance Log',
-                href: complianceLog(),
-                icon: ShieldCheck,
-            },
-            {
-                title: 'Platform Settings',
-                href: platformSettings(),
-                icon: Settings,
-            },
+            { title: 'Users', href: adminUsers(), icon: Users },
+            { title: 'Vessel Inventory', href: vesselInventory(), icon: Ship },
+            { title: 'Compliance Log', href: complianceLog(), icon: ShieldCheck },
+            { title: 'Platform Settings', href: platformSettings(), icon: Settings },
         ];
     }
 
     if (role === 'owner') {
         return [
             sharedItems[0],
-            {
-                title: 'My Yachts',
-                href: myYachts(),
-                icon: Ship,
-            },
-            {
-                title: 'Captains',
-                href: captains(),
-                icon: User,
-            },
+            { title: 'My Yachts', href: myYachts(), icon: Ship },
+            { title: 'Captains', href: captains(), icon: User },
             {
                 title: 'Captain Requests',
                 href: '/captain-requests',
                 icon: ClipboardList,
-            },  {
-                title: 'Deckhands',
-                href: deckhands(),
-                icon: User,
-            },
-                {
-                title: 'Deckhand Requests',
-                href: '/deckhand-requests',
-                icon: Mail, 
-            },
-        
-            {
-                title: 'Charterers',
-                href: charterers(),
-                icon: Users,
-            },
+                badge: pendingCaptainCount, 
+            },  
+            { title: 'Deckhands', href: deckhands(), icon: User },
+            { title: 'Deckhand Requests',
+              href: '/deckhand-requests',
+              icon: Mail , 
+              badge: pendingDeckhandRequestsCount,},
+            { title: 'Charterers', href: charterers(), icon: Users },
             sharedItems[1],
         ];
     }
@@ -128,21 +87,9 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
     if (role === 'captain') {
         return [
             sharedItems[0],
-            {
-                title: 'Yachts Match',
-                href: yachtsMatch(),
-                icon: Ship,
-            },
-            {
-                title: 'Charterer Requests',
-                href: requests(),
-                icon: ClipboardList,
-            },
-            {
-                title: 'Owner Invitations',
-                href: '/invitations',
-                icon: Bell,
-            },
+            { title: 'Yachts Match', href: yachtsMatch(), icon: Ship },
+            { title: 'Charterer Requests', href: requests(), icon: ClipboardList ,badge: pendingCharterInvitationsCount},
+            { title: 'Owner Invitations', href: '/invitations', icon: Bell, badge: pendingOwnerInvitationsCount },
             sharedItems[1],
         ];
     }
@@ -150,55 +97,42 @@ function resolveNavItems(role: string | null | undefined): NavItem[] {
     if (role === 'deckhand') {
         return [
             sharedItems[0],
-            {
-                title: 'Yachts Match',
-                href: yachtsMatch(),
-                icon: Ship,
-            },
-            {
-                title: 'My Profile',
-                href: myProfile(),
-                icon: User,
-            },
-            {
-                title: 'Requests',
-                href: requests(),
-                icon: ClipboardList,
-            },
-                {
-                title: 'Invitations',
-                href: '/deckhand-invitations',
-                icon: Mail, 
-            },
+            { title: 'Yachts Match', href: yachtsMatch(), icon: Ship },
+            { title: 'My Profile', href: myProfile(), icon: User },
+            { title: 'Requests', href: requests(), icon: ClipboardList , badge: pendingCaptainInvitationsCountForDeckhand },
+            { title: 'Invitations', href: '/deckhand-invitations', icon: Mail , badge: pendingOwnerInvitationsCountForDeckhand},
             sharedItems[1],
         ];
     }
 
-        if (role === 'charterer') {
-            return [
-                sharedItems[0],
-                {
-                    title: 'My Booking',
-                    href: myBooking(),
-                    icon: CalendarDays,
-                },
-                {
-                    title: 'Notifications',
-                    href: notifications(),
-                    icon: Bell,
-                },
-                sharedItems[1],
-            ];
-        }
+    if (role === 'charterer') {
+        return [
+            sharedItems[0],
+            { title: 'My Booking', href: myBooking(), icon: CalendarDays },
+            { title: 'Notifications', href: '/notifications', icon: Bell },
+            sharedItems[1],
+        ];
+    }
 
     return sharedItems;
 }
-
 export function AppSidebar() {
-    const page = usePage<{ auth?: { role?: string | null } }>();
+    const page = usePage<{ auth?: { role?: string | null }, pendingCaptainRequestsCount?: number, pendingOwnerInvitationsCount?: number , pendingDeckhandRequestsCount?: number , pendingCharterInvitationsCount?: number , pendingOwnerInvitationsCountForDeckhand?: number , pendingCaptainInvitationsCountForDeckhand?: number}>();
     const cleanup = useMobileNavigation();
-    const mainNavItems = resolveNavItems(page.props.auth?.role);
+    
+    const pendingCaptainCount = page.props.pendingCaptainRequestsCount || 0;
+    const pendingDeckhandRequestsCount = page.props.pendingDeckhandRequestsCount || 0;
+    const pendingOwnerInvitationsCount = page.props.pendingOwnerInvitationsCount || 0;
+    const pendingCharterInvitationsCount= page.props.pendingCharterInvitationsCount || 0;
+    const pendingCaptainInvitationsCountForDeckhand = page.props.pendingCaptainInvitationsCountForDeckhand || 0;
+    const pendingOwnerInvitationsCountForDeckhand = page.props.pendingOwnerInvitationsCountForDeckhand ;
 
+
+    console.log('pendingCaptainInvitationsCountForDeckhand', pendingCaptainInvitationsCountForDeckhand);
+
+
+    const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount, pendingOwnerInvitationsCount , pendingDeckhandRequestsCount , pendingCharterInvitationsCount,pendingOwnerInvitationsCountForDeckhand, pendingCaptainInvitationsCountForDeckhand);
+    // console.log('pendingDeckhandRequestsCount', pendingDeckhandRequestsCount);
     const handleLogout = () => {
         cleanup();
         router.flushAll();
@@ -206,7 +140,7 @@ export function AppSidebar() {
 
     return (
         <Sidebar
-            collapsible="icon"
+
             variant="sidebar"
             className="border-r border-[#e5e7eb] bg-[#f6f7f9]"
         >
