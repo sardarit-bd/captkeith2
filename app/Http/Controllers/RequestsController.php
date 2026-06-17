@@ -185,6 +185,7 @@ class RequestsController extends Controller
                 }
                 return [
                     'id'                => $crewResponse->id,
+                    'crewRole'          => $crewRole,
                     'type'              => 'charter_request',
                     'yachtName'         => $vessel?->name ?? '—',
                     'yachtSpec'         => $vessel ? ucfirst($vessel->vessel_type) . ' • ' . $vessel->length_ft . 'ft' : '—',
@@ -201,6 +202,7 @@ class RequestsController extends Controller
                     'deckhandInfo'      => $deckhandInfo,
                     'agreements'        => $agreements,
                     'captainInfo'       => $captainInfo, 
+                    'selectedDeckhand'  => $crewResponse->selected_by_captain_id || null
                 ];
             });
 
@@ -336,6 +338,7 @@ class RequestsController extends Controller
 
     public function respond(Request $request, CharterCrewResponse $crewResponse): RedirectResponse
     {
+        // dd($request->all());
         $user = Auth::user();
         $isCaptain = $user->hasRole('captain');
 
@@ -360,13 +363,20 @@ class RequestsController extends Controller
                 ->where('crew_role', 'deckhand')
                 ->where('response', 'available') 
                 ->first();
-            
+            dd($existingDeckhand);
             if (!$existingDeckhand) {
                 return back()->withErrors([
                     'deckhand' => 'You must select a deckhand and they must accept before you can accept this request.'
                 ]);
             }
         }
+        // if(!$isCaptain && $validated['response'] === 'available'){
+        //         $existingDeckhand = CharterCrewResponse::where('charter_event_id', $event->id)
+        //         ->where('crew_role', 'deckhand')
+        //         ->where('response', 'available') 
+        //         ->first();
+        //         dd($existingDeckhand);
+        // }
 
 
         $crewResponse->update([
