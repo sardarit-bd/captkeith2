@@ -188,6 +188,8 @@
                 Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
                 Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
                 // Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
+                Route::get('charterer/agreement/{agreementId}/download', [CharterController::class, 'downloadAgreement'])
+    ->name('charterer.agreement.download');
                 Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
                 Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
                 Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');

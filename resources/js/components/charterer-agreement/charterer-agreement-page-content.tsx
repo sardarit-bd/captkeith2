@@ -251,7 +251,7 @@ function AgreementCard({
 export function ChartererAgreementPageContent() {
     const { agreements, vessel, charterEventId, flash } =
         usePage<PageProps>().props;
-
+    console.log('agreements', agreements);
     const [signedIds, setSignedIds] = useState<Set<string>>(
         new Set(agreements.filter(a => a.isSigned).map(a => a.id))
     );

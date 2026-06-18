@@ -4,9 +4,11 @@ import { Download, FileText } from 'lucide-react';
 import { agreement } from '@/routes/charterer';
 import { insuranceNote } from './charterer-insurance-data';
 import { ChartererInsuranceMainCard } from './charterer-insurance-main-card';
+// import { route } from '@/routes';
 interface Agreement {
     id: string;
     name: string;
+    downloadUrl?: string; 
 }
 interface PageProps {
     charterEventId?: string;
@@ -15,6 +17,8 @@ interface PageProps {
 export function ChartererInsurancePageContent() {
 
     const { agreements } = usePage<PageProps>().props;
+    const response = usePage<PageProps>().props;
+    console.log('response', response);
     return (
         <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] font-poppins">
             {agreements && agreements.length > 0 && (

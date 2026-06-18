@@ -22,7 +22,7 @@ const statusLabels: Record<CaptainRequestRecord['status'], string> = {
 interface RequestCardProps {
     request: CaptainRequestRecord;
     onSelectDeckhand?: (requestId: string, charterEventId: string) => void;
-    onSignDeckhandAgreement?: (agreementId: string) => void;
+    onSignDeckhandAgreement?: (crewResponseId: string) => void;
 }
 
 export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement }: RequestCardProps) {
@@ -42,27 +42,30 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
 
     // Agreement for THIS captain (only present when selectedByMe)
     const deckhandAgreement = request.agreements?.find(a => a.type === 'deckhand_hire');
-
+    console.log('deckhandAgreement', deckhandAgreement);
     // ── State classification (captain only) ──────────────────────────────────
     // State 1: isPending && !hasSelectedDeckhand
     // State 2: isPending && hasSelectedDeckhand && deckhandIsPending
     // State 3: deckhandAccepted && !deckhandHireFullySigned
     // State 4: deckhandHireFullySigned
 
-    // ── Accept button disabled logic ─────────────────────────────────────────
     const acceptDisabled =
         !isPending ||
         isSubmitting ||
-        (crewRole === 'captain' && !deckhandHireFullySigned);
+        (crewRole === 'captain' && 
+         !deckhandHireFullySigned && 
+         !(request.deckhandInfo?.selectedDeckhand?.responseStatus === 'available' && 
+           request.deckhandInfo?.selectedDeckhand?.selectedByMe === false));
 
-    // ── Accept tooltip ────────────────────────────────────────────────────────
     const acceptTooltip = crewRole === 'captain'
         ? !hasSelectedDeckhand
             ? 'Please select a deckhand first'
             : deckhandIsPending
                 ? 'Waiting for deckhand to accept'
-                : !deckhandHireFullySigned
-                    ? 'Please sign the deckhand agreement first'
+                : !deckhandHireFullySigned && 
+                  !(request.deckhandInfo?.selectedDeckhand?.responseStatus === 'available' && 
+                    request.deckhandInfo?.selectedDeckhand?.selectedByMe === false)
+                    ? 'Please sign the deckhand agreement to enable acceptance'
                     : ''
         : '';
 
@@ -89,11 +92,59 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
             router.visit(`/messages?with=${request.captainInfo.userId}`);
         }
     }
-
+const [isSignModalOpen, setIsSignModalOpen] = useState(false);
     const fallbackImage = '/images/home/about3.jpg';
-
+    console.log(request);
     return (
         <article className="rounded-xl border border-[#eef2f6] bg-white p-6 shadow-sm">
+            {isSignModalOpen && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="rounded-lg bg-white p-6 shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sign Deckhand Agreement</h3>
+            <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to sign the Deckhand Hire Agreement? This will generate the PDF and finalize the process.
+            </p>
+            <div className="flex justify-end gap-3">
+                <button
+                    type="button"
+                    onClick={() => setIsSignModalOpen(false)}
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        // This runs ONLY when they click "Sign" inside the modal
+                        router.post(`/requests/${request.id}/sign-deckhand-agreement`, {}, {
+                            preserveScroll: true,
+                            onSuccess: (page) => {
+                                // 1. Get the URL from the backend flash data
+                                const downloadUrl = page.props.flash?.downloadUrl;
+                                
+                                // 2. Trigger the browser download
+                                if (downloadUrl) {
+                                    const link = document.createElement('a');
+                                    link.href = downloadUrl;
+                                    link.setAttribute('download', 'deckhand-agreement.pdf');
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    link.remove();
+                                }
+                                
+                                // 3. Close the modal
+                                setIsSignModalOpen(false);
+                            }
+                        });
+                    }}
+                    className="rounded-md bg-[#35ADD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#2a8fb0]"
+                >
+                    Sign & Download
+                </button>
+            </div>
+        </div>
+    </div>
+)}
             {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-4">
@@ -275,22 +326,35 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
 
                     {/*
                       Sign Agreement Button — State 3, only for THIS captain (selectedByMe).
-                      Shows when: deckhand accepted + agreement not yet fully signed + I selected them.
+                      Shows when: deckhand accepted + agreement not yet fully signed + I selected them
+                                  + I have NOT already signed it.
                     */}
                     {crewRole === 'captain' &&
                      deckhandAccepted &&
                      selectedByMe &&
-                     !deckhandHireFullySigned &&
-                     deckhandAgreement &&
-                     !deckhandAgreement.isFullySigned && (
-                        <button
-                            type="button"
-                            onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
-                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
-                        >
-                            <FileSignature className="h-4 w-4" />
-                            Sign Agreement
-                        </button>
+                      (
+                        <>
+                            {deckhandAgreement?.downloadUrl ? (
+                                <a
+                                    href={deckhandAgreement.downloadUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className=" cursor-pointer hidden items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Download Agreement
+                                </a>
+                            ) : (
+                                <button
+                                type="button"
+                                onClick={() => setIsSignModalOpen(true)} // <-- Opens local modal
+                                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                            >
+                                <FileSignature className="h-4 w-4" />
+                                Sign Agreement
+                            </button>
+                            )}
+                        </>
                     )}
 
                     {/*
@@ -304,7 +368,7 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                             href={deckhandAgreement.downloadUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
                         >
                             <Download className="h-4 w-4" />
                             Download Agreement
@@ -324,7 +388,7 @@ export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement
                         className={`inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors ${
                             acceptDisabled
                                 ? 'cursor-not-allowed bg-gray-400 opacity-60'
-                                : 'cursor-pointer bg-[#111827] hover:bg-[#1f2937]'
+                                : 'cursor-pointer bg-[#35ADD5] hover:bg-[#35ADD5]/70'
                         }`}
                     >
                         <Check className="h-4 w-4" />

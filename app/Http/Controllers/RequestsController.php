@@ -50,92 +50,117 @@ class RequestsController extends Controller
 
                 $deckhandInfo = null;
                 $agreements = [];
-
+                $hiredDeckhandResponse = null; 
                 if ($event) {
                     if ($crewRole === 'captain') {
+                        // 1. Check if ANY deckhand is already hired/accepted for THIS charter event
+                        $hiredDeckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
+                            ->where('crew_role', 'deckhand')
+                            ->where('response', 'available')
+                            ->first();
 
-                        $selectedDeckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
+                        // 2. Check if I have personally selected someone (even if they haven't accepted yet)
+                        $mySelection = CharterCrewResponse::where('charter_event_id', $event->id)
                             ->where('crew_role', 'deckhand')
                             ->where('selected_by_captain_id', $profile->id)
                             ->whereIn('response', ['pending', 'available'])
                             ->with('deckhandProfile')
                             ->first();
-                        // dd($selectedDeckhandResponse);
-                        $isMySelection = $selectedDeckhandResponse && $selectedDeckhandResponse->selected_by_captain_id === $profile->id;
 
-                        $approvedInvitations = \App\Models\OwnerDeckhandInvitation::where('vessel_id', $vessel?->id)
-                            ->where('status', 'accepted') 
-                            ->with(['deckhand.user'])
-                            ->get();
+                        $isMySelection = $mySelection && $mySelection->selected_by_captain_id === $profile->id;
 
-                        $approvedDeckhandIds = $approvedInvitations->pluck('deckhand_id')->toArray();
-                        $hiredDeckhandIds = CharterCrewResponse::where('charter_event_id', $event->id)
-                            ->where('crew_role', 'deckhand')
-                            ->where('response', 'available') 
-                            ->pluck('profile_id')
-                            ->toArray();
+                        // 3. Determine if the slot is globally "taken" by someone else
+                        $isGloballyTaken = false;
+                        if ($hiredDeckhandResponse) {
+                            $isGloballyTaken = true;
+                        } elseif (!$mySelection) {
+                            // If I haven't selected anyone, check if someone else has a pending selection
+                            $isGloballyTaken = CharterCrewResponse::where('charter_event_id', $event->id)
+                                ->where('crew_role', 'deckhand')
+                                ->whereNotNull('selected_by_captain_id')
+                                ->exists();
+                        }
 
-                        $availableDeckhands = \App\Models\DeckhandProfile::query()
-                            ->with('user') 
-                            ->whereIn('deckhand_profiles.id', $approvedDeckhandIds) 
-                            ->leftJoin('charter_crew_responses as ccr', function($join) use ($event, $profile) {
-                                $join->on('ccr.profile_id', '=', 'deckhand_profiles.id')
-                                    ->where('ccr.charter_event_id', $event->id)
-                                    ->where('ccr.crew_role', 'deckhand')
-                                    ->where('ccr.selected_by_captain_id', $profile->id);
-                            })
-                            ->addSelect('deckhand_profiles.*', 'ccr.response as request_status', 'ccr.id as request_id')
-                            ->get()
-                            ->map(function($deckhand) {
-                                return [
-                                    'id' => $deckhand->id,
-                                    'name' => $deckhand->full_name ?? ($deckhand->user->name ?? 'Unknown'),
-                                    'photo' => $deckhand->photo_path ? asset('storage/' . $deckhand->photo_path) : null,
-                                    'experience' => ($deckhand->years_experience ?? 0) . ' years',
-                                    'rate' => '$' . ($deckhand->hourly_rate ?? 0) . '/day',
-                                    'hasServer' => (bool) ($deckhand->has_server_experience ?? false),
-                                    'hasBartend' => (bool) ($deckhand->has_bartending_experience ?? false),
-                                    'requestStatus' => $deckhand->request_status ?? 'none',
-                                    'requestId' => $deckhand->request_id,
-                                ];
-                            });
+                        // 4. Get available deckhands ONLY if no one has fully hired someone yet
+                        $availableDeckhands = [];
+                        if (!$hiredDeckhandResponse) {
+                            $approvedInvitations = \App\Models\OwnerDeckhandInvitation::where('vessel_id', $vessel?->id)
+                                ->where('status', 'accepted') 
+                                ->with(['deckhand.user'])
+                                ->get();
 
-                        $mustSelectDeckhand = empty($hiredDeckhandIds);
+                            $approvedDeckhandIds = $approvedInvitations->pluck('deckhand_id')->toArray();
 
-                            $deckhandInfo = [
-                            'selectedDeckhand'      => $selectedDeckhandResponse ? [
-                                'id'             => $selectedDeckhandResponse->deckhandProfile?->id,
-                                'name'           => $selectedDeckhandResponse->deckhandProfile?->full_name ?? '—',
-                                'responseStatus' => $selectedDeckhandResponse->response,
+                            $availableDeckhands = \App\Models\DeckhandProfile::query()
+                                ->with('user') 
+                                ->whereIn('deckhand_profiles.id', $approvedDeckhandIds) 
+                                ->leftJoin('charter_crew_responses as ccr', function($join) use ($event, $profile) {
+                                    $join->on('ccr.profile_id', '=', 'deckhand_profiles.id')
+                                        ->where('ccr.charter_event_id', $event->id)
+                                        ->where('ccr.crew_role', 'deckhand')
+                                        ->where('ccr.selected_by_captain_id', $profile->id);
+                                })
+                                ->addSelect('deckhand_profiles.*', 'ccr.response as request_status', 'ccr.id as request_id')
+                                ->get()
+                                ->map(function($deckhand) {
+                                    return [
+                                        'id' => $deckhand->id,
+                                        'name' => $deckhand->full_name ?? ($deckhand->user->name ?? 'Unknown'),
+                                        'photo' => $deckhand->photo_path ? asset('storage/' . $deckhand->photo_path) : null,
+                                        'experience' => ($deckhand->years_experience ?? 0) . ' years',
+                                        'rate' => '$' . ($deckhand->hourly_rate ?? 0) . '/day',
+                                        'hasServer' => (bool) ($deckhand->has_server_experience ?? false),
+                                        'hasBartend' => (bool) ($deckhand->has_bartending_experience ?? false),
+                                        'requestStatus' => $deckhand->request_status ?? 'none',
+                                        'requestId' => $deckhand->request_id,
+                                    ];
+                                });
+                        }
+
+                        // 5. Build the deckhandInfo object with global awareness
+                        $deckhandInfo = [
+                            'selectedDeckhand'      => $mySelection ? [
+                                'id'             => $mySelection->deckhandProfile?->id,
+                                'name'           => $mySelection->deckhandProfile?->full_name ?? '—',
+                                'responseStatus' => $mySelection->response,
                                 'selectedByMe'   => $isMySelection, 
-                            ] : null,
+                            ] : ($hiredDeckhandResponse ? [
+                                // Pass hired deckhand info even if not selected by me, 
+                                // so UI can show "Taken" state
+                                'id'             => $hiredDeckhandResponse->deckhandProfile?->id,
+                                'name'           => $hiredDeckhandResponse->deckhandProfile?->full_name ?? 'Hired Captain\'s Deckhand',
+                                'responseStatus' => 'available',
+                                'selectedByMe'   => false,
+                            ] : null),
                             'availableDeckhands'    => $availableDeckhands,
-                            'mustSelectDeckhand'    => $mustSelectDeckhand,
+                            'mustSelectDeckhand'    => !$hiredDeckhandResponse && !$isMySelection,
                             'hasQualifiedDeckhands' => count($availableDeckhands) > 0,
-                            'deckhandHireFullySigned' => \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
+                            'deckhandHireFullySigned' => $hiredDeckhandResponse ? \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
                                 ->where('agreement_type', 'deckhand_hire')
                                 ->whereNotNull('fully_signed_at')
-                                ->exists(),
+                                ->exists() : false,
+                            'isGloballyTaken'       => $isGloballyTaken, // NEW FLAG FOR FRONTEND
                         ];
 
-
-                        if ($selectedDeckhandResponse) {
-                            \App\Models\CharterHireAgreement::firstOrCreate(
-                                [
-                                    'charter_event_id' => $event->id,
-                                    'deckhand_profile_id' => $selectedDeckhandResponse->profile_id,
-                                    'agreement_type' => 'deckhand_hire',
-                                ],
-                                [
-                                    'charterer_id' => $event->charterer_id,
-                                    'captain_profile_id' => $profile->id,
-                                    'initiated_by' => 'captain',
-                                    'crew_role' => 'deckhand',
-                                    'sign_status' => 'not_sent',
-                                ]
-                            );
-                        }
+                        // 6. Create agreement record if I have made a selection
+                        // if ($mySelection) {
+                        //     \App\Models\CharterHireAgreement::firstOrCreate(
+                        //         [
+                        //             'charter_event_id' => $event->id,
+                        //             'deckhand_profile_id' => $mySelection->profile_id,
+                        //             'agreement_type' => 'deckhand_hire',
+                        //         ],
+                        //         [
+                        //             'charterer_id' => $event->charterer_id,
+                        //             'captain_profile_id' => $profile->id,
+                        //             'initiated_by' => 'captain',
+                        //             'crew_role' => 'deckhand',
+                        //             'sign_status' => 'not_sent',
+                        //         ]
+                        //     );
+                        // }
             
+                        // 7. Map agreements with signing status
                         $agreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
                             ->where(function ($query) use ($profile) {
                                 $query->where('captain_profile_id', $profile->id)
@@ -143,6 +168,10 @@ class RequestsController extends Controller
                             })
                             ->get()
                             ->map(function ($a) use ($profile) {
+                                // Check if current captain has already signed this specific agreement
+                                $hasSignedByMe = !is_null($a->captain_signed_at) && 
+                                                $a->captain_profile_id === $profile->id;
+
                                 return [
                                     'id' => $a->id,
                                     'type' => $a->agreement_type,
@@ -153,6 +182,7 @@ class RequestsController extends Controller
                                     'isSignedByCrew' => !is_null($a->crew_signed_at),
                                     'isFullySigned' => !is_null($a->fully_signed_at),
                                     'deckhandProfileId' => $a->deckhand_profile_id,
+                                    'hasSignedByMe' => $hasSignedByMe, // New flag for UI
                                 ];
                             });
                     } elseif ($crewRole === 'deckhand') {
@@ -206,7 +236,7 @@ class RequestsController extends Controller
                     'deckhandInfo'      => $deckhandInfo,
                     'agreements'        => $agreements,
                     'captainInfo'       => $captainInfo, 
-                    'selectedDeckhand'  => $crewResponse->selected_by_captain_id || null
+                    'selectedDeckhand'  => (bool) $hiredDeckhandResponse || false,
                 ];
             });
 
@@ -367,7 +397,7 @@ class RequestsController extends Controller
                 ->where('crew_role', 'deckhand')
                 ->where('response', 'available') 
                 ->first();
-            dd($existingDeckhand);
+            // dd($existingDeckhand);
             if (!$existingDeckhand) {
                 return back()->withErrors([
                     'deckhand' => 'You must select a deckhand and they must accept before you can accept this request.'
@@ -468,53 +498,63 @@ class RequestsController extends Controller
         return Storage::disk('local')->download($path, basename($path));
     }
 
-    public function signDeckhandAgreement(Request $request, CharterCrewResponse $crewResponse): RedirectResponse
-    {
-        $user = Auth::user();
-        $profile = CaptainProfile::where('user_id', $user->id)->firstOrFail();
-        
-        abort_if($crewResponse->profile_id !== $profile->id || $crewResponse->crew_role !== 'captain', 403);
+ public function signDeckhandAgreement(Request $request, CharterCrewResponse $crewResponse, AgreementPdfService $pdfService): RedirectResponse
+{
+    $user = Auth::user();
+    $profile = CaptainProfile::where('user_id', $user->id)->firstOrFail();
+    
+    abort_if($crewResponse->profile_id !== $profile->id || $crewResponse->crew_role !== 'captain', 403);
 
-        $event = $crewResponse->charterEvent;
-        abort_if(!$event, 404);
+    $event = $crewResponse->charterEvent;
+    abort_if(!$event, 404);
 
-        $deckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
-            ->where('crew_role', 'deckhand')
-            ->where('selected_by_captain_id', $profile->id)
-            ->first();
+    $deckhandResponse = CharterCrewResponse::where('charter_event_id', $event->id)
+        ->where('crew_role', 'deckhand')
+        ->where('selected_by_captain_id', $profile->id)
+        ->first();
 
-        abort_if(!$deckhandResponse, 403, 'No deckhand selected by you for this charter.');
+    abort_if(!$deckhandResponse, 403, 'No deckhand selected by you for this charter.');
 
-        $agreement = CharterHireAgreement::where('charter_event_id', $event->id)
-            ->where('deckhand_profile_id', $deckhandResponse->profile_id)
-            ->where('agreement_type', 'deckhand_hire') 
-            ->first();
+    // 1. Create or update the agreement and mark as signed
+    $agreement = CharterHireAgreement::updateOrCreate(
+        [
+            'charter_event_id' => $event->id,
+            'deckhand_profile_id' => $deckhandResponse->profile_id,
+            'agreement_type' => 'deckhand_hire', 
+        ],
+        [
+            'charterer_id' => $event->charterer_id,
+            'captain_profile_id' => $profile->id, 
+            'initiated_by' => 'captain',
+            'crew_role' => 'deckhand', 
+            'sign_status' => 'fully_signed', 
+            'captain_signed_at' => now(),
+            'fully_signed_at' => now(),
+        ]
+    );
 
-        if (!$agreement) {
-            $pdfService = app(AgreementPdfService::class);
-            $deckhand = $deckhandResponse->deckhandProfile;
-
-            $agreement = CharterHireAgreement::updateOrCreate(
-                [
-                    'charter_event_id' => $event->id,
-                    'deckhand_profile_id' => $deckhandResponse->profile_id,
-                    'agreement_type' => 'deckhand_hire', 
-                ],
-                [
-                    'charterer_id' => $event->charterer_id,
-                    'captain_profile_id' => $profile->id, 
-                    'initiated_by' => 'captain',
-                    'crew_role' => 'deckhand', 
-                    'sign_status' => 'not_sent', 
-                ]
-            );
+    // 2. Generate PDF if it doesn't exist yet
+    if (empty($agreement->pdf_path)) {
+        try {
+            $pdfPath = $pdfService->generateDeckhandHireAgreement($event, $deckhandResponse->deckhandProfile);
+            $agreement->update(['pdf_path' => $pdfPath]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Deckhand agreement PDF generation failed', [
+                'agreement_id' => $agreement->id,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Failed to generate agreement document. Please try again.');
         }
-
-        return back()->with([
-            'signDeckhandAgreementId' => $agreement->id,
-            'signDeckhandModalOpen' => true,
-        ]);
     }
+
+    // 3. Return the download URL in flash data so frontend can trigger it
+    $downloadUrl = route('requests.agreement.download', ['agreementId' => $agreement->id]);
+
+    return back()->with([
+        'success' => 'Agreement signed successfully!',
+        'downloadUrl' => $downloadUrl,
+    ]);
+}
 
     private function getAgreementStatusLabel(CharterHireAgreement $agreement): string
     {
