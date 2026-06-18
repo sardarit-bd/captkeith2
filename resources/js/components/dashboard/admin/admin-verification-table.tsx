@@ -1,12 +1,23 @@
-import { verificationQueueItems } from './admin-dashboard-data';
 import { AdminSectionCard } from './admin-section-card';
+
+interface AdminVerificationTableProps {
+    verifications: Array<{
+        id: string | number;
+        user_name: string;
+        user_role: string;
+        document_type: string;
+        submitted_at: string;
+        initials: string;
+    }>;
+}
 
 const badgeToneClass = {
     blue: 'bg-blue-50 text-blue-700',
     purple: 'bg-purple-50 text-purple-700',
+    orange: 'bg-orange-50 text-orange-700', // Added for variety
 };
 
-export function AdminVerificationTable() {
+export function AdminVerificationTable({ verifications }: AdminVerificationTableProps) {
     return (
         <AdminSectionCard
             title="Credential Verifications"
@@ -18,17 +29,13 @@ export function AdminVerificationTable() {
                     <thead>
                         <tr className="bg-slate-50 text-xs tracking-wider text-slate-500 uppercase">
                             <th className="px-6 py-4 font-medium">User</th>
-                            <th className="px-6 py-4 font-medium">
-                                Document Type
-                            </th>
+                            <th className="px-6 py-4 font-medium">Document Type</th>
                             <th className="px-6 py-4 font-medium">Submitted</th>
-                            <th className="px-6 py-4 text-right font-medium">
-                                Action
-                            </th>
+                            <th className="px-6 py-4 text-right font-medium">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm">
-                        {verificationQueueItems.map((item) => (
+                        {verifications.map((item) => (
                             <tr
                                 key={item.id}
                                 className="transition-colors hover:bg-slate-50"
@@ -40,23 +47,21 @@ export function AdminVerificationTable() {
                                         </span>
                                         <div>
                                             <p className="font-medium text-[#35ADD5]">
-                                                {item.name}
+                                                {item.user_name}
                                             </p>
                                             <p className="text-xs text-slate-500">
-                                                {item.role}
+                                                {item.user_role}
                                             </p>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span
-                                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeToneClass[item.badgeTone]}`}
-                                    >
-                                        {item.documentType}
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeToneClass.blue}`}>
+                                        {item.document_type}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-xs text-slate-500">
-                                    {item.submitted}
+                                    {item.submitted_at}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <button
@@ -68,6 +73,13 @@ export function AdminVerificationTable() {
                                 </td>
                             </tr>
                         ))}
+                        {verifications.length === 0 && (
+                            <tr>
+                                <td colSpan={4} className="px-6 py-4 text-center text-slate-500">
+                                    No pending verifications found.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

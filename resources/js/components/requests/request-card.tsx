@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { User, Calendar, Clock, MessageSquare, Check, X, FileSignature, Download } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import type { CaptainRequestRecord } from './requests-data';
-import { selectDeckhand } from '../../routes/requests';
 
 const statusStyles: Record<CaptainRequestRecord['status'], string> = {
     pending: 'bg-[#111827] text-white',
@@ -29,32 +28,54 @@ interface RequestCardProps {
 export function RequestCard({ request, onSelectDeckhand, onSignDeckhandAgreement }: RequestCardProps) {
     const isPending = request.status === 'pending';
     const [isSubmitting, setIsSubmitting] = useState(false);
-    console.log('request', request);
-    
-    // Check if deckhand has accepted
-    const deckhandAccepted = request.deckhandInfo?.selectedDeckhand?.responseStatus === 'available';
-    console.log(deckhandAccepted,request?.deckhandInfo?.selectedDeckhand)
-    // Check if agreement exists and is signed
-    const deckhandAgreement = request?.agreements?.find(a => a.type === 'deckhand_hire');
-    const agreementSigned = deckhandAgreement?.downloadUrl ?? false;
-    console.log('deckhandAgreement', deckhandAgreement);
-    console.log('deckhandAccepted', deckhandAccepted);
-    console.log('agreementSigned', agreementSigned);
-    // Captain can only accept if deckhand accepted AND agreement is signed (or no deckhand required)
-    const canAcceptRequest = deckhandAccepted && agreementSigned
-    const crewRole=request.crewRole
-    const selectedDeckhand=request?.selectedDeckhand
-    function handleAccept() {
-        if(crewRole ==='captain' && !canAcceptRequest) return;
 
+    const crewRole = request.crewRole;
+
+    // ── Deckhand state flags ──────────────────────────────────────────────────
+    const hasSelectedDeckhand   = !!request.deckhandInfo?.selectedDeckhand;
+    const deckhandIsPending     = hasSelectedDeckhand &&
+                                  request.deckhandInfo?.selectedDeckhand?.responseStatus !== 'available';
+    const deckhandAccepted      = hasSelectedDeckhand &&
+                                  request.deckhandInfo?.selectedDeckhand?.responseStatus === 'available';
+    const selectedByMe          = request.deckhandInfo?.selectedDeckhand?.selectedByMe === true;
+    const deckhandHireFullySigned = request.deckhandInfo?.deckhandHireFullySigned === true;
+
+    // Agreement for THIS captain (only present when selectedByMe)
+    const deckhandAgreement = request.agreements?.find(a => a.type === 'deckhand_hire');
+
+    // ── State classification (captain only) ──────────────────────────────────
+    // State 1: isPending && !hasSelectedDeckhand
+    // State 2: isPending && hasSelectedDeckhand && deckhandIsPending
+    // State 3: deckhandAccepted && !deckhandHireFullySigned
+    // State 4: deckhandHireFullySigned
+
+    // ── Accept button disabled logic ─────────────────────────────────────────
+    const acceptDisabled =
+        !isPending ||
+        isSubmitting ||
+        (crewRole === 'captain' && !deckhandHireFullySigned);
+
+    // ── Accept tooltip ────────────────────────────────────────────────────────
+    const acceptTooltip = crewRole === 'captain'
+        ? !hasSelectedDeckhand
+            ? 'Please select a deckhand first'
+            : deckhandIsPending
+                ? 'Waiting for deckhand to accept'
+                : !deckhandHireFullySigned
+                    ? 'Please sign the deckhand agreement first'
+                    : ''
+        : '';
+
+    // ── Handlers ─────────────────────────────────────────────────────────────
+    function handleAccept() {
+        if (acceptDisabled) return;
         setIsSubmitting(true);
         router.patch(`/requests/${request.id}/respond`, { response: 'available' }, {
             preserveScroll: true,
             onFinish: () => setIsSubmitting(false),
         });
     }
-    console.log(deckhandAccepted,agreementSigned,crewRole)
-console.log(deckhandAccepted && (agreementSigned == false) && crewRole == "captain");
+
     function handleDecline() {
         setIsSubmitting(true);
         router.patch(`/requests/${request.id}/respond`, { response: 'unavailable' }, {
@@ -70,18 +91,16 @@ console.log(deckhandAccepted && (agreementSigned == false) && crewRole == "capta
     }
 
     const fallbackImage = '/images/home/about3.jpg';
-const requestButtonDisabledForCaptian = crewRole === "captain" && !canAcceptRequest;
-const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.status === 'available' || request.status === 'unavailable');
-  console.log('requestButtonDisabledForCaptian', requestButtonDisabledForCaptian);
-    console.log('requestButtonDisabledForDeckhand', requestButtonDisabledForDeckhand );
+
     return (
         <article className="rounded-xl border border-[#eef2f6] bg-white p-6 shadow-sm">
+            {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-4">
-                    <img 
-                        src={request.image ?? fallbackImage} 
-                        alt={request.yachtName} 
-                        className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover" 
+                    <img
+                        src={request.image ?? fallbackImage}
+                        alt={request.yachtName}
+                        className="h-16 w-16 shrink-0 rounded-lg border border-[#f3f4f6] object-cover"
                     />
                     <div>
                         <a
@@ -105,6 +124,7 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                 </span>
             </header>
 
+            {/* ── Captain Info ───────────────────────────────────────────────── */}
             {request.captainInfo && (
                 <div className="mb-6 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-4">
                     <div className="flex items-center justify-between">
@@ -121,7 +141,7 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                                 </div>
                             )}
                             <div className="min-w-0 flex-1">
-                                <a 
+                                <a
                                     href={`/captains/${request.captainInfo.id}`}
                                     className="text-[15px] font-semibold text-[#111827] hover:text-[#35ADD5] hover:underline"
                                     onClick={(e) => {
@@ -146,6 +166,7 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                 </div>
             )}
 
+            {/* ── Trip Details ───────────────────────────────────────────────── */}
             <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
                 <div>
                     <div className="mb-1 flex items-center gap-1.5">
@@ -167,12 +188,13 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                 </div>
             </div>
 
+            {/* ── Special Notes ──────────────────────────────────────────────── */}
             <section className="mb-6">
                 <p className="mb-1 text-[12px] font-medium text-[#6b7280]">Special Notes</p>
                 <p className="text-[14px] text-[#1f2937]">{request.specialNotes || '—'}</p>
             </section>
 
-            {/* Deckhand Status Section */}
+            {/* ── Deckhand Status Section ────────────────────────────────────── */}
             {request.deckhandInfo?.mustSelectDeckhand && (
                 <section className="mb-6 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-4">
                     <div className="flex items-center justify-between">
@@ -180,14 +202,14 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                             <p className="text-[14px] font-semibold text-[#111827]">Deckhand Status</p>
                             {request.deckhandInfo.selectedDeckhand ? (
                                 <p className="text-[13px] text-[#6b7280]">
-                                    {request.deckhandInfo.selectedDeckhand.name} - 
+                                    {request.deckhandInfo.selectedDeckhand.name} -
                                     <span className={`ml-2 font-medium ${
-                                        request.deckhandInfo.selectedDeckhand.responseStatus === 'available' 
-                                            ? 'text-green-600' 
+                                        request.deckhandInfo.selectedDeckhand.responseStatus === 'available'
+                                            ? 'text-green-600'
                                             : 'text-gray-600'
                                     }`}>
-                                        {request.deckhandInfo.selectedDeckhand.responseStatus === 'available' 
-                                            ? 'Accepted' 
+                                        {request.deckhandInfo.selectedDeckhand.responseStatus === 'available'
+                                            ? 'Accepted'
                                             : 'Pending'}
                                     </span>
                                 </p>
@@ -195,12 +217,12 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                                 <p className="text-[13px] text-[#6b7280]">No deckhand selected</p>
                             )}
                         </div>
-                        {deckhandAccepted && !agreementSigned && (
+                        {deckhandAccepted && !deckhandHireFullySigned && (
                             <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-[11px] font-medium text-yellow-800">
                                 Agreement Required
                             </span>
                         )}
-                        {agreementSigned && (
+                        {deckhandHireFullySigned && (
                             <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-[11px] font-medium text-green-800">
                                 Agreement Signed
                             </span>
@@ -209,100 +231,120 @@ const requestButtonDisabledForDeckhand = crewRole === "deckhand" && (request.sta
                 </section>
             )}
 
-            <footer className="flex flex-wrap items-center gap-4">
-                {/* Select Deckhand Button */}
-                {/* Shows if pending, user is captain, and NO deckhand is selected yet */}
-                {isPending && crewRole === "captain" && !request.deckhandInfo?.selectedDeckhand && (
-                    <button
-                        type="button"
-                        onClick={() => onSelectDeckhand?.(request.id, request.charterEventId)}
-                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
-                    >
-                        <User className="h-4 w-4" />
-                        Select Deckhand
-                    </button>
-                )}
+            {/* ── Footer ─────────────────────────────────────────────────────── */}
+            <footer className="flex flex-col gap-3">
 
-                {/* Sign Agreement Button */}
-                {/* Shows ONLY for the captain who selected the deckhand, if agreement exists but is not fully signed */}
-                {crewRole === "captain" && 
-                 request.deckhandInfo?.selectedDeckhand?.selectedByMe && 
-                 request.deckhandInfo?.selectedDeckhand?.responseStatus === 'available' &&
-                 deckhandAgreement && 
-                 !deckhandAgreement.isFullySigned && (
-                    <button
-                        type="button"
-                        onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
-                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
-                    >
-                        <FileSignature className="h-4 w-4" />
-                        Sign Agreement
-                    </button>
-                )}
-     
-                {/* Download Agreement Button */}
-                {/* Shows if agreement is fully signed */}
-                {deckhandAgreement?.isFullySigned && (
-                    <a
-                        href={deckhandAgreement.downloadUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
-                    >
-                        <Download className="h-4 w-4" />
-                        Download Agreement
-                    </a>
-                )}
-
-                {/* Accept Request Button */}
-                {/* Logic: 
-                    1. If Captain: Must have selected deckhand, deckhand must accept, agreement must be signed (if selected by me).
-                    2. If Deckhand: Can accept if status is pending.
+                {/*
+                  State 2 guidance message:
+                  Captain has sent deckhand invite but deckhand hasn't accepted yet.
                 */}
-                <button
-                    type="button"
-                    disabled={
-                        crewRole === "captain" 
-                            ? (!request.deckhandInfo?.selectedDeckhand || // No deckhand selected
-                               request.deckhandInfo.selectedDeckhand.responseStatus !== 'available' || // Deckhand hasn't accepted
-                               (request.deckhandInfo.selectedDeckhand.selectedByMe && !deckhandAgreement?.isFullySigned)) // Selected by me but agreement not signed
-                            : (request.status !== 'pending') // Deckhand can only accept if pending
-                    }
-                    onClick={handleAccept}
-                    className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors ${
-                        (crewRole === "captain" && 
-                         (!request.deckhandInfo?.selectedDeckhand || 
-                          request.deckhandInfo.selectedDeckhand.responseStatus !== 'available' || 
-                          (request.deckhandInfo.selectedDeckhand.selectedByMe && !deckhandAgreement?.isFullySigned))) || 
-                        (crewRole === "deckhand" && request.status !== 'pending')
-                            ? 'cursor-not-allowed bg-gray-400 opacity-60' 
-                            : 'bg-[#111827] hover:bg-[#1f2937]'
-                    }`}
-                    title={
-                        crewRole === "captain"
-                            ? !request.deckhandInfo?.selectedDeckhand
-                                ? 'Please select a deckhand first'
-                                : request.deckhandInfo.selectedDeckhand.responseStatus !== 'available'
-                                    ? 'Waiting for deckhand to accept'
-                                    : !deckhandAgreement?.isFullySigned
-                                        ? 'Please sign the agreement'
-                                        : ''
-                            : ''
-                    }
-                >
-                    <Check className="h-4 w-4" />
-                    Accept Request
-                </button>
+                {isPending && crewRole === 'captain' && deckhandIsPending && (
+                    <p className="rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-[13px] text-yellow-700">
+                        Your deckhand invitation is pending. You can accept this charter once the deckhand confirms.
+                    </p>
+                )}
 
-                <button
-                    type="button"
-                    disabled={!isPending || isSubmitting}
-                    onClick={handleDecline}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    <X className="h-4 w-4" />
-                    Decline
-                </button>
+                <div className="flex flex-wrap items-center gap-4">
+
+                    {/*
+                      Select Deckhand Button — captain only, States 1 & 2.
+                      State 1 (!hasSelectedDeckhand)  → enabled
+                      State 2 (deckhandIsPending)      → disabled
+                      Hidden once deckhand has accepted (States 3 & 4).
+                    */}
+                    {isPending && crewRole === 'captain' && !deckhandAccepted && (
+                        <button
+                            type="button"
+                            disabled={hasSelectedDeckhand}
+                            onClick={() => {
+                                if (!hasSelectedDeckhand) {
+                                    onSelectDeckhand?.(request.id, request.charterEventId as string);
+                                }
+                            }}
+                            title={deckhandIsPending ? 'Deckhand invitation already sent' : 'Select a deckhand for this charter'}
+                            className={`inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors ${
+                                hasSelectedDeckhand
+                                    ? 'cursor-not-allowed bg-gray-400 opacity-60'
+                                    : 'cursor-pointer bg-[#35ADD5] hover:bg-[#2a8fb0]'
+                            }`}
+                        >
+                            <User className="h-4 w-4" />
+                            Select Deckhand
+                        </button>
+                    )}
+
+                    {/*
+                      Sign Agreement Button — State 3, only for THIS captain (selectedByMe).
+                      Shows when: deckhand accepted + agreement not yet fully signed + I selected them.
+                    */}
+                    {crewRole === 'captain' &&
+                     deckhandAccepted &&
+                     selectedByMe &&
+                     !deckhandHireFullySigned &&
+                     deckhandAgreement &&
+                     !deckhandAgreement.isFullySigned && (
+                        <button
+                            type="button"
+                            onClick={() => onSignDeckhandAgreement?.(deckhandAgreement.id)}
+                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#35ADD5] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#2a8fb0]"
+                        >
+                            <FileSignature className="h-4 w-4" />
+                            Sign Agreement
+                        </button>
+                    )}
+
+                    {/*
+                      Download Agreement Button — State 4, only for THIS captain.
+                      Shows when: agreement is fully signed.
+                    */}
+                    {crewRole === 'captain' &&
+                     deckhandHireFullySigned &&
+                     deckhandAgreement?.isFullySigned && (
+                        <a
+                            href={deckhandAgreement.downloadUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-[#14532d] px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-[#166534]"
+                        >
+                            <Download className="h-4 w-4" />
+                            Download Agreement
+                        </a>
+                    )}
+
+                    {/*
+                      Accept Request Button.
+                      Captain  → enabled only in State 4 (deckhandHireFullySigned).
+                      Deckhand → enabled only when status is 'pending'.
+                    */}
+                    <button
+                        type="button"
+                        disabled={acceptDisabled}
+                        onClick={handleAccept}
+                        title={acceptTooltip}
+                        className={`inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-[13px] font-medium text-white shadow-sm transition-colors ${
+                            acceptDisabled
+                                ? 'cursor-not-allowed bg-gray-400 opacity-60'
+                                : 'cursor-pointer bg-[#111827] hover:bg-[#1f2937]'
+                        }`}
+                    >
+                        <Check className="h-4 w-4" />
+                        Accept Request
+                    </button>
+
+                    {/*
+                      Decline Button — enabled only while request is pending.
+                    */}
+                    <button
+                        type="button"
+                        disabled={!isPending || isSubmitting}
+                        onClick={handleDecline}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-5 py-2.5 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <X className="h-4 w-4" />
+                        Decline
+                    </button>
+
+                </div>
             </footer>
         </article>
     );

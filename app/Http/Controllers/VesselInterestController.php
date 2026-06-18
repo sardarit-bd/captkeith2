@@ -50,11 +50,11 @@ public function store(Request $request, Vessel $vessel): RedirectResponse
         }
 
     
-        $vessel->loadMissing('owner.user');
+        $vessel->loadMissing('ownerProfile.user');
 
   
-        if ($vessel->owner && $vessel->owner->user) {
-            $vessel->owner->user->notify(new VesselInterestNotification(
+        if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
+            $vessel->ownerProfile->user->notify(new VesselInterestNotification(
                 $vessel,
                 $user,
                 $role

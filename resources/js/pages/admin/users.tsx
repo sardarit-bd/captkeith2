@@ -1,21 +1,20 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import { AdminUsersTable } from '@/components/admin-users/admin-users-table';
-import { AdminUsersFilters } from '@/components/admin-users/admin-users-filters';
+import { AdminUsersTable } from '@/components/admin/admin-users-table';
+import { AdminUsersFilters } from '@/components/admin/admin-users-filters';
 import { PageProps } from '@/types';
 import { useState, useEffect } from 'react';
 
-// Define expected shape from backend
 interface UsersPageProps extends PageProps {
-    userData?: {
+    userData: {
         users: any[];
         total: number;
-        filters?: {
+        filters: {
             roles: string[];
             statuses: string[];
         };
     };
-    filters?: {
+    filters: {
         search?: string;
         role?: string;
         status?: string;
@@ -23,12 +22,11 @@ interface UsersPageProps extends PageProps {
 }
 
 export default function UsersPage({ userData, filters }: UsersPageProps) {
-    const [search, setSearch] = useState(filters?.search || '');
-    const [role, setRole] = useState(filters?.role || 'all');
-    const [status, setStatus] = useState(filters?.status || 'all');
+    const [search, setSearch] = useState(filters.search || '');
+    const [role, setRole] = useState(filters.role || 'all');
+    const [status, setStatus] = useState(filters.status || 'all');
     const [perPage, setPerPage] = useState(10);
 
-    // Debounced search/filter handler
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             router.get(route('admin.users.index'), 
@@ -40,15 +38,9 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
         return () => clearTimeout(delayDebounce);
     }, [search, role, status, perPage]);
 
-    // Safe fallbacks if backend isn't ready yet
-    const users = userData?.users ?? [];
-    const total = userData?.total ?? 0;
-    const availableRoles = userData?.filters?.roles ?? ['Captain', 'Owner', 'Deckhand', 'Charterer'];
-    const availableStatuses = userData?.filters?.statuses ?? ['Active', 'Verified', 'Pending Review', 'Suspended'];
-
     return (
         <AppLayout>
-            {/* <Head title="Users Directory" /> */}
+            <Head title="Users Directory" />
             <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                     <div className="mx-auto w-full max-w-7xl space-y-6 py-6">
@@ -60,7 +52,7 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
                             </p>
                         </div> */}
 
-                        {/* Dynamic Filters */}
+                        {/* Filters */}
                         <AdminUsersFilters
                             search={search}
                             onSearchChange={setSearch}
@@ -68,15 +60,15 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
                             onRoleChange={setRole}
                             status={status}
                             onStatusChange={setStatus}
-                            roles={availableRoles}
-                            statuses={availableStatuses}
-                            total={total}
+                            roles={userData.filters.roles}
+                            statuses={userData.filters.statuses}
+                            total={userData.total}
                         />
 
                         {/* Table */}
                         <AdminUsersTable 
-                            users={users} 
-                            total={total}
+                            users={userData.users} 
+                            total={userData.total}
                             perPage={perPage}
                             onPerPageChange={setPerPage}
                         />
@@ -87,17 +79,16 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
     );
 }
 
-
-// UsersPage.layout = {
-//     breadcrumbs: [
-//         {
-//             title: 'Vessel Inventory',
-//             href: UsersPage(),
-//         },
-//     ],
-//     pageHeader: {
-//         title: 'Vessel Inventory',
-//         description:
-//             'Manage fleet, oversee demise compliance, and approve listings.',
-//     },
-// };
+VesselInventoryPage.layout = {
+    breadcrumbs: [
+        {
+            title: 'Vessel Inventory',
+            href: vesselInventory(),
+        },
+    ],
+    pageHeader: {
+        title: 'Vessel Inventory',
+        description:
+            'Manage fleet, oversee demise compliance, and approve listings.',
+    },
+};

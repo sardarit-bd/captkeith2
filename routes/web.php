@@ -111,8 +111,9 @@
             });
 
             Route::middleware('role:admin')->group(function () {
+                Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
                 Route::inertia('admin/users', 'admin-users')->name('admin-users');
-                Route::inertia('admin/vessel-inventory', 'vessel-inventory')->name('vessel-inventory');
+                Route::get('admin/vessel-inventory', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'index'])->name('vessel-inventory');
                 Route::inertia('admin/compliance-log', 'compliance-log')->name('compliance-log');
                 Route::inertia('admin/platform-settings', 'platform-settings')->name('platform-settings');
                 Route::inertia('admin/my-profile', 'admin/my-profile')->name('admin-my-profile');

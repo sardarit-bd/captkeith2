@@ -60,8 +60,8 @@ class RequestsController extends Controller
                             ->whereIn('response', ['pending', 'available'])
                             ->with('deckhandProfile')
                             ->first();
-
-                        $thisCaptainSelected = $selectedDeckhandResponse !== null;
+                        // dd($selectedDeckhandResponse);
+                        $isMySelection = $selectedDeckhandResponse && $selectedDeckhandResponse->selected_by_captain_id === $profile->id;
 
                         $approvedInvitations = \App\Models\OwnerDeckhandInvitation::where('vessel_id', $vessel?->id)
                             ->where('status', 'accepted') 
@@ -102,16 +102,20 @@ class RequestsController extends Controller
 
                         $mustSelectDeckhand = empty($hiredDeckhandIds);
 
-                        $deckhandInfo = [
+                            $deckhandInfo = [
                             'selectedDeckhand'      => $selectedDeckhandResponse ? [
                                 'id'             => $selectedDeckhandResponse->deckhandProfile?->id,
                                 'name'           => $selectedDeckhandResponse->deckhandProfile?->full_name ?? '—',
                                 'responseStatus' => $selectedDeckhandResponse->response,
-                                'selectedByMe'   => true, 
+                                'selectedByMe'   => $isMySelection, 
                             ] : null,
                             'availableDeckhands'    => $availableDeckhands,
                             'mustSelectDeckhand'    => $mustSelectDeckhand,
                             'hasQualifiedDeckhands' => count($availableDeckhands) > 0,
+                            'deckhandHireFullySigned' => \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
+                                ->where('agreement_type', 'deckhand_hire')
+                                ->whereNotNull('fully_signed_at')
+                                ->exists(),
                         ];
 
 

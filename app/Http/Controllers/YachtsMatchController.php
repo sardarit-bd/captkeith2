@@ -31,10 +31,11 @@ class YachtsMatchController extends Controller
         }
 
         $query = Vessel::query()
-            ->with([
-                'photos' => fn($q) => $q->orderBy('display_order'),
-                'owner',
-            ])
+                ->with([
+                    'photos' => fn($q) => $q->orderBy('display_order'),
+                    'ownerProfile',
+                ])
+
             ->where('is_active', true)
             ->whereNull('deleted_at');
 
@@ -140,7 +141,7 @@ class YachtsMatchController extends Controller
                     'image'                 => $photo?->image_path
                         ? Storage::url($photo->image_path)
                         : null,
-                    'ownerUserId'           => $vessel->owner?->user_id,
+                    'ownerUserId' => $vessel->ownerProfile?->user_id,
                     'interestStatus'        => $interestStatuses[$vessel->id] ?? null, 
                     'ownerInvitationStatus' => $ownerInvitationStatuses[$vessel->id] ?? null,
                 ];

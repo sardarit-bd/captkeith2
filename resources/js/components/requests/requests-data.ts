@@ -44,7 +44,7 @@ export interface CaptainRequestRecord {
     ownerUserId?: string;
     captainInfo?: CaptainInfo;
     crewRole:string;
-    selectedDeckhand: boolean; 
+    selectedDeckhand: any[]; 
     deckhandInfo?: {
         selectedDeckhand?: {
             name: string;
@@ -54,6 +54,8 @@ export interface CaptainRequestRecord {
         availableDeckhands?: any[];
         mustSelectDeckhand?: boolean;
         hasQualifiedDeckhands?: boolean;
+        deckhandHireFullySigned?: boolean;
+    
     agreements?: Agreement[];
     };
 }

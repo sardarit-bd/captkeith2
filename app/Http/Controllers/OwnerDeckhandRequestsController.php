@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DeckhandProfile;
 use App\Models\OwnerDeckhandInvitation;
 use App\Models\OwnerProfile;
+use App\Notifications\OwnerDeckhandResponseNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -95,7 +96,12 @@ class OwnerDeckhandRequestsController extends Controller
         abort_if(! $ownsVessel, 403, 'You do not own this vessel.');
 
         $interest->update(['status' => $validated['status']]);
+        $interest->load('vessel');
+        $deckhandUser = $interest->deckhand?->user;
 
+        if ($deckhandUser) {
+            $deckhandUser->notify(new OwnerDeckhandResponseNotification($interest));
+        }
         $message = $validated['status'] === 'accepted'
             ? 'Deckhand request accepted.'
             : 'Deckhand request declined.';
