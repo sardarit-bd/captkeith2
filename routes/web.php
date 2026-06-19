@@ -25,6 +25,42 @@
                 Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
             });
 
+                // Captain and Deckhand approval routes
+                Route::middleware(['auth', 'verified'])->group(function () {
+                    // Captain approval
+                    // Route::put('/admin/captains/{captain}/approve', [CaptainController::class, 'approve'])
+                    //     ->name('admin.captains.approve')
+                    //     ->middleware('can:admin');
+                    
+                    // Route::put('/admin/captains/{captain}/reject', [CaptainController::class, 'reject'])
+                    //     ->name('admin.captains.reject')
+                    //     ->middleware('can:admin');
+                    
+
+                    
+                    // Deckhand approval
+                    // Route::put('/admin/deckhands/{deckhand}/approve', [DeckhandController::class, 'approve'])
+                    //     ->name('admin.deckhands.approve')
+                    //     ->middleware('can:admin');
+                    
+                    // Route::put('/admin/deckhands/{deckhand}/reject', [DeckhandController::class, 'reject'])
+                    //     ->name('admin.deckhands.reject')
+                    //     ->middleware('can:admin');
+                    
+
+                    
+                    // Vessel approval
+                    // Route::put('/admin/vessels/{vessel}/approve', [VesselInventoryController::class, 'approve'])
+                    //     ->name('admin.vessels.approve')
+                    //     ->middleware('can:admin');
+                    
+                    // Route::put('/admin/vessels/{vessel}/reject', [VesselInventoryController::class, 'reject'])
+                    //     ->name('admin.vessels.reject')
+                    //     ->middleware('can:admin');
+                    
+
+                });
+
             Route::get('/notifications', function () {
                 return Inertia::render('notifications', [
                     'notifications' => auth()->user()
@@ -48,6 +84,12 @@
             });
 
 
+            Route::middleware(['auth', 'role:admin'])->group(function () {
+                Route::patch('/vessels/{vessel}/approve', [VesselController::class, 'approve'])
+                    ->name('admin.vessels.approve');
+                Route::patch('/vessels/{vessel}/reject', [VesselController::class, 'reject'])
+                    ->name('admin.vessels.reject');
+            });
             Route::middleware('role:owner')->group(function () {
                 Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
                 Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
@@ -112,11 +154,37 @@
 
             Route::middleware('role:admin')->group(function () {
                 Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
-                Route::inertia('admin/users', 'admin-users')->name('admin-users');
+                Route::get('admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users');
                 Route::get('admin/vessel-inventory', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'index'])->name('vessel-inventory');
                 Route::inertia('admin/compliance-log', 'compliance-log')->name('compliance-log');
                 Route::inertia('admin/platform-settings', 'platform-settings')->name('platform-settings');
                 Route::inertia('admin/my-profile', 'admin/my-profile')->name('admin-my-profile');
+                Route::get('/admin/verifications', [\App\Http\Controllers\AdminDashboardController::class, 'verifications'])->name('admin.verifications');
+                // Captain profile view route
+                Route::get('/admin/captains/{captain}/profile', [\App\Http\Controllers\CaptainController::class, 'showProfile'])
+                    ->name('admin.captains.profile')
+                    ->middleware('can:admin');
+
+                // Deckhand profile view route
+                Route::get('/admin/deckhands/{deckhand}/profile', [\App\Http\Controllers\DeckhandController::class, 'showProfile'])
+                    ->name('admin.deckhands.profile')
+                    ->middleware('can:admin');
+                // Approval routes
+                Route::patch('admin/vessels/{vessel}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveVessel'])->name('admin.vessels.approve');
+                Route::patch('admin/vessels/{vessel}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectVessel'])->name('admin.vessels.reject');
+                Route::patch('admin/captains/{captain}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveCaptain'])->name('admin.captains.approve');
+                Route::patch('admin/captains/{captain}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectCaptain'])->name('admin.captains.reject');
+                Route::patch('admin/deckhands/{deckhand}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveDeckhand'])->name('admin.deckhands.approve');
+                Route::patch('admin/deckhands/{deckhand}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectDeckhand'])->name('admin.deckhands.reject');
+                Route::get('/admin/vessels/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'show'])
+                        ->name('admin.vessels.show')
+                        ->middleware('can:admin');
+                Route::get('/admin/deckhands/{deckhand}', [\App\Http\Controllers\DeckhandController::class, 'show'])
+                        ->name('admin.deckhands.show')
+                        ->middleware('can:admin');
+                Route::get('/admin/captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])
+                        ->name('admin.captains.show')
+                        ->middleware('can:admin');
             });
 
             Route::middleware('role:owner|captain|deckhand')->group(function () {
@@ -188,8 +256,8 @@
                 Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
                 Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
                 // Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
-                Route::get('charterer/agreement/{agreementId}/download', [CharterController::class, 'downloadAgreement'])
-    ->name('charterer.agreement.download');
+                Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])
+                ->name('charterer.agreement.download');
                 Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
                 Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
                 Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');

@@ -43,4 +43,26 @@ class VesselInventoryController extends Controller
             'filters' => $request->only(['search', 'type', 'status']),
         ]);
     }
+        public function show(Vessel $vessel)
+    {
+        $vessel->load(['ownerProfile.user', 'photos']);
+        
+        return Inertia::render('admin/vessels/show', [
+            'vessel' => $vessel,
+        ]);
+    }
+
+    public function approve(Vessel $vessel)
+    {
+        $vessel->update(['status' => 'approved']);
+        
+        return back()->with('success', 'Vessel approved successfully');
+    }
+
+    public function reject(Vessel $vessel)
+    {
+        $vessel->update(['status' => 'rejected']);
+        
+        return back()->with('success', 'Vessel rejected');
+    }
 }

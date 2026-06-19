@@ -20,36 +20,32 @@ interface Vessel {
     };
 }
 
-interface Props {
-    vessels?: {
-        data: Vessel[];
-        meta: {
-            from: number;
-            to: number;
-            total: number;
-            per_page: number;
-            current_page: number;
-            last_page: number;
-        };
-        links: {
-            prev: string | null;
-            next: string | null;
-        };
+// Laravel's default LengthAwarePaginator serialization is flat, not nested
+interface VesselPaginator {
+    data: Vessel[];
+    current_page: number;
+    first_page_url: string;
+    from: number | null;
+    last_page: number;
+    last_page_url: string;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number | null;
+    total: number;
+}
+
+interface AdminVesselsTableProps {
+    vessels: VesselPaginator;
+    filters: {
+        search?: string;
+        type?: string;
+        status?: string;
     };
 }
 
-export function VesselInventoryTable({ vessels }: Props) {
-    // Defensive check: if vessels is undefined, show empty state
-    if (!vessels || !vessels.data) {
-        return (
-            <section className="overflow-hidden rounded-2xl border border-[#e6ebf1] bg-white shadow-sm">
-                <div className="px-6 py-12 text-center text-slate-500">
-                    Loading vessel data...
-                </div>
-            </section>
-        );
-    }
-
+export default function VesselInventoryTable({ vessels, filters }: AdminVesselsTableProps) {
     const handlePageChange = (url: string | null) => {
         if (url) router.get(url, {}, { preserveState: true, preserveScroll: true });
     };
@@ -57,7 +53,7 @@ export function VesselInventoryTable({ vessels }: Props) {
     return (
         <section className="overflow-hidden rounded-2xl border border-[#e6ebf1] bg-white shadow-sm">
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[980px] border-collapse text-left">
+                <table className="w-full min-w-245 border-collapse text-left">
                     <thead>
                         <tr className="border-b border-[#e6ebf1] bg-slate-50 text-xs tracking-wider text-slate-500 uppercase">
                             <th className="px-6 py-4 font-medium">Vessel Profile</th>
@@ -85,18 +81,20 @@ export function VesselInventoryTable({ vessels }: Props) {
 
             <footer className="flex flex-col items-center justify-between gap-4 border-t border-[#e6ebf1] bg-slate-50 px-4 py-4 sm:flex-row sm:px-6">
                 <p className="text-xs text-slate-500">
-                    Showing <span className="font-medium text-slate-800">{vessels.meta.from}</span>{' '}
-                    to <span className="font-medium text-slate-800">{vessels.meta.to}</span> of{' '}
-                    <span className="font-medium text-slate-800">{vessels.meta.total}</span>{' '}
+                    {/* FIX: Access from, to, and total directly on the vessels object */}
+                    Showing <span className="font-medium text-slate-800">{vessels.from ?? 0}</span>{' '}
+                    to <span className="font-medium text-slate-800">{vessels.to ?? 0}</span> of{' '}
+                    <span className="font-medium text-slate-800">{vessels.total}</span>{' '}
                     vessels
                 </p>
                 <div className="flex w-full items-center justify-between gap-2 text-sm sm:w-auto sm:justify-end">
+                    {/* FIX: Access prev_page_url and next_page_url directly */}
                     <button
                         type="button"
-                        disabled={!vessels.links.prev}
-                        onClick={() => handlePageChange(vessels.links.prev)}
+                        disabled={!vessels.prev_page_url}
+                        onClick={() => handlePageChange(vessels.prev_page_url)}
                         className={`rounded-lg border px-3 py-1.5 transition-colors ${
-                            !vessels.links.prev
+                            !vessels.prev_page_url
                                 ? 'cursor-not-allowed border-slate-200 bg-white text-slate-400'
                                 : 'border-[#e6ebf1] bg-white font-medium text-[#35ADD5] hover:bg-slate-100'
                         }`}
@@ -105,10 +103,10 @@ export function VesselInventoryTable({ vessels }: Props) {
                     </button>
                     <button
                         type="button"
-                        disabled={!vessels.links.next}
-                        onClick={() => handlePageChange(vessels.links.next)}
+                        disabled={!vessels.next_page_url}
+                        onClick={() => handlePageChange(vessels.next_page_url)}
                         className={`rounded-lg border px-3 py-1.5 transition-colors ${
-                            !vessels.links.next
+                            !vessels.next_page_url
                                 ? 'cursor-not-allowed border-slate-200 bg-white text-slate-400'
                                 : 'border-[#e6ebf1] bg-white font-medium text-[#35ADD5] hover:bg-slate-100'
                         }`}

@@ -1,5 +1,5 @@
 import { VesselInventoryFilters } from './vessel-inventory-filters';
-import { VesselInventoryTable } from './vessel-inventory-table';
+import VesselInventoryTable from './vessel-inventory-table';
 
 interface Props {
     vessels: any;
@@ -12,7 +12,8 @@ export function VesselInventoryPageContent({ vessels, initialFilters }: Props) {
             <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                 <div className="mx-auto w-full py-4">
                     <VesselInventoryFilters initialFilters={initialFilters} />
-                    <VesselInventoryTable vessels={vessels} />
+                    {/* Changed filters={filters} to filters={initialFilters} */}
+                    <VesselInventoryTable vessels={vessels} filters={initialFilters} />
                 </div>
             </div>
         </div>

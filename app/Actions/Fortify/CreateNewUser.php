@@ -113,6 +113,7 @@ class CreateNewUser implements CreatesNewUsers
                     'tonnage_rating'      => 0,
                     'years_experience'    => 0,
                     'hourly_rate'         => 0,
+                    'status'              => 'pending',
                 ]),
                 'deckhand' => \App\Models\DeckhandProfile::create([
                     'user_id'             => $user->id,
@@ -125,6 +126,7 @@ class CreateNewUser implements CreatesNewUsers
                     'travel_radius_miles' => 0,
                     'years_experience'    => 0,
                     'hourly_rate'         => 0,
+                    'status'              => 'pending',
                 ]),
                 'owner' => \App\Models\OwnerProfile::create([
                     'user_id'   => $user->id,

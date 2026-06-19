@@ -16,6 +16,7 @@ class DeckhandController extends Controller
     public function index(Request $request): Response
     {
         $query = DeckhandProfile::query()
+            ->where('status', 'approved')
             ->whereNull('deleted_at')
             ->with('user');
 
@@ -109,6 +110,82 @@ class DeckhandController extends Controller
             'acceptedDeckhandIds'     => $acceptedDeckhandIds,
             'acceptedViaInterestIds'  => $acceptedViaInterestIds,
             'interestedDeckhandIds'   => $interestedDeckhandIds,
+        ]);
+    }
+
+
+
+        public function show(DeckhandProfile $deckhand)
+    {
+        $deckhand->load('user');
+        
+        return Inertia::render('admin/deckhands/show', [
+            'deckhand' => [
+                'id' => $deckhand->id,
+                'user_id' => $deckhand->user_id,
+                'full_name' => $deckhand->full_name,
+                'phone' => $deckhand->phone,
+                'email' => $deckhand->user->email,
+                'address' => $deckhand->address,
+                'city' => $deckhand->city,
+                'state' => $deckhand->state,
+                'zip_code' => $deckhand->zip_code,
+                'years_experience' => $deckhand->years_experience,
+                'hourly_rate' => $deckhand->hourly_rate,
+                'has_server_experience' => $deckhand->has_server_experience,
+                'has_bartending_experience' => $deckhand->has_bartending_experience,
+                'status' => $deckhand->status ?? 'pending',
+                'resume_path' => $deckhand->resume_path,
+                'photo_path' => $deckhand->photo_path,
+                'created_at' => $deckhand->created_at,
+                'updated_at' => $deckhand->updated_at,
+            ],
+        ]);
+    }
+
+    public function approve(DeckhandProfile $deckhand)
+    {
+        $deckhand->update(['status' => 'approved']);
+        
+        return back()->with('success', 'Deckhand approved successfully');
+    }
+
+    public function reject(DeckhandProfile $deckhand)
+    {
+        $deckhand->update(['status' => 'rejected']);
+        
+        return back()->with('success', 'Deckhand rejected');
+    }
+
+
+    public function showProfile(DeckhandProfile $deckhand)
+    {
+        $deckhand->load('user');
+        
+        return Inertia::render('admin/deckhands/[id]/profile', [
+            'deckhand' => [
+                'id' => $deckhand->id,
+                'user_id' => $deckhand->user_id,
+                'full_name' => $deckhand->full_name,
+                'email' => $deckhand->user?->email ?? 'No email',
+                'phone' => $deckhand->phone,
+                'address' => $deckhand->address,
+                'city' => $deckhand->city,
+                'state' => $deckhand->state,
+                'zip_code' => $deckhand->zip_code,
+                'years_experience' => $deckhand->years_experience,
+                'has_server_experience' => $deckhand->has_server_experience,
+                'has_bartending_experience' => $deckhand->has_bartending_experience,
+                'hourly_rate' => $deckhand->hourly_rate,
+                'status' => $deckhand->status,
+                'is_verified' => $deckhand->is_verified,
+                'created_at' => $deckhand->created_at,
+                'updated_at' => $deckhand->updated_at,
+                
+                // FIX: Use asset() to generate the full public URL for storage files
+                'resume_path' => $deckhand->resume_path ? asset('storage/' . $deckhand->resume_path) : null,
+                'photo_path' => $deckhand->photo_path ? asset('storage/' . $deckhand->photo_path) : null,
+            ],
         ]);
     }
 }

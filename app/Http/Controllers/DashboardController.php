@@ -16,7 +16,14 @@ class DashboardController extends Controller
         $user = $request->user();
         $dashboard = $dashboardResolver->resolve($user);
 
+        // 👇 PASTE IT RIGHT HERE 👇
+        // dd([
+        //     'component' => $dashboard->component,
+        //     'props_keys' => array_keys($dashboard->props),
+        //     'props' => $dashboard->props,
+        // ]);
+        // 👆 PASTE IT RIGHT HERE 👆
+
         return Inertia::render($dashboard->component, $dashboard->props);
     }
 }
-

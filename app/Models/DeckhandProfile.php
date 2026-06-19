@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'resume_path',
     'photo_path',
     'hourly_rate',
+    'status',
     'preferences',
 ])]
 class DeckhandProfile extends Model

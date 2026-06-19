@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import { AdminUsersTable } from '@/components/admin/admin-users-table';
-import { AdminUsersFilters } from '@/components/admin/admin-users-filters';
+import  AdminUsersTable  from '@/components/admin-users/admin-users-table';
+import AdminUsersFilters  from '@/components/admin-users/admin-users-filters';
 import { PageProps } from '@/types';
 import { useState, useEffect } from 'react';
 
@@ -26,7 +26,7 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
     const [role, setRole] = useState(filters.role || 'all');
     const [status, setStatus] = useState(filters.status || 'all');
     const [perPage, setPerPage] = useState(10);
-
+    console.log('userData:', userData);
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             router.get(route('admin.users.index'), 

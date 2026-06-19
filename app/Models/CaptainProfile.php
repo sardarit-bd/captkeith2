@@ -33,7 +33,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'can_provide_deckhand',
     'deckhand_hourly_rate',
     'photo_path',
-    'is_verified',
+   'is_verified',
+    'status',
     'preferences',
 ])]
 class CaptainProfile extends Model

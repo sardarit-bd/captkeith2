@@ -1,21 +1,22 @@
+import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { VesselInventoryPageContent } from '@/components/vessel-inventory/vessel-inventory-page-content';
 
 interface Props {
-    vessels: any; // Replace with proper type later
+    vessels: any; 
     filters: any;
 }
 
-export default function VesselInventoryPage({ vessels, filters }: Props) {
+export default function VesselInventory({ vessels, filters }: Props) {
     return (
-        <>
+        <AppLayout>
             <Head title="Vessel Inventory" />
             <VesselInventoryPageContent vessels={vessels} initialFilters={filters} />
-        </>
+        </AppLayout>
     );
 }
 
-VesselInventoryPage.layout = {
+VesselInventory.layout = {
     breadcrumbs: [{ title: 'Vessel Inventory', href: '/admin/vessel-inventory' }],
     pageHeader: {
         title: 'Vessel Inventory',

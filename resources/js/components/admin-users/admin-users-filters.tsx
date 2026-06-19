@@ -12,7 +12,7 @@ interface AdminUsersFiltersProps {
     total: number;
 }
 
-export function AdminUsersFilters({
+export default function AdminUsersFilters({
     search,
     onSearchChange,
     role,

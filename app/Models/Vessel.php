@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'required_tonnage_rating',
     'required_years_experience',
     'is_active',
+    'status',
 ])]
 class Vessel extends Model
 {

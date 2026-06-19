@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import { AdminUsersTable } from '@/components/admin-users/admin-users-table';
-import { AdminUsersFilters } from '@/components/admin-users/admin-users-filters';
+import AdminUsersFilters from "@/components/admin-users/admin-users-filters";
+import AdminUsersTable from "@/components/admin-users/admin-users-table";
 import { PageProps } from '@/types';
 import { useState, useEffect } from 'react';
 

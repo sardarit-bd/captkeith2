@@ -3,8 +3,10 @@ import { Head } from '@inertiajs/react';
 import { AdminDashboard } from '@/components/dashboard/admin/admin-dashboard';
 import { PageProps } from '@/types';
 
-// Define the shape of the data coming from the backend
 interface DashboardPageProps extends PageProps {
+    dashboard: {
+        role: string;
+    };
     dashboardData: {
         stats: Record<string, number>;
         pending_verifications: Array<any>;
@@ -13,12 +15,17 @@ interface DashboardPageProps extends PageProps {
     };
 }
 
-export default function Dashboard({ dashboardData }: DashboardPageProps) {
+export default function Dashboard(props: DashboardPageProps) {
+    // Debug: Check what we actually receive
+    console.log('Full props object:', props);
+    console.log('dashboardData:', props.dashboardData);
+    console.log('dashboard:', props.dashboard);
+    
     return (
         <AppLayout>
             <Head title="Admin Dashboard" />
-            {/* Pass the dynamic data here */}
-            <AdminDashboard data={dashboardData} />
+            <AdminDashboard data={props} />
+            
         </AppLayout>
     );
 }

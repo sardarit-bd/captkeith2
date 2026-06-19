@@ -3,22 +3,24 @@ import {AdminStatsCards} from './admin-stats-cards';
 import {AdminVerificationTable }from './admin-verification-table';
 import AdminVesselsTable from './admin-vessels-table';
 import { AdminComplianceLog } from './admin-compliance-log';
-
-interface AdminDashboardProps {
-    data?: { // Make data optional with '?'
+import { usePage } from '@inertiajs/react';
+interface dashboardDataType {
+    // dashboardData?: {
         stats: Record<string, number>;
         pending_verifications: Array<any>;
         pending_vessels: Array<any>;
         compliance_events: Array<any>;
-    };
+    // };
 }
 
-export function AdminDashboard({ data }: AdminDashboardProps) {
-    // Provide fallbacks to prevent "undefined" errors
-    const stats = data?.stats ?? {};
-    const verifications = data?.pending_verifications ?? [];
-    const vessels = data?.pending_vessels ?? [];
-    const events = data?.compliance_events ?? [];
+export function AdminDashboard() {
+          const data = usePage<{ }>()
+              .props;
+        const dashboardData : dashboardDataType = data.dashboardData;
+    const stats = dashboardData?dashboardData.stats : {}
+    const verifications = dashboardData?.pending_verifications ?? [];
+    const vessels = dashboardData?.pending_vessels ?? [];
+    const events = dashboardData?.compliance_events ?? [];
 
     return (
         <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">

@@ -46,6 +46,7 @@ class VesselController extends Controller
                 'required_years_experience' => $request->input('required_years_experience'),
                 'requires_deckhand' => $request->boolean('requires_deckhand'),
                 'is_active' => true,
+                'status'    => 'pending',
             ]);
 
             foreach ($request->file('photos', []) as $order => $photo) {
@@ -64,8 +65,9 @@ class VesselController extends Controller
         });
 
         if ($vessel) {
+            // Notify the owner that their vessel has been submitted and is awaiting admin approval.
+            // Vessel matching runs only after admin approves the vessel.
             $owner->user->notify(new YachtListedNotification($vessel));
-            (new VesselMatchingService())->matchForVessel($vessel);
         }
 
         return redirect()

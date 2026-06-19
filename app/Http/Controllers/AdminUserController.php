@@ -11,6 +11,8 @@ class AdminUserController extends Controller
 {
     public function index(Request $request, UserManagementService $service): Response
     {
+        // $userData= $service->getUsers($request->only(['search', 'role', 'status', 'per_page']));
+    // dd($userData);
         return Inertia::render('admin/users', [
             'userData' => $service->getUsers($request->only(['search', 'role', 'status', 'per_page'])),
             'filters' => $request->only(['search', 'role', 'status']),

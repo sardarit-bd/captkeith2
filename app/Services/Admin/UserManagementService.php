@@ -42,7 +42,7 @@ class UserManagementService
                 'initials' => strtoupper(substr($user->name, 0, 2)),
                 'role' => $this->getPrimaryRole($user),
                 'status' => $user->status ?? 'active',
-                'key_details' => $this->getKeyDetails($user),
+                // 'key_details' => $this->getKeyDetails($user),
                 'joined' => $user->created_at->format('M d, Y'),
             ]);
 

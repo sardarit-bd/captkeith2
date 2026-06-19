@@ -31,7 +31,7 @@ const statusColors: Record<string, string> = {
     Suspended: 'text-red-600',
 };
 
-export function AdminUsersTable({ users, total, perPage, onPerPageChange }: AdminUsersTableProps) {
+export default function AdminUsersTable({ users, total, perPage, onPerPageChange }: AdminUsersTableProps) {
     return (
         <div className="rounded-2xl border border-[#e6ebf1] bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
