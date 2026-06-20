@@ -186,4 +186,51 @@ public function index()
         ]);
         return redirect()->back()->with('success', 'Vessel has been approved successfully.');
     }
+
+
+
+    public function rejectVessel($vesselId)
+    {
+        $vessel = Vessel::findOrFail($vesselId);
+        $vessel->update([
+            'status' => 'rejected',
+        ]);
+        return redirect()->back()->with('success', 'Vessel has been rejected.');
+    }
+
+    public function approveCaptain($captainId)
+    {
+        $captain = CaptainProfile::findOrFail($captainId);
+        $captain->update([
+            'status' => 'approved',
+        ]);
+        return redirect()->back()->with('success', 'Captain has been approved successfully.');
+    }
+
+    public function rejectCaptain($captainId)
+    {
+        $captain = CaptainProfile::findOrFail($captainId);
+        $captain->update([
+            'status' => 'rejected',
+        ]);
+        return redirect()->back()->with('success', 'Captain has been rejected.');
+    }
+
+    public function approveDeckhand($deckhandId)
+    {
+        $deckhand = DeckhandProfile::findOrFail($deckhandId);
+        $deckhand->update([
+            'status' => 'approved',
+        ]);
+        return redirect()->back()->with('success', 'Deckhand has been approved successfully.');
+    }
+
+    public function rejectDeckhand($deckhandId)
+    {
+        $deckhand = DeckhandProfile::findOrFail($deckhandId);
+        $deckhand->update([
+            'status' => 'rejected',
+        ]);
+        return redirect()->back()->with('success', 'Deckhand has been rejected.');
+    }
 }
