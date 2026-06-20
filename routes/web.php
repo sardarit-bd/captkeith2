@@ -1,251 +1,251 @@
-        <?php
+            <?php
 
-        use App\Http\Controllers\DashboardController;
-        use App\Http\Controllers\NotificationController;
-        use Illuminate\Support\Facades\Route;
-        use Illuminate\Http\Request;
-        use Laravel\Fortify\Features;
-        use Inertia\Inertia;
-        Route::inertia('/', 'welcome', [
-            'canRegister' => Features::enabled(Features::registration()),
-        ])->name('home');
+            use App\Http\Controllers\DashboardController;
+            use App\Http\Controllers\NotificationController;
+            use Illuminate\Support\Facades\Route;
+            use Illuminate\Http\Request;
+            use Laravel\Fortify\Features;
+            use Inertia\Inertia;
+            Route::inertia('/', 'welcome', [
+                'canRegister' => Features::enabled(Features::registration()),
+            ])->name('home');
 
-        Route::inertia('/contact', 'public/contact')->name('contact');
-        Route::inertia('/about-us', 'public/about', [
-            'canRegister' => Features::enabled(Features::registration()),
-        ])->name('about');
+            Route::inertia('/contact', 'public/contact')->name('contact');
+            Route::inertia('/about-us', 'public/about', [
+                'canRegister' => Features::enabled(Features::registration()),
+            ])->name('about');
 
-        Route::middleware(['auth', 'verified'])->group(function () {
-            Route::get('dashboard', DashboardController::class)->name('dashboard');
-            Route::get('messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
-            Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
-            Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
-            Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
-                Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
-                Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
-            });
-            Route::get('/notifications', function () {
-                return Inertia::render('notifications', [
-                    'notifications' => auth()->user()
-                        ->notifications()
-                        ->latest()
-                        ->paginate(20),
-                ]);
-            })->name('notifications');
-        
-
-            Route::middleware(['auth'])->group(function () {
-                Route::get('/api/notifications/count', function (Request $request) {
-                    return response()->json([
-                        'unreadCount' => $request->user()->unreadNotifications()->count(),
-                    ]);
-                })->name('api.notifications.count');
-
-                Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
-                Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-                Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-            });
-
-
-                Route::middleware(['auth', 'role:admin'])->group(function () {
-                    Route::patch('/vessels/{vessel}/approve', [\App\Http\Controllers\Vessels\VesselController::class, 'approve'])
-                        ->name('admin.vessels.approve');
-                    Route::patch('/vessels/{vessel}/reject', [\App\Http\Controllers\Vessels\VesselController::class, 'reject'])
-                        ->name('admin.vessels.reject');
-                });
-            Route::middleware('role:owner')->group(function () {
-                Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
-                Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
-                Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
-                Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
-                Route::get('owner/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('owner.agreement.download');
-                Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
-                Route::delete('charterers/{charterEvent}', [\App\Http\Controllers\CharterController::class, 'destroy'])->name('charterers.destroy');
-                Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
-                Route::post('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'store'])
-                    ->name('captains.invite.store');
-                Route::delete('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'destroy'])
-                    ->name('captains.invite.destroy');
-                Route::get('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'index'])
-                    ->name('owner-settings');
-                Route::patch('owner/settings/preferences', [\App\Http\Controllers\OwnerSettingsController::class, 'updatePreferences'])
-                    ->name('owner-settings.preferences');
-                Route::patch('owner/settings/deactivate', [\App\Http\Controllers\OwnerSettingsController::class, 'deactivate'])
-                    ->name('owner-settings.deactivate');
-
-                Route::get('deckhands', [\App\Http\Controllers\DeckhandController::class, 'index'])->name('deckhands');
-                Route::post('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'store'])
-                    ->name('deckhands.invite.store');
-                Route::delete('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'destroy'])
-                    ->name('deckhands.invite.destroy');
-                Route::delete(
-                    'deckhands/{deckhand}/revoke-acceptance',
-                    [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'revokeAcceptance']
-                )->name('deckhands.revoke-acceptance');
-
-                Route::get(
-                    'deckhand-requests',
-                    [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'index']
-                )->name('deckhand-requests');
-
-                Route::patch(
-                    'deckhand-requests/{interest}/respond',
-                    [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'respond']
-                )->name('deckhand-requests.respond');
-                Route::delete('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'destroy'])
-                    ->name('owner-settings.destroy');
-                Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
-                Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
-                Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
-                Route::match(['PUT', 'PATCH'], 'my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'update'])->name('my-yachts.update');
-                Route::get(
-                    'captain-requests',
-                    [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'index']
-                )->name('captain-requests');
-
-                Route::patch(
-                    'captain-requests/{interest}/respond',
-                    [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'respond']
-                )->name('captain-requests.respond');
-                // Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])
-                //     ->name('charterer.join');
-                Route::delete(
-                    'captains/{captain}/revoke-acceptance',
-                    [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'revokeAcceptance']
-                )->name('captains.revoke-acceptance');
-            });
-
-            Route::middleware('role:admin')->group(function () {
-                Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
-                Route::get('admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users');
-                Route::get('admin/vessel-inventory', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'index'])->name('vessel-inventory');
-                Route::inertia('admin/compliance-log', 'compliance-log')->name('compliance-log');
-                Route::get('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'index'])->name('platform-settings');
-                Route::put('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'update'])->name('platform-settings.update');
-                Route::inertia('admin/my-profile', 'admin/my-profile')->name('admin-my-profile');
-                Route::get('/admin/verifications', [\App\Http\Controllers\AdminDashboardController::class, 'verifications'])->name('admin.verifications');
-           
-                Route::get('/admin/captains/{captain}/profile', [\App\Http\Controllers\CaptainController::class, 'showProfile'])
-                    ->name('admin.captains.profile')
-                    ->middleware('can:admin');
-
-                Route::get('/admin/owners/{owner}/profile', [\App\Http\Controllers\OwnerProfileController::class, 'show'])
-                    ->name('admin.owners.profile')
-                    ->middleware('can:admin');
-                
-                Route::put('/admin/owners/{owner}', [\App\Http\Controllers\OwnerProfileController::class, 'update'])
-                    ->name('admin.owners.update')
-                    ->middleware('can:admin');
-                
-                // Charterer profile routes
-                Route::get('/admin/charterers/{charterer}/profile', [\App\Http\Controllers\ChartererProfileController::class, 'show'])
-                    ->name('admin.charterers.profile')
-                    ->middleware('can:admin');
-                
-                Route::put('/admin/charterers/{charterer}', [\App\Http\Controllers\ChartererProfileController::class, 'update'])
-                    ->name('admin.charterers.update')
-                    ->middleware('can:admin');
-                Route::get('/admin/deckhands/{deckhand}/profile', [\App\Http\Controllers\DeckhandController::class, 'showProfile'])
-                    ->name('admin.deckhands.profile')
-                    ->middleware('can:admin');
-        
-                Route::patch('admin/vessels/{vessel}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveVessel'])->name('admin.vessels.approve');
-                Route::patch('admin/vessels/{vessel}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectVessel'])->name('admin.vessels.reject');
-                Route::patch('admin/captains/{captain}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveCaptain'])->name('admin.captains.approve');
-                Route::patch('admin/captains/{captain}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectCaptain'])->name('admin.captains.reject');
-                Route::patch('admin/deckhands/{deckhand}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveDeckhand'])->name('admin.deckhands.approve');
-                Route::patch('admin/deckhands/{deckhand}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectDeckhand'])->name('admin.deckhands.reject');
-                Route::get('/admin/vessels/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'show'])
-                        ->name('admin.vessels.show')
-                        ->middleware('can:admin');
-                Route::get('/admin/deckhands/{deckhand}', [\App\Http\Controllers\DeckhandController::class, 'show'])
-                        ->name('admin.deckhands.show')
-                        ->middleware('can:admin');
-                Route::get('/admin/captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])
-                        ->name('admin.captains.show')
-                        ->middleware('can:admin');
-            });
-
-            Route::middleware('role:owner|captain|deckhand')->group(function () {
-                Route::get('my-profile', [\App\Http\Controllers\MyProfileController::class, 'edit'])
-                    ->name('my-profile');
-                Route::post('my-profile', [\App\Http\Controllers\MyProfileController::class, 'update'])
-                    ->name('my-profile.update');
-            });
-
-            Route::middleware('role:captain|deckhand')->group(function () {
-                Route::get('yachts-match', [\App\Http\Controllers\YachtsMatchController::class, 'index'])
-                    ->name('yachts-match');
-                Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
-                Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
-                Route::patch('/requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');
-                Route::get('account-preferences', [\App\Http\Controllers\AccountPreferencesController::class, 'index'])
-                    ->name('account-preferences');
-
-                Route::patch('account-preferences/toggles', [\App\Http\Controllers\AccountPreferencesController::class, 'updateToggles'])
-                    ->name('account-preferences.toggles');
-
-                Route::post('account-preferences/dates', [\App\Http\Controllers\AccountPreferencesController::class, 'storeDate'])
-                    ->name('account-preferences.dates.store');
-
-                Route::delete('account-preferences/dates/{dateId}', [\App\Http\Controllers\AccountPreferencesController::class, 'destroyDate'])
-                    ->name('account-preferences.dates.destroy');
-                Route::inertia('yacht/details', 'yacht/details')->name('yacht-details');
-                Route::post(
-                    'vessels/{vessel}/interest',
-                    [\App\Http\Controllers\VesselInterestController::class, 'store']
-                )->name('vessels.interest.store');
-
-                Route::delete(
-                    'vessels/{vessel}/interest',
-                    [\App\Http\Controllers\VesselInterestController::class, 'destroy']
-                )->name('vessels.interest.destroy');
-
-                Route::patch(
-                    'invitations/{invitation}/respond',
-                    [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'respond']
-                )->name('invitations.respond');
-                Route::get('invitations', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'index'])->name('invitations');
-                Route::patch(
-                'deckhand-invitations/{invitation}/respond',
-                [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
-                )->name('deckhand-invitations.respond');
-                Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
-                Route::post('/requests/deckhand/send', [\App\Http\Controllers\RequestsController::class, 'sendDeckhandRequest'])
-                    ->name('requests.send-deckhand');
-                Route::post('/requests/deckhand-agreement/{agreementId}/sign', [\App\Http\Controllers\RequestsController::class, 'confirmSignDeckhandAgreement'])
-        ->name('requests.deckhand-agreement.sign');
-                Route::post('/requests/deckhand/cancel', [\App\Http\Controllers\RequestsController::class, 'cancelDeckhandRequest'])
-                    ->name('requests.cancel-deckhand');
-                    Route::get('requests/{crewResponse}/agreement-details', [\App\Http\Controllers\RequestsController::class, 'getAgreementDetails'])->name('requests.agreement-details');
-                    Route::get('requests/agreement/{agreementId}/download', [\App\Http\Controllers\RequestsController::class, 'downloadAgreement'])->name('requests.agreement.download');
-                    Route::post('requests/{crewResponse}/sign-deckhand-agreement', [\App\Http\Controllers\RequestsController::class, 'signDeckhandAgreement'])->name('requests.sign-deckhand-agreement');
-            });
-
-            Route::middleware('role:charterer')->group(function () {
-                Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
-            Route::get('charterer/request/{id}', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
-                Route::get('/charterer/captain-select', [\App\Http\Controllers\CharterController::class, 'captainSelect'])->name('charterer.captain-select');
-                Route::post('/charterer/captain-requests/{responseId}/cancel', [\App\Http\Controllers\CharterController::class, 'cancelCaptainRequest'])
-                    ->name('charterer.captain-request.cancel');
-                Route::post('/charterer/captain-requests', [\App\Http\Controllers\CharterController::class, 'sendCaptainRequests'])->name('charterer.captain-requests.send');
-                Route::get('/charterer/captain-request-status', [\App\Http\Controllers\CharterController::class, 'captainRequestStatus'])->name('charterer.captain-request-status');
-                Route::get('charterer/information', [\App\Http\Controllers\CharterController::class, 'information'])->name('charterer.information');
-                Route::post('charterer/information', [\App\Http\Controllers\CharterController::class, 'saveInformation'])->name('charterer.information.save');
-                Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
-                Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
-                // Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
-                Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])
-                ->name('charterer.agreement.download');
-                Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
+            Route::middleware(['auth', 'verified'])->group(function () {
+                Route::get('dashboard', DashboardController::class)->name('dashboard');
+                Route::get('messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
+                Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
                 Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
-                Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
-                Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');
-                Route::patch('charterer/settings/preferences', [\App\Http\Controllers\ChartererSettingsController::class, 'updatePreferences'])->name('charterer-settings.preferences');
-                Route::patch('charterer/settings/deactivate', [\App\Http\Controllers\ChartererSettingsController::class, 'deactivate'])->name('charterer-settings.deactivate');
-                Route::delete('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'destroy'])->name('charterer-settings.destroy');
-                Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])->name('charterer.join');
-            });
-        });
+                Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
+                    Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
+                    Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
+                });
+                Route::get('/notifications', function () {
+                    return Inertia::render('notifications', [
+                        'notifications' => auth()->user()
+                            ->notifications()
+                            ->latest()
+                            ->paginate(20),
+                    ]);
+                })->name('notifications');
+            
 
-        require __DIR__ . '/settings.php';
+                Route::middleware(['auth'])->group(function () {
+                    Route::get('/api/notifications/count', function (Request $request) {
+                        return response()->json([
+                            'unreadCount' => $request->user()->unreadNotifications()->count(),
+                        ]);
+                    })->name('api.notifications.count');
+
+                    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+                    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+                    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+                });
+
+
+                    // Route::middleware(['auth', 'role:admin'])->group(function () {
+                    //     Route::patch('/vessels/{vessel}/approve', [\App\Http\Controllers\Vessels\VesselController::class, 'approve'])
+                    //         ->name('admin.vessels.approve');
+                    //     Route::patch('/vessels/{vessel}/reject', [\App\Http\Controllers\Vessels\VesselController::class, 'reject'])
+                    //         ->name('admin.vessels.reject');
+                    // });
+                Route::middleware('role:owner')->group(function () {
+                    Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
+                    Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
+                    Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
+                    Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
+                    Route::get('owner/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('owner.agreement.download');
+                    Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
+                    Route::delete('charterers/{charterEvent}', [\App\Http\Controllers\CharterController::class, 'destroy'])->name('charterers.destroy');
+                    Route::inertia('chartarere/invite', 'chartarere/invite')->name('chartarere.invite');
+                    Route::post('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'store'])
+                        ->name('captains.invite.store');
+                    Route::delete('captains/{captain}/invite', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'destroy'])
+                        ->name('captains.invite.destroy');
+                    Route::get('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'index'])
+                        ->name('owner-settings');
+                    Route::patch('owner/settings/preferences', [\App\Http\Controllers\OwnerSettingsController::class, 'updatePreferences'])
+                        ->name('owner-settings.preferences');
+                    Route::patch('owner/settings/deactivate', [\App\Http\Controllers\OwnerSettingsController::class, 'deactivate'])
+                        ->name('owner-settings.deactivate');
+
+                    Route::get('deckhands', [\App\Http\Controllers\DeckhandController::class, 'index'])->name('deckhands');
+                    Route::post('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'store'])
+                        ->name('deckhands.invite.store');
+                    Route::delete('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'destroy'])
+                        ->name('deckhands.invite.destroy');
+                    Route::delete(
+                        'deckhands/{deckhand}/revoke-acceptance',
+                        [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'revokeAcceptance']
+                    )->name('deckhands.revoke-acceptance');
+
+                    Route::get(
+                        'deckhand-requests',
+                        [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'index']
+                    )->name('deckhand-requests');
+
+                    Route::patch(
+                        'deckhand-requests/{interest}/respond',
+                        [\App\Http\Controllers\OwnerDeckhandRequestsController::class, 'respond']
+                    )->name('deckhand-requests.respond');
+                    Route::delete('owner/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'destroy'])
+                        ->name('owner-settings.destroy');
+                    Route::get('my-yachts/{vessel}/edit', [\App\Http\Controllers\Vessels\VesselController::class, 'edit'])->name('my-yachts.edit');
+                    Route::delete('my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'destroy'])->name('my-yachts.destroy');
+                    Route::post('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'store'])->name('my-yachts.store');
+                    Route::match(['PUT', 'PATCH'], 'my-yachts/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'update'])->name('my-yachts.update');
+                    Route::get(
+                        'captain-requests',
+                        [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'index']
+                    )->name('captain-requests');
+
+                    Route::patch(
+                        'captain-requests/{interest}/respond',
+                        [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'respond']
+                    )->name('captain-requests.respond');
+                    // Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])
+                    //     ->name('charterer.join');
+                    Route::delete(
+                        'captains/{captain}/revoke-acceptance',
+                        [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'revokeAcceptance']
+                    )->name('captains.revoke-acceptance');
+                });
+
+                Route::middleware('role:admin')->group(function () {
+                    Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+                    Route::get('admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users');
+                    Route::get('admin/vessel-inventory', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'index'])->name('vessel-inventory');
+                    Route::inertia('admin/compliance-log', 'compliance-log')->name('compliance-log');
+                    Route::get('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'index'])->name('platform-settings');
+                    Route::put('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'update'])->name('platform-settings.update');
+                    Route::inertia('admin/my-profile', 'admin/my-profile')->name('admin-my-profile');
+                    Route::get('/admin/verifications', [\App\Http\Controllers\AdminDashboardController::class, 'verifications'])->name('admin.verifications');
+            
+                    Route::get('/admin/captains/{captain}/profile', [\App\Http\Controllers\CaptainController::class, 'showProfile'])
+                        ->name('admin.captains.profile')
+                        ->middleware('can:admin');
+
+                    Route::get('/admin/owners/{owner}/profile', [\App\Http\Controllers\OwnerProfileController::class, 'show'])
+                        ->name('admin.owners.profile')
+                        ->middleware('can:admin');
+                    
+                    Route::put('/admin/owners/{owner}', [\App\Http\Controllers\OwnerProfileController::class, 'update'])
+                        ->name('admin.owners.update')
+                        ->middleware('can:admin');
+                    
+                    // Charterer profile routes
+                    Route::get('/admin/charterers/{charterer}/profile', [\App\Http\Controllers\ChartererProfileController::class, 'show'])
+                        ->name('admin.charterers.profile')
+                        ->middleware('can:admin');
+                    
+                    Route::put('/admin/charterers/{charterer}', [\App\Http\Controllers\ChartererProfileController::class, 'update'])
+                        ->name('admin.charterers.update')
+                        ->middleware('can:admin');
+                    Route::get('/admin/deckhands/{deckhand}/profile', [\App\Http\Controllers\DeckhandController::class, 'showProfile'])
+                        ->name('admin.deckhands.profile')
+                        ->middleware('can:admin');
+            
+                    Route::patch('admin/vessels/{vessel}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveVessel'])->name('admin.vessels.approve');
+                    Route::patch('admin/vessels/{vessel}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectVessel'])->name('admin.vessels.reject');
+                    Route::patch('admin/captains/{captain}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveCaptain'])->name('admin.captains.approve');
+                    Route::patch('admin/captains/{captain}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectCaptain'])->name('admin.captains.reject');
+                    Route::patch('admin/deckhands/{deckhand}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveDeckhand'])->name('admin.deckhands.approve');
+                    Route::patch('admin/deckhands/{deckhand}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectDeckhand'])->name('admin.deckhands.reject');
+                    Route::get('/admin/vessels/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'show'])
+                            ->name('admin.vessels.show')
+                            ->middleware('can:admin');
+                    Route::get('/admin/deckhands/{deckhand}', [\App\Http\Controllers\DeckhandController::class, 'show'])
+                            ->name('admin.deckhands.show')
+                            ->middleware('can:admin');
+                    Route::get('/admin/captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])
+                            ->name('admin.captains.show')
+                            ->middleware('can:admin');
+                });
+
+                Route::middleware('role:owner|captain|deckhand')->group(function () {
+                    Route::get('my-profile', [\App\Http\Controllers\MyProfileController::class, 'edit'])
+                        ->name('my-profile');
+                    Route::post('my-profile', [\App\Http\Controllers\MyProfileController::class, 'update'])
+                        ->name('my-profile.update');
+                });
+
+                Route::middleware('role:captain|deckhand')->group(function () {
+                    Route::get('yachts-match', [\App\Http\Controllers\YachtsMatchController::class, 'index'])
+                        ->name('yachts-match');
+                    Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
+                    Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
+                    Route::patch('/requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');
+                    Route::get('account-preferences', [\App\Http\Controllers\AccountPreferencesController::class, 'index'])
+                        ->name('account-preferences');
+
+                    Route::patch('account-preferences/toggles', [\App\Http\Controllers\AccountPreferencesController::class, 'updateToggles'])
+                        ->name('account-preferences.toggles');
+
+                    Route::post('account-preferences/dates', [\App\Http\Controllers\AccountPreferencesController::class, 'storeDate'])
+                        ->name('account-preferences.dates.store');
+
+                    Route::delete('account-preferences/dates/{dateId}', [\App\Http\Controllers\AccountPreferencesController::class, 'destroyDate'])
+                        ->name('account-preferences.dates.destroy');
+                    Route::inertia('yacht/details', 'yacht/details')->name('yacht-details');
+                    Route::post(
+                        'vessels/{vessel}/interest',
+                        [\App\Http\Controllers\VesselInterestController::class, 'store']
+                    )->name('vessels.interest.store');
+
+                    Route::delete(
+                        'vessels/{vessel}/interest',
+                        [\App\Http\Controllers\VesselInterestController::class, 'destroy']
+                    )->name('vessels.interest.destroy');
+
+                    Route::patch(
+                        'invitations/{invitation}/respond',
+                        [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'respond']
+                    )->name('invitations.respond');
+                    Route::get('invitations', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'index'])->name('invitations');
+                    Route::patch(
+                    'deckhand-invitations/{invitation}/respond',
+                    [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
+                    )->name('deckhand-invitations.respond');
+                    Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
+                    Route::post('/requests/deckhand/send', [\App\Http\Controllers\RequestsController::class, 'sendDeckhandRequest'])
+                        ->name('requests.send-deckhand');
+                    Route::post('/requests/deckhand-agreement/{agreementId}/sign', [\App\Http\Controllers\RequestsController::class, 'confirmSignDeckhandAgreement'])
+            ->name('requests.deckhand-agreement.sign');
+                    Route::post('/requests/deckhand/cancel', [\App\Http\Controllers\RequestsController::class, 'cancelDeckhandRequest'])
+                        ->name('requests.cancel-deckhand');
+                        Route::get('requests/{crewResponse}/agreement-details', [\App\Http\Controllers\RequestsController::class, 'getAgreementDetails'])->name('requests.agreement-details');
+                        Route::get('requests/agreement/{agreementId}/download', [\App\Http\Controllers\RequestsController::class, 'downloadAgreement'])->name('requests.agreement.download');
+                        Route::post('requests/{crewResponse}/sign-deckhand-agreement', [\App\Http\Controllers\RequestsController::class, 'signDeckhandAgreement'])->name('requests.sign-deckhand-agreement');
+                });
+
+                Route::middleware('role:charterer')->group(function () {
+                    Route::get('my-booking', [\App\Http\Controllers\MyBookingController::class, 'index'])->name('my-booking');
+                Route::get('charterer/request/{id}', [\App\Http\Controllers\CharterController::class, 'request'])->name('charterer.request');
+                    Route::get('/charterer/captain-select', [\App\Http\Controllers\CharterController::class, 'captainSelect'])->name('charterer.captain-select');
+                    Route::post('/charterer/captain-requests/{responseId}/cancel', [\App\Http\Controllers\CharterController::class, 'cancelCaptainRequest'])
+                        ->name('charterer.captain-request.cancel');
+                    Route::post('/charterer/captain-requests', [\App\Http\Controllers\CharterController::class, 'sendCaptainRequests'])->name('charterer.captain-requests.send');
+                    Route::get('/charterer/captain-request-status', [\App\Http\Controllers\CharterController::class, 'captainRequestStatus'])->name('charterer.captain-request-status');
+                    Route::get('charterer/information', [\App\Http\Controllers\CharterController::class, 'information'])->name('charterer.information');
+                    Route::post('charterer/information', [\App\Http\Controllers\CharterController::class, 'saveInformation'])->name('charterer.information.save');
+                    Route::get('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'agreement'])->name('charterer.agreement');
+                    Route::post('charterer/agreement', [\App\Http\Controllers\CharterController::class, 'signAgreements'])->name('charterer.agreement.sign');
+                    // Route::inertia('charterer/insurance', 'charterer/insurance')->name('charterer.insurance');
+                    Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])
+                    ->name('charterer.agreement.download');
+                    Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
+                    Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
+                    Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
+                    Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');
+                    Route::patch('charterer/settings/preferences', [\App\Http\Controllers\ChartererSettingsController::class, 'updatePreferences'])->name('charterer-settings.preferences');
+                    Route::patch('charterer/settings/deactivate', [\App\Http\Controllers\ChartererSettingsController::class, 'deactivate'])->name('charterer-settings.deactivate');
+                    Route::delete('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'destroy'])->name('charterer-settings.destroy');
+                    Route::get('charterer/join/{token}', [\App\Http\Controllers\CharterController::class, 'join'])->name('charterer.join');
+                });
+            });
+
+            require __DIR__ . '/settings.php';
