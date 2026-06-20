@@ -26,13 +26,13 @@ interface AdminVerificationTableProps {
 
 export function AdminVerificationTable({ verifications }: AdminVerificationTableProps) {
     const handleApprove = (id: string, profileType: 'captain' | 'deckhand') => {
-        router.put(`/admin/${profileType}s/${id}/approve`, {}, {
+        router.patch(`/admin/${profileType}s/${id}/approve`, {}, {
             preserveScroll: true,
         });
     };
 
     const handleReject = (id: string, profileType: 'captain' | 'deckhand') => {
-        router.put(`/admin/${profileType}s/${id}/reject`, {}, {
+        router.patch(`/admin/${profileType}s/${id}/reject`, {}, {
             preserveScroll: true,
         });
     };
