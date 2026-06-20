@@ -1,62 +1,131 @@
-import { MapPin } from 'lucide-react';
-import { vesselQueueItems } from './admin-dashboard-data';
-import { AdminSectionCard } from './admin-section-card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { router } from '@inertiajs/react';
 
-export function AdminVesselTable() {
+interface Vessel {
+    id: string;
+    name: string;
+    vessel_type: string;
+    status?: 'pending' | 'approved' | 'rejected' | 'inactive';
+    owner?: {
+        name: string;
+        email: string;
+    };
+    submitted_at?: string;
+}
+
+interface AdminVesselTableProps {
+    vessels: Vessel[];
+}
+
+export function AdminVesselTable({ vessels }: AdminVesselTableProps) {
+    const getStatusBadge = (status?: string) => {
+        const safeStatus = status || 'inactive';
+        const variants: Record<string, string> = {
+            pending: 'bg-yellow-500',
+            approved: 'bg-green-500',
+            rejected: 'bg-red-500',
+            inactive: 'bg-gray-500',
+        };
+
+        return (
+            <Badge className={variants[safeStatus] || 'bg-gray-500'}>
+                {safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1)}
+            </Badge>
+        );
+    };
+
+    const handleApprove = (vesselId: string) => {
+        router.put(`/admin/vessels/${vesselId}/approve`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleReject = (vesselId: string) => {
+        router.put(`/admin/vessels/${vesselId}/reject`, {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
-        <AdminSectionCard
-            title="Pending Vessel Listings"
-            description="Yachts waiting for platform approval"
-            actionLabel="View All"
-        >
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] border-collapse text-left">
-                    <thead>
-                        <tr className="bg-slate-50 text-xs tracking-wider text-slate-500 uppercase">
-                            <th className="px-6 py-4 font-medium">Vessel Info</th>
-                            <th className="px-6 py-4 font-medium">Owner</th>
-                            <th className="px-6 py-4 font-medium">Location</th>
-                            <th className="px-6 py-4 text-right font-medium">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm">
-                        {vesselQueueItems.map((item) => (
-                            <tr
-                                key={item.id}
-                                className="transition-colors hover:bg-slate-50"
-                            >
-                                <td className="px-6 py-4">
-                                    <p className="font-medium text-[#35ADD5]">
-                                        {item.vesselName}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                        {item.spec}
-                                    </p>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-slate-700">
-                                    {item.ownerName}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center text-xs text-slate-500">
-                                        <MapPin className="mr-1 h-3 w-3" />
-                                        {item.location}
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Vessel Info</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {vessels.map((vessel) => (
+                        <TableRow key={vessel.id}>
+                            <TableCell>
+                                <div className="font-medium">{vessel.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    {vessel.vessel_type}
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="space-y-1">
+                                    <div className="font-medium">{vessel.owner?.name || 'Unknown'}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {vessel.owner?.email || 'No email'}
                                     </div>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button
-                                        type="button"
-                                        className="rounded-lg border border-[#e6ebf1] bg-white px-4 py-2 text-xs font-medium text-[#35ADD5] transition-colors hover:bg-slate-50"
-                                    >
-                                        Inspect
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </AdminSectionCard>
+                                    {/* Status badge in owner card */}
+                                    <div className="mt-1">
+                                        {getStatusBadge(vessel.status)}
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="text-sm text-muted-foreground">
+                                    Location info
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                    {vessel.status === 'pending' && (
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                variant="default"
+                                                className="bg-green-600 hover:bg-green-700"
+                                                onClick={() => handleApprove(vessel.id)}
+                                            >
+                                                Approve
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => handleReject(vessel.id)}
+                                            >
+                                                Reject
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                    {vessels.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                No pending vessels
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </div>
     );
 }

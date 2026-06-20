@@ -1,9 +1,11 @@
 export function ToggleField({
     checked,
     disabled,
+    onChange,
 }: {
     checked?: boolean;
     disabled?: boolean;
+    onChange?: () => void;
 }) {
     return (
         <button
@@ -11,6 +13,7 @@ export function ToggleField({
             role="switch"
             aria-checked={checked}
             aria-disabled={disabled}
+            onClick={onChange}
             className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
                 checked ? 'bg-[#35ADD5]' : 'bg-slate-300'
             } ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}

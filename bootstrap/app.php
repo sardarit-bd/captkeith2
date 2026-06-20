@@ -33,6 +33,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ShareNotificationCount::class
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
+            if ($request->inertia()) {
+                return Inertia::render('Error', [
+                    'status' => 403,
+                    'message' => 'You are not authorized to view this page.',
+                ])->toResponse($request)->setStatusCode(403);
+            }
+        });
     })->create();
+    

@@ -50,11 +50,11 @@ public function store(Request $request, Vessel $vessel): RedirectResponse
         }
 
     
-        $vessel->loadMissing('owner.user');
+        $vessel->loadMissing('ownerProfile.user');
 
   
-        if ($vessel->owner && $vessel->owner->user) {
-            $vessel->owner->user->notify(new VesselInterestNotification(
+        if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
+            $vessel->ownerProfile->user->notify(new VesselInterestNotification(
                 $vessel,
                 $user,
                 $role
@@ -71,6 +71,7 @@ public function store(Request $request, Vessel $vessel): RedirectResponse
         if ($user->hasRole('captain')) {
             $profile = $user->captainProfile;
             abort_if($profile === null, 403, 'No captain profile found.');
+            abort_if($profile->status !== 'approved', 403, 'Your profile is pending admin approval. You cannot send interest until approved.');
 
             OwnerCaptainInvitation::where('owner_id', $vessel->owner_id)
                 ->where('captain_id', $profile->id)
@@ -79,6 +80,8 @@ public function store(Request $request, Vessel $vessel): RedirectResponse
         } else {
             $profile = $user->deckhandProfile;
             abort_if($profile === null, 403, 'No deckhand profile found.');
+            abort_if($profile->status !== 'approved', 403, 'Your profile is pending admin approval. You cannot send interest until approved.');
+
 
             OwnerDeckhandInvitation::where('owner_id', $vessel->owner_id)
                 ->where('deckhand_id', $profile->id)

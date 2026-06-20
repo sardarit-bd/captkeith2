@@ -1,0 +1,189 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\CaptainProfile;
+use App\Models\DeckhandProfile;
+use App\Models\Vessel;
+use App\Models\User;
+use App\Services\Dashboard\AdminDashboardService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class AdminDashboardController extends Controller
+{
+    public function __construct(
+        private AdminDashboardService $dashboardService
+    ) {}
+
+    public function __invoke(Request $request)
+    {
+        $data = $this->dashboardService->getDashboardData($request->user());
+
+        // Load pending verifications with user relationships
+        $pendingCaptains = CaptainProfile::where('status', 'pending')
+            ->with('user')
+            ->get()
+            ->map(function ($captain) {
+                return [
+                    'id' => $captain->id,
+                    'user_id' => $captain->user_id,
+                    'type' => 'captain',
+                    'full_name' => $captain->full_name,
+                    'email' => $captain->user?->email ?? 'No email provided',
+                    'license_type' => $captain->license_type ?? 'N/A',
+                    'status' => $captain->status ?? 'pending',
+                    'submitted_at' => $captain->created_at,
+                    'user' => $captain->user ? [
+                        'name' => $captain->user->name,
+                        'email' => $captain->user->email,
+                    ] : null,
+                ];
+            });
+
+        $pendingDeckhands = DeckhandProfile::where('status', 'pending')
+            ->with('user')
+            ->get()
+            ->map(function ($deckhand) {
+                return [
+                    'id' => $deckhand->id,
+                    'user_id' => $deckhand->user_id,
+                    'type' => 'deckhand',
+                    'full_name' => $deckhand->full_name,
+                    'email' => $deckhand->user?->email ?? 'No email provided',
+                    'license_type' => 'N/A',
+                    'status' => $deckhand->status ?? 'pending',
+                    'submitted_at' => $deckhand->created_at,
+                    'user' => $deckhand->user ? [
+                        'name' => $deckhand->user->name,
+                        'email' => $deckhand->user->email,
+                    ] : null,
+                ];
+            });
+
+        $pendingVerifications = $pendingCaptains->concat($pendingDeckhands);
+
+        // Load pending vessels with owner relationships
+        $pendingVessels = Vessel::where('status', 'pending')
+            ->with(['ownerProfile.user'])
+            ->get()
+            ->map(function ($vessel) {
+                return [
+                    'id' => $vessel->id,
+                    'name' => $vessel->name,
+                    'vessel_type' => $vessel->vessel_type,
+                    'status' => $vessel->status ?? 'pending',
+                    'owner' => $vessel->ownerProfile ? [
+                        'name' => $vessel->ownerProfile->user?->name ?? 'Unknown',
+                        'email' => $vessel->ownerProfile->user?->email ?? 'No email',
+                    ] : null,
+                    'submitted_at' => $vessel->created_at,
+                ];
+            });
+
+        return Inertia::render('admin/dashboard', [
+            ...$data,
+            'pendingVerifications' => $pendingVerifications,
+            'pendingVessels' => $pendingVessels,
+        ]);
+    }
+
+
+    public function verifications(Request $request)
+{
+    // Load pending verifications with user relationships
+    $pendingCaptains = CaptainProfile::where('status', 'pending')
+        ->with('user')
+        ->get()
+        ->map(function ($captain) {
+            return [
+                'id' => $captain->id,
+                'user_id' => $captain->user_id,
+                'type' => 'captain',
+                'full_name' => $captain->full_name,
+                'email' => $captain->user?->email ?? 'No email provided',
+                'license_type' => $captain->license_type ?? 'N/A',
+                'status' => $captain->status ?? 'pending',
+                'submitted_at' => $captain->created_at,
+                'user' => $captain->user ? [
+                    'name' => $captain->user->name,
+                    'email' => $captain->user->email,
+                ] : null,
+            ];
+        });
+
+    $pendingDeckhands = DeckhandProfile::where('status', 'pending')
+        ->with('user')
+        ->get()
+        ->map(function ($deckhand) {
+            return [
+                'id' => $deckhand->id,
+                'user_id' => $deckhand->user_id,
+                'type' => 'deckhand',
+                'full_name' => $deckhand->full_name,
+                'email' => $deckhand->user?->email ?? 'No email provided',
+                'license_type' => 'N/A',
+                'status' => $deckhand->status ?? 'pending',
+                'submitted_at' => $deckhand->created_at,
+                'user' => $deckhand->user ? [
+                    'name' => $deckhand->user->name,
+                    'email' => $deckhand->user->email,
+                ] : null,
+            ];
+        });
+
+    $pendingVerifications = $pendingCaptains->concat($pendingDeckhands)->values();
+
+    return Inertia::render('admin/verifications', [
+        'pendingVerifications' => $pendingVerifications,
+    ]);
+}
+
+public function index()
+{
+    $pendingVerifications = User::whereHas('captainProfile', function($query) {
+        $query->where('status', 'pending');
+    })->orWhereHas('deckhandProfile', function($query) {
+        $query->where('status', 'pending');
+    })->latest()->take(5)->get();
+
+    $pendingVesselListings = Vessel::where('status', 'pending')
+        ->with(['ownerProfile', 'vesselPhotos'])
+        ->latest()
+        ->take(5)
+        ->get();
+
+    $recentComplianceEvents = ComplianceCheck::with(['user', 'vessel'])
+        ->latest()
+        ->take(10)
+        ->get();
+
+    return Inertia::render('Admin/Dashboard', [
+        'pendingVerifications' => $pendingVerifications,
+        'pendingVesselListings' => $pendingVesselListings,
+        'recentComplianceEvents' => $recentComplianceEvents,
+        'stats' => [
+            'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                $query->where('status', 'pending');
+            })->orWhereHas('deckhandProfile', function($query) {
+                $query->where('status', 'pending');
+            })->count(),
+            'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
+            'activeChartersCount' => CharterEvent::where('status', 'confirmed')
+                ->whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->count(),
+            'totalUsersCount' => User::count(),
+        ]
+    ]);
+}
+
+
+    public function approveVessel($vesselId)
+    {
+        $vessel = Vessel::findOrFail($vesselId);
+        $vessel->update([
+            'status' => 'approved', 
+        ]);
+        return redirect()->back()->with('success', 'Vessel has been approved successfully.');
+    }
+}

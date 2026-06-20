@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'crew_role',
     'captain_profile_id',
     'deckhand_profile_id',
-    'initiated_by',
+    'initiated_by', 
     'payor',
     's3_key',
     'pdf_path',      

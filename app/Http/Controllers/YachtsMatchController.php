@@ -30,12 +30,26 @@ class YachtsMatchController extends Controller
             ]);
         }
 
+
+       $isProfileRestricted = ($profile->status === 'pending') || empty($profile->is_active);
+
+        if (($isCaptain || $isDeckhand) && $isProfileRestricted) {
+            return Inertia::render('yachts-match', [
+                'vessels'                 => [],
+                'profileMissing'          => true, 
+                'interestStatuses'        => [],
+                'ownerInvitationStatuses' => [],
+            ]);
+        }
+ 
         $query = Vessel::query()
-            ->with([
-                'photos' => fn($q) => $q->orderBy('display_order'),
-                'owner',
-            ])
+                ->with([
+                    'photos' => fn($q) => $q->orderBy('display_order'),
+                    'ownerProfile',
+                ])
+
             ->where('is_active', true)
+            ->where('status', 'approved')
             ->whereNull('deleted_at');
 
         if ($isCaptain) {
@@ -140,7 +154,7 @@ class YachtsMatchController extends Controller
                     'image'                 => $photo?->image_path
                         ? Storage::url($photo->image_path)
                         : null,
-                    'ownerUserId'           => $vessel->owner?->user_id,
+                    'ownerUserId' => $vessel->ownerProfile?->user_id,
                     'interestStatus'        => $interestStatuses[$vessel->id] ?? null, 
                     'ownerInvitationStatus' => $ownerInvitationStatuses[$vessel->id] ?? null,
                 ];

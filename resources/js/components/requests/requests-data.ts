@@ -39,10 +39,12 @@ export interface CaptainRequestRecord {
     duration: string;
     specialNotes: string;
     status: 'pending' | 'available' | 'unavailable' | 'accepted' | 'declined';
-    charterEventId?: string;
+    charterEventId?: unknown;
     vesselId?: string;
     ownerUserId?: string;
     captainInfo?: CaptainInfo;
+    crewRole:string;
+    selectedDeckhand: any[]; 
     deckhandInfo?: {
         selectedDeckhand?: {
             name: string;
@@ -52,6 +54,8 @@ export interface CaptainRequestRecord {
         availableDeckhands?: any[];
         mustSelectDeckhand?: boolean;
         hasQualifiedDeckhands?: boolean;
+        deckhandHireFullySigned?: boolean;
+    
     agreements?: Agreement[];
     };
 }

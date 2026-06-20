@@ -1,26 +1,26 @@
+import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { VesselInventoryPageContent } from '@/components/vessel-inventory/vessel-inventory-page-content';
-import { vesselInventory } from '@/routes';
 
-export default function VesselInventoryPage() {
+interface Props {
+    vessels: any; 
+    filters: any;
+}
+
+export default function VesselInventory({ vessels, filters }: Props) {
     return (
         <>
             <Head title="Vessel Inventory" />
-            <VesselInventoryPageContent />
+            <VesselInventoryPageContent vessels={vessels} initialFilters={filters} />
         </>
     );
 }
 
-VesselInventoryPage.layout = {
-    breadcrumbs: [
-        {
-            title: 'Vessel Inventory',
-            href: vesselInventory(),
-        },
-    ],
+VesselInventory.layout = {
+    breadcrumbs: [{ title: 'Vessel Inventory', href: '/admin/vessel-inventory' 
+    }],
     pageHeader: {
         title: 'Vessel Inventory',
-        description:
-            'Manage fleet, oversee demise compliance, and approve listings.',
+        description: 'Manage fleet, oversee demise compliance, and approve listings.',
     },
 };

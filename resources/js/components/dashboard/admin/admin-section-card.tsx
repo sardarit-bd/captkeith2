@@ -4,6 +4,7 @@ type Props = {
     title: string;
     description: string;
     actionLabel: string;
+    onClick?: () => void|Promise<void>;
     children: ReactNode;
 };
 
@@ -11,6 +12,7 @@ export function AdminSectionCard({
     title,
     description,
     actionLabel,
+    onClick,
     children,
 }: Props) {
     return (
@@ -23,6 +25,7 @@ export function AdminSectionCard({
                 <button
                     type="button"
                     className="text-sm font-medium text-[#35ADD5] transition-colors hover:text-[#0ea5c6]"
+                    onclick={onClick}
                 >
                     {actionLabel}
                 </button>

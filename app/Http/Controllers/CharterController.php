@@ -9,7 +9,6 @@ use App\Models\OwnerCaptainInvitation;
 use App\Models\Vessel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,7 +16,9 @@ use App\Models\CharterCrewResponse;
 use App\Services\AgreementPdfService;
 use App\Notifications\AgreementSignedNotification;
 use App\Models\CaptainProfile;
+use Illuminate\Support\Facades\Storage;
 use App\Notifications\CrewRequestNotification;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 // use App\Notifications\PaymentCompleteNotification;
 class CharterController extends Controller
 {
@@ -653,14 +654,17 @@ class CharterController extends Controller
 
         $agreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
             ->where('charterer_id', $charterer->id)
+            ->whereNotNull('charterer_signed_at') 
+            ->with('captainProfile')
             ->get()
             ->map(fn($a) => [
                 'id' => $a->id,
                 'name' => match($a->agreement_type) {
                     'bareboat' => 'Bareboat Charter Agreement',
-                    'captain_hire' => 'Captain Hire Agreement',
+                    'captain_hire' => 'Captain ' . ($a->captainProfile?->full_name ?? 'Hire') . ' Agreement',
                     default => 'Agreement',
                 },
+                'downloadUrl' => url("/charterer/agreement/{$a->id}/download"), 
             ]);
 
         return \Inertia\Inertia::render('charterer/insurance', [
@@ -684,11 +688,6 @@ class CharterController extends Controller
             ->with(['vessel.owner', 'crewResponses.captainProfile.user'])
             ->latest('created_at')
             ->first();
-
-        \Illuminate\Support\Facades\Log::info('Agreement method reached', [
-            'event_id' => $event?->id,
-            'status'   => $event?->status,
-        ]);
 
         if (! $event) {
             return redirect()->route('dashboard')
@@ -716,13 +715,31 @@ class CharterController extends Controller
         $vessel = $event->vessel;
         $owner  = $vessel?->owner;
 
-  
+        // Fetch all agreements for this event and charterer
         $existingAgreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
             ->where('charterer_id', $charterer->id)
-            ->get()
-            ->keyBy(function ($a) {
-                return $a->agreement_type === 'bareboat' ? 'bareboat' : 'captain_' . $a->captain_profile_id;
-            });
+            ->get();
+
+        // Log for debugging
+        \Illuminate\Support\Facades\Log::info('Agreements fetched for signing page', [
+            'event_id' => $event->id,
+            'agreements_count' => $existingAgreements->count(),
+            'agreements' => $existingAgreements->map(fn($a) => [
+                'type' => $a->agreement_type,
+                'captain_id' => $a->captain_profile_id,
+                'signed_at' => $a->charterer_signed_at
+            ])->toArray()
+        ]);
+
+        // Map agreements to a keyed array for easy lookup
+        $agreementMap = [];
+        foreach ($existingAgreements as $agreement) {
+            if ($agreement->agreement_type === 'bareboat') {
+                $agreementMap['bareboat'] = $agreement;
+            } elseif ($agreement->agreement_type === 'captain_hire' && $agreement->captain_profile_id) {
+                $agreementMap['captain_' . $agreement->captain_profile_id] = $agreement;
+            }
+        }
 
         return \Inertia\Inertia::render('charterer/agreement', [
             'charterEventId' => $event->id,
@@ -736,19 +753,19 @@ class CharterController extends Controller
                         'owner'     => $owner?->full_name ?? 'Vessel Owner',
                         'charterer' => $charterer->full_name ?? '—',
                     ],
-                    'isSigned' => isset($existingAgreements['bareboat']) && !empty($existingAgreements['bareboat']->pdf_path),
+                    'isSigned' => isset($agreementMap['bareboat']) && !is_null($agreementMap['bareboat']->charterer_signed_at),
                 ],
-                ...($acceptedCaptains->map(fn($captain, $index) => [
+                ...($acceptedCaptains->map(fn($captain) => [
                     'id'        => 'captain_' . $captain['profileId'],
                     'type'      => 'captain_hire',
-                    'title'     => 'Captain Hire Agreement ' . ($index + 1),
+                    'title'     => 'Captain Hire Agreement',
                     'subtitle'  => 'Independent Captain for Hire Agreement',
                     'captainProfileId' => $captain['profileId'],
                     'parties'   => [
                         'captain'   => $captain['name'],
                         'charterer' => $charterer->full_name ?? '—',
                     ],
-                    'isSigned' => isset($existingAgreements['captain_' . $captain['profileId']]) && !empty($existingAgreements['captain_' . $captain['profileId']]->pdf_path),
+                    'isSigned' => isset($agreementMap['captain_' . $captain['profileId']]) && !is_null($agreementMap['captain_' . $captain['profileId']]->charterer_signed_at),
                 ]))->toArray(),
             ],
             'vessel' => [
@@ -759,130 +776,143 @@ class CharterController extends Controller
         ]);
     }
 
-public function signAgreements(
-    \Illuminate\Http\Request $request,
-    AgreementPdfService $pdfService
-): \Illuminate\Http\RedirectResponse {
-        $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+        public function signAgreements(
+            \Illuminate\Http\Request $request,
+            AgreementPdfService $pdfService
+        ): \Illuminate\Http\RedirectResponse {
+            $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->firstOrFail();
 
-        $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
-            ->whereNull('deleted_at')
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->with(['vessel.owner', 'crewResponses.captainProfile'])
-            ->latest('created_at')
-            ->firstOrFail();
+            $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
+                ->whereNull('deleted_at')
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->with(['vessel.owner', 'crewResponses.captainProfile'])
+                ->latest('created_at')
+                ->firstOrFail();
 
-        $request->validate([
-            'acknowledged' => ['required', 'accepted'],
-        ]);
+            $request->validate([
+                'acknowledged' => ['required', 'accepted'],
+            ]);
 
-        try {
-        
-            $bareboatPath = $pdfService->generateBareboatAgreement($event);
-
-            \App\Models\CharterHireAgreement::updateOrCreate(
+            // Step 1: Record signing intent for ALL agreements immediately (before PDF generation).
+            // This ensures isSigned is persisted even if PDF generation later fails.
+            $bareboatAgreement = \App\Models\CharterHireAgreement::updateOrCreate(
                 [
                     'charter_event_id'   => $event->id,
                     'charterer_id'       => $charterer->id,
-                    'captain_profile_id' => null, 
+                    'captain_profile_id' => null,
                     'agreement_type'     => 'bareboat',
                     'crew_role'          => 'owner',
                 ],
                 [
-                    'pdf_path'    => $bareboatPath,
-                    'sign_status' => 'partially_signed',
+                    'sign_status'         => 'partially_signed',
                     'charterer_signed_at' => now(),
-                    'initiated_by' => 'charterer',
-                    'payor'        => 'charterer',
+                    'initiated_by'        => 'charterer',
+                    'payor'               => 'charterer',
                 ]
             );
 
-           
             $acceptedCaptains = $event->crewResponses
                 ->where('crew_role', 'captain')
                 ->where('response', 'available')
                 ->take(2);
 
+            $captainAgreements = [];
             foreach ($acceptedCaptains as $crewResponse) {
                 $captain = $crewResponse->captainProfile;
                 if (! $captain) {
                     continue;
                 }
 
-                $captainPath = $pdfService->generateCaptainHireAgreement($event, $captain);
-
-                \App\Models\CharterHireAgreement::updateOrCreate(
+                $captainAgreements[$captain->id] = \App\Models\CharterHireAgreement::updateOrCreate(
                     [
                         'charter_event_id'   => $event->id,
                         'charterer_id'       => $charterer->id,
-                        'captain_profile_id' => $captain->id, 
-                        'agreement_type'     => 'captain_hire', 
+                        'captain_profile_id' => $captain->id,
+                        'agreement_type'     => 'captain_hire',
                         'crew_role'          => 'captain',
                     ],
                     [
-                        'pdf_path'    => $captainPath,
-                        'sign_status' => 'partially_signed',
+                        'sign_status'         => 'partially_signed',
                         'charterer_signed_at' => now(),
-                        'initiated_by' => 'charterer',
-                        'payor'        => 'charterer',
+                        'initiated_by'        => 'charterer',
+                        'payor'               => 'charterer',
                     ]
                 );
-
-        $agreement->charterEvent->vessel->owner->user->notify(
-            new AgreementSignedNotification($agreement, $charterer->user)
-    
-        );
             }
 
+            // Step 2: Update event status now that signing is recorded.
             if (in_array($event->status, ['awaiting_responses', 'draft'])) {
                 $event->update(['status' => 'agreements_signed']);
             }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Agreement PDF generation failed', [
-                'charter_event_id' => $event->id,
-                'error' => $e->getMessage(),
-            ]);
 
-            return back()->with('error', 'Failed to generate agreement documents. Please try again.');
+            // Step 3: Attempt PDF generation as best-effort (non-blocking).
+            // If PDF generation fails, signing is already recorded above — user still proceeds to insurance.
+            try {
+                $bareboatPath = $pdfService->generateBareboatAgreement($event);
+                $bareboatAgreement->update(['pdf_path' => $bareboatPath]);
+
+                foreach ($acceptedCaptains as $crewResponse) {
+                    $captain = $crewResponse->captainProfile;
+                    if (! $captain) {
+                        continue;
+                    }
+
+                    $captainPath = $pdfService->generateCaptainHireAgreement($event, $captain);
+
+                    $agreement = $captainAgreements[$captain->id] ?? null;
+                    if ($agreement) {
+                        $agreement->update(['pdf_path' => $captainPath]);
+
+                        if ($event->vessel && $event->vessel->owner && $event->vessel->owner->user) {
+                            $event->vessel->owner->user->notify(
+                                new AgreementSignedNotification($agreement, $charterer->user)
+                            );
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Agreement PDF generation failed (non-blocking)', [
+                    'charter_event_id' => $event->id,
+                    'error'            => $e->getMessage(),
+                ]);
+                // Do NOT return back() here — signing is already recorded, user should proceed.
+            }
+
+            return redirect()->route('charterer.insurance')
+                ->with('success', 'Agreements signed and saved successfully.');
         }
 
-        return redirect()->route('charterer.insurance')
-            ->with('success', 'Agreements signed and saved successfully.');
+
+public function downloadAgreement(string $agreementId): StreamedResponse
+{
+    $user = auth()->user();
+    
+    // Find the agreement
+    $agreement = \App\Models\CharterHireAgreement::with([
+        'charterEvent.vessel.owner.user',
+        'charterer.user',
+        'captainProfile.user',
+    ])->findOrFail($agreementId);
+
+    // Check if the current user is authorized to download this agreement
+    $isCharterer = $agreement->charterer && $agreement->charterer->user_id === $user->id;
+    $isCaptain = $agreement->captainProfile && $agreement->captainProfile->user_id === $user->id;
+    $isOwner = $agreement->charterEvent && $agreement->charterEvent->vessel && 
+               $agreement->charterEvent->vessel->owner && 
+               $agreement->charterEvent->vessel->owner->user_id === $user->id;
+
+    if (!$isCharterer && !$isCaptain && !$isOwner) {
+        abort(403, 'Unauthorized to download this agreement.');
     }
 
-
-    public function downloadAgreement(string $agreementId): \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\RedirectResponse
-    {
-        $user = auth()->user();
-
-        $agreement = \App\Models\CharterHireAgreement::with([
-            'charterEvent.vessel.owner.user',
-            'charterer.user',
-            'captainProfile.user',
-        ])->findOrFail($agreementId);
-
-
-        $isCharterer = $agreement->charterer?->user_id === $user->id;
-        $isCaptain   = $agreement->captainProfile?->user_id === $user->id;
-        $isOwner     = $agreement->charterEvent?->vessel?->owner?->user_id === $user->id;
-
-        if (! $isCharterer && ! $isCaptain && ! $isOwner) {
-            abort(403, 'You are not authorized to download this document.');
-        }
-        if ($isOwner && $agreement->agreement_type !== 'bareboat') {
-            abort(403, 'Owners can only download the owner-charterer agreement.');
-        }
-        $path = $agreement->pdf_path;
-
-        if (! $path || ! \Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
-            abort(404, 'Agreement document not found.');
-        }
-
-        $filename = basename($path);
-
-        return \Illuminate\Support\Facades\Storage::disk('local')->download($path, $filename, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+    // Get the PDF path from the agreement
+    $path = $agreement->pdf_path;
+    
+    if (!$path || !Storage::disk('private')->exists($path)) {
+        abort(404, 'Agreement document not found.');
     }
+
+    // Return the file as a download
+    return Storage::disk('private')->download($path, basename($path));
+}
 }

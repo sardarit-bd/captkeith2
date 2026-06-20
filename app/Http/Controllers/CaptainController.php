@@ -6,20 +6,21 @@ use App\Models\CaptainProfile;
 use App\Models\OwnerCaptainInvitation;
 use App\Models\OwnerProfile;
 use App\Models\Vessel;
-use App\Models\VesselMatch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\User;
 
 class CaptainController extends Controller
 {
     public function index(Request $request): Response
     {
         $query = CaptainProfile::query()
+            ->where('status', 'approved')
             ->whereNull('deleted_at')
             ->with('user');
-
+        // dd($query);
         if ($request->filled('license_type')) {
             $query->where('license_type', $request->input('license_type'));
         }
@@ -42,8 +43,13 @@ class CaptainController extends Controller
                 'availability' => 'Available',
                 'photo'        => $captain->photo_path ? Storage::url($captain->photo_path) : null,
                 'is_verified'  => $captain->is_verified,
+                'status'       => $captain->status,
             ]);
 
+        // if (! $request->user()->hasRole('admin') && $captain->status !== 'approved') {
+        //     abort(404);
+        // }
+        // dd($captains);
         $owner = OwnerProfile::where('user_id', $request->user()->id)->first();
 
         $vesselIds = $owner
@@ -99,137 +105,54 @@ class CaptainController extends Controller
                 : [],
             'invitations'            => $invitations,
             'acceptedCaptainIds'     => $acceptedCaptainIds,
-            'acceptedViaInterestIds' => [], // deprecated — kept for frontend compatibility
+            'acceptedViaInterestIds' => [], 
             'interestedCaptainIds'   => $interestedCaptainIds,
         ]);
     }
 
-    public function show(Request $request, CaptainProfile $captain): Response
+    public function show(CaptainProfile $captain)
     {
-        $owner = OwnerProfile::where('user_id', $request->user()->id)->first();
-
-        $vessels = $owner
-            ? Vessel::where('owner_id', $owner->id)
-            ->whereNull('deleted_at')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get()
-            ->map(fn($v) => ['value' => $v->id, 'label' => $v->name])
-            : [];
-
-        $invitations = $owner
-            ? OwnerCaptainInvitation::where('owner_id', $owner->id)
-            ->where('captain_id', $captain->id)
-            ->get()
-            ->pluck('status', 'vessel_id')
-            : collect();
-
-        $isAccepted = $owner
-            ? OwnerCaptainInvitation::whereIn(
-                'vessel_id',
-                Vessel::where('owner_id', $owner->id)->whereNull('deleted_at')->pluck('id')
-            )
-            ->where('captain_id', $captain->id)
-            ->where('status', 'accepted')
-            ->exists()
-            : false;
-
-        $hasInterest = $owner
-            ? OwnerCaptainInvitation::whereIn(
-                'vessel_id',
-                Vessel::where('owner_id', $owner->id)->whereNull('deleted_at')->pluck('id')
-            )
-            ->where('captain_id', $captain->id)
-            ->whereIn('status', ['pending', 'accepted'])
-            ->exists()
-            : false;
-
-        $licenseLabels = [
-            'oupv'    => 'OUPV (Six-Pack)',
-            'masters' => 'Master License',
-        ];
-
-        $endorsementLabels = [
-            'inland'       => 'Inland Waters',
-            'near_coastal' => 'Near Coastal',
-            'unlimited'    => 'Unlimited',
-        ];
-
-        $matchedVessels = Vessel::query()
-            ->with(['photos' => fn($q) => $q->orderBy('display_order'), 'owner'])
-            ->where('is_active', true)
-            ->whereNull('deleted_at')
-            ->whereHas(
-                'matches',
-                fn($q) => $q
-                    ->where('profile_id', $captain->id)
-                    ->where('profile_type', 'captain')
-            )
-            ->get()
-            ->map(function (Vessel $vessel) use ($licenseLabels, $endorsementLabels) {
-                $photo          = $vessel->photos->first();
-                $qualifications = [];
-
-                if ($vessel->required_license_type) {
-                    $qualifications[] = $licenseLabels[$vessel->required_license_type] ?? $vessel->required_license_type;
-                }
-                if ($vessel->required_endorsement) {
-                    $qualifications[] = $endorsementLabels[$vessel->required_endorsement] ?? $vessel->required_endorsement;
-                }
-                if ($vessel->required_tonnage_rating) {
-                    $qualifications[] = $vessel->required_tonnage_rating . ' Ton Rating';
-                }
-                if ($vessel->required_years_experience) {
-                    $qualifications[] = $vessel->required_years_experience . '+ Years Experience';
-                }
-
-                return [
-                    'id'             => $vessel->id,
-                    'name'           => $vessel->name,
-                    'registrationNo' => $vessel->official_number,
-                    'type'           => ucfirst($vessel->vessel_type ?? ''),
-                    'length'         => $vessel->length_ft ? $vessel->length_ft . ' ft' : null,
-                    'marina'         => $vessel->marina_name,
-                    'city'           => $vessel->marina_city,
-                    'state'          => $vessel->marina_state,
-                    'operatingArea'  => $vessel->operating_area,
-                    'qualifications' => $qualifications,
-                    'image'          => $photo?->image_path ? Storage::url($photo->image_path) : null,
-                    'ownerUserId'    => $vessel->owner?->user_id,
-                    'interestStatus' => null,
-                ];
-            })
-            ->values();
-
-        return Inertia::render('captains/show', [
+        $captain->load('user');
+        
+        return Inertia::render('admin/captains/show', [
             'captain' => [
-                'id'                   => $captain->id,
-                'user_id'              => $captain->user_id,
-                'name'                 => $captain->full_name,
-                'photo'                => $captain->photo_path ? Storage::url($captain->photo_path) : null,
-                'location'             => trim(collect([$captain->city, $captain->state])->filter()->implode(', ')),
-                'phone'                => $captain->phone,
-                'license'              => isset($captain->license_type) ? ($licenseLabels[$captain->license_type] ?? $captain->license_type) : '—',
-                'endorsement'          => isset($captain->endorsement) ? ($endorsementLabels[$captain->endorsement] ?? $captain->endorsement) : '—',
-                'tonnage_rating'       => $captain->tonnage_rating ? $captain->tonnage_rating . ' Ton' : '—',
-                'years_experience'     => $captain->years_experience ? $captain->years_experience . ' years' : '—',
-                'boats_worked_on'      => $captain->boats_worked_on ?? '—',
-                'bodies_of_water'      => $captain->bodies_of_water ?? '—',
-                'geographic_area'      => $captain->geographic_area ?? '—',
-                'hourly_rate'          => $captain->hourly_rate ? '$' . number_format($captain->hourly_rate, 0) . '/hr' : '—',
-                'can_provide_deckhand' => $captain->can_provide_deckhand,
-                'deckhand_hourly_rate' => $captain->deckhand_hourly_rate ? '$' . number_format($captain->deckhand_hourly_rate, 0) . '/hr' : null,
-                'is_verified'          => $captain->is_verified,
-                'travel_radius_miles'  => $captain->travel_radius_miles,
-                'resume_url'           => $captain->resume_path ? Storage::url($captain->resume_path) : null,
-                'license_doc_url'      => $captain->license_doc_path ? Storage::url($captain->license_doc_path) : null,
+                'id' => $captain->id,
+                'user_id' => $captain->user_id,
+                'full_name' => $captain->full_name,
+                'phone' => $captain->phone,
+                'email' => $captain->user->email,
+                'address' => $captain->address,
+                'city' => $captain->city,
+                'state' => $captain->state,
+                'zip_code' => $captain->zip_code,
+                'license_type' => $captain->license_type,
+                'endorsement' => $captain->endorsement,
+                'tonnage_rating' => $captain->tonnage_rating,
+                'years_experience' => $captain->years_experience,
+                'hourly_rate' => $captain->hourly_rate,
+                'status' => $captain->status ?? 'pending',
+                'is_verified' => $captain->is_verified,
+                'resume_path' => $captain->resume_path,
+                'license_doc_path' => $captain->license_doc_path,
+                'photo_path' => $captain->photo_path,
+                'created_at' => $captain->created_at,
+                'updated_at' => $captain->updated_at,
             ],
-            'vessels'        => $vessels,
-            'invitations'    => $invitations,
-            'isAccepted'     => $isAccepted,
-            'hasInterest'    => $hasInterest,
-            'matchedVessels' => $matchedVessels,
         ]);
+    }
+
+    public function approve(CaptainProfile $captain)
+    {
+        $captain->update(['status' => 'approved']);
+        
+        return back()->with('success', 'Captain approved successfully');
+    }
+
+    public function reject(CaptainProfile $captain)
+    {
+        $captain->update(['status' => 'rejected']);
+        
+        return back()->with('success', 'Captain rejected');
     }
 
     public function acceptRequest(Request $request, CaptainProfile $captain)
@@ -254,4 +177,49 @@ class CaptainController extends Controller
 
     return back()->with('success', 'Captain request accepted successfully.');
 }
+
+    public function profile(string $id)
+    {
+        $captain = CaptainProfile::with('user')->findOrFail($id);
+        
+        return Inertia::render('admin/captains/[id]/profile', [
+            'captain' => $captain,
+        ]);
+    }
+
+    public function showProfile(User $captain)
+    {
+        $captainProfile = CaptainProfile::where('user_id', $captain->id)->firstOrFail();
+        $captainProfile->load('user');
+        
+        return Inertia::render('admin/captains/[id]/profile', [
+            'captain' => [
+                'id' => $captainProfile->id,
+                'user_id' => $captainProfile->user_id,
+                'full_name' => $captainProfile->full_name,
+                'email' => $captainProfile->user?->email ?? 'No email',
+                'phone' => $captainProfile->phone,
+                'address' => $captainProfile->address,
+                'city' => $captainProfile->city,
+                'state' => $captainProfile->state,
+                'zip_code' => $captainProfile->zip_code,
+                'license_type' => $captainProfile->license_type,
+                'endorsement' => $captainProfile->endorsement,
+                'tonnage_rating' => $captainProfile->tonnage_rating,
+                'years_experience' => $captainProfile->years_experience,
+                'boats_worked_on' => $captainProfile->boats_worked_on,
+                'bodies_of_water' => $captainProfile->bodies_of_water,
+                'geographic_area' => $captainProfile->geographic_area,
+                'hourly_rate' => $captainProfile->hourly_rate,
+                'status' => $captainProfile->status,
+                'is_verified' => $captainProfile->is_verified,
+                'created_at' => $captainProfile->created_at,
+                'updated_at' => $captainProfile->updated_at,
+                
+                'resume_path' => $captainProfile->resume_path ? asset('storage/' . $captainProfile->resume_path) : null,
+                'license_doc_path' => $captainProfile->license_doc_path ? asset('storage/' . $captainProfile->license_doc_path) : null,
+                'photo_path' => $captainProfile->photo_path ? asset('storage/' . $captainProfile->photo_path) : null,
+            ],
+        ]);
+    }
 }

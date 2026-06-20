@@ -31,21 +31,21 @@ export const platformSettingsTabs: PlatformSettingsTab[] = [
         label: 'USCG Taxonomy',
         icon: BookOpen,
     },
-    {
-        id: 'vquip',
-        label: 'Integrations (VQUIP)',
-        icon: Plug,
-    },
-    {
-        id: 'notifications',
-        label: 'Notifications',
-        icon: BellRing,
-    },
-    {
-        id: 'security',
-        label: 'Security & Access',
-        icon: Shield,
-    },
+    // {
+    //     id: 'vquip',
+    //     label: 'Integrations (VQUIP)',
+    //     icon: Plug,
+    // },
+    // {
+    //     id: 'notifications',
+    //     label: 'Notifications',
+    //     icon: BellRing,
+    // },
+    // {
+    //     id: 'security',
+    //     label: 'Security & Access',
+    //     icon: Shield,
+    // },
 ];
 
 export const uscgLicenseTypes = [

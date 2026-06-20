@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import {
-    adminUsers,
+    // adminUsers, // <-- Removed this as it doesn't exist in @/routes
     captains,
     charterers,
     complianceLog,
@@ -56,9 +56,10 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
     if (role === 'admin') {
         return [
             sharedItems[0],
-            { title: 'Users', href: adminUsers(), icon: Users },
+            // <-- Changed adminUsers() to the hardcoded string '/admin/users'
+            { title: 'Users', href: '/admin/users', icon: Users },
             { title: 'Vessel Inventory', href: vesselInventory(), icon: Ship },
-            { title: 'Compliance Log', href: complianceLog(), icon: ShieldCheck },
+            // { title: 'Compliance Log', href: complianceLog(), icon: ShieldCheck },
             { title: 'Platform Settings', href: platformSettings(), icon: Settings },
         ];
     }
@@ -116,6 +117,7 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
 
     return sharedItems;
 }
+
 export function AppSidebar() {
     const page = usePage<{ auth?: { role?: string | null }, pendingCaptainRequestsCount?: number, pendingOwnerInvitationsCount?: number , pendingDeckhandRequestsCount?: number , pendingCharterInvitationsCount?: number , pendingOwnerInvitationsCountForDeckhand?: number , pendingCaptainInvitationsCountForDeckhand?: number}>();
     const cleanup = useMobileNavigation();
@@ -127,12 +129,8 @@ export function AppSidebar() {
     const pendingCaptainInvitationsCountForDeckhand = page.props.pendingCaptainInvitationsCountForDeckhand || 0;
     const pendingOwnerInvitationsCountForDeckhand = page.props.pendingOwnerInvitationsCountForDeckhand ;
 
-
-    console.log('pendingCaptainInvitationsCountForDeckhand', pendingCaptainInvitationsCountForDeckhand);
-
-
     const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount, pendingOwnerInvitationsCount , pendingDeckhandRequestsCount , pendingCharterInvitationsCount,pendingOwnerInvitationsCountForDeckhand, pendingCaptainInvitationsCountForDeckhand);
-    // console.log('pendingDeckhandRequestsCount', pendingDeckhandRequestsCount);
+    
     const handleLogout = () => {
         cleanup();
         router.flushAll();
@@ -140,7 +138,6 @@ export function AppSidebar() {
 
     return (
         <Sidebar
-
             variant="sidebar"
             className="border-r border-[#e5e7eb] bg-[#f6f7f9]"
         >

@@ -1,10 +1,11 @@
 <?php
 
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -34,16 +35,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'required_tonnage_rating',
     'required_years_experience',
     'is_active',
+    'status',
 ])]
 class Vessel extends Model
 {
     use HasUuids, SoftDeletes;
 
+    public function ownerProfile(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(OwnerProfile::class, 'owner_id');
+    }
     public function owner(): BelongsTo
     {
         return $this->belongsTo(OwnerProfile::class, 'owner_id');
     }
-
     public function photos(): HasMany
     {
         return $this->hasMany(VesselPhoto::class)->orderBy('display_order');

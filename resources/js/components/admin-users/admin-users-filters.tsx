@@ -1,66 +1,82 @@
-import { Download, Filter, Search } from 'lucide-react';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    adminUserRoleFilters,
-    adminUserStatusFilters,
-} from './admin-users-data';
+import { Search, Filter, Download } from 'lucide-react';
 
-export function AdminUsersFilters() {
+interface AdminUsersFiltersProps {
+    search: string;
+    onSearchChange: (value: string) => void;
+    role: string;
+    onRoleChange: (value: string) => void;
+    status: string;
+    onStatusChange: (value: string) => void;
+    roles?: string[]; // Make optional with '?'
+    statuses?: string[]; // Make optional with '?'
+    total: number;
+}
+
+export default function AdminUsersFilters({
+    search,
+    onSearchChange,
+    role,
+    onRoleChange,
+    status,
+    onStatusChange,
+    roles = [], // Default to empty array
+    statuses = [], // Default to empty array
+    total,
+}: AdminUsersFiltersProps) {
     return (
-        <section className="mb-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-[#e6ebf1] bg-white p-4 shadow-sm lg:flex-row">
-            <div className="relative w-full lg:w-96">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                    type="text"
-                    placeholder="Search users by name, email, or ID..."
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pr-4 pl-10 text-sm transition-all focus:border-[#35ADD5] focus:outline-none focus:ring-2 focus:ring-[#35ADD5]/20"
-                />
-            </div>
-
-            <div className="flex w-full items-center gap-3 overflow-x-auto pb-1 lg:w-auto lg:pb-0">
-                <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-600">
-                    <Filter className="ml-3 h-4 w-4" />
-                    <Select defaultValue={adminUserRoleFilters[0]}>
-                        <SelectTrigger className="h-10 w-[11rem] border-0 bg-transparent shadow-none focus-visible:ring-0">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent side="bottom" align="start" sideOffset={6}>
-                            {adminUserRoleFilters.map((option) => (
-                                <SelectItem key={option} value={option}>
-                                    {option}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+        <div className="rounded-2xl border border-[#e6ebf1] bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                {/* Search */}
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search users by name, email, or ID..."
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 py-2 pl-10 pr-4 text-sm focus:border-[#35ADD5] focus:outline-none focus:ring-1 focus:ring-[#35ADD5]"
+                    />
                 </div>
 
-                <Select defaultValue={adminUserStatusFilters[0]}>
-                    <SelectTrigger className="h-10 w-[11rem] rounded-lg border-slate-200 bg-slate-50 font-medium text-slate-600 shadow-none focus-visible:ring-0">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent side="bottom" align="start" sideOffset={6}>
-                        {adminUserStatusFilters.map((option) => (
-                            <SelectItem key={option} value={option}>
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                {/* Filters & Export */}
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2">
+                        <Filter className="h-4 w-4 text-slate-400" />
+                        <select
+                            value={role}
+                            onChange={(e) => onRoleChange(e.target.value)}
+                            className="bg-transparent text-sm text-slate-700 focus:outline-none"
+                        >
+                            <option value="all">All Roles</option>
+                            {roles.map((r) => (
+                                <option key={r} value={r}>{r}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#e6ebf1] bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-[#35ADD5] transition-colors hover:bg-slate-50"
-                >
-                    <Download className="h-4 w-4" />
-                    Export CSV
-                </button>
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2">
+                        <select
+                            value={status}
+                            onChange={(e) => onStatusChange(e.target.value)}
+                            className="bg-transparent text-sm text-slate-700 focus:outline-none"
+                        >
+                            <option value="all">All Statuses</option>
+                            {statuses.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button className="flex items-center gap-2 rounded-lg border border-[#35ADD5] px-4 py-2 text-sm font-medium text-[#35ADD5] transition-colors hover:bg-[#35ADD5] hover:text-white">
+                        <Download className="h-4 w-4" />
+                        Export CSV
+                    </button>
+                </div>
             </div>
-        </section>
+            
+            <div className="mt-3 text-xs text-slate-500">
+                Showing results for {total} total users
+            </div>
+        </div>
     );
 }

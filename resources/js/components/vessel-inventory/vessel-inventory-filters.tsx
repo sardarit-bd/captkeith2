@@ -1,66 +1,61 @@
-import { Plus, Search, Ship } from 'lucide-react';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    vesselStatusFilters,
-    vesselTypeFilters,
-} from './vessel-inventory-data';
+import { router } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
-export function VesselInventoryFilters() {
+interface Props {
+    initialFilters: { search?: string; type?: string; status?: string };
+}
+
+export function VesselInventoryFilters({ initialFilters }: Props) {
+    const [search, setSearch] = useState(initialFilters.search || '');
+    const [type, setType] = useState(initialFilters.type || 'all');
+    const [status, setStatus] = useState(initialFilters.status || 'all');
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            router.get(
+                route('vessel-inventory'),
+                { search, type, status },
+                { preserveState: true, preserveScroll: true, replace: true }
+            );
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [search, type, status]);
+
+    // Render your existing filter UI here, binding values to these state variables
+    // Example:
+    // <input value={search} onChange={(e) => setSearch(e.target.value)} />
+    // <select value={type} onChange={(e) => setType(e.target.value)}>...</select>
+    // <select value={status} onChange={(e) => setStatus(e.target.value)}>...</select>
+    
     return (
-        <section className="mb-6 flex flex-col justify-between gap-4 rounded-2xl border border-[#e6ebf1] bg-white p-4 shadow-sm xl:flex-row xl:items-center">
-            <div className="relative w-full xl:w-96">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                    type="text"
-                    placeholder="Search by vessel name, official number..."
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-4 pl-10 text-sm transition-all focus:border-[#35ADD5] focus:outline-none focus:ring-2 focus:ring-[#35ADD5]/20"
-                />
-            </div>
-
-            <div className="flex w-full flex-wrap items-center gap-3 xl:w-auto">
-                <div className="flex flex-1 items-center rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-600 sm:flex-none">
-                    <Ship className="ml-3 h-4 w-4 shrink-0" />
-                    <Select defaultValue={vesselTypeFilters[0]}>
-                        <SelectTrigger className="h-10 w-full min-w-[11rem] border-0 bg-transparent font-medium text-slate-600 shadow-none focus-visible:ring-0 sm:w-[11rem]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent side="bottom" align="start" sideOffset={6}>
-                            {vesselTypeFilters.map((option) => (
-                                <SelectItem key={option} value={option}>
-                                    {option}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <Select defaultValue={vesselStatusFilters[0]}>
-                    <SelectTrigger className="h-10 w-full min-w-[11rem] rounded-lg border-slate-200 bg-slate-50 font-medium text-slate-600 shadow-none focus-visible:ring-0 sm:w-[11rem]">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent side="bottom" align="start" sideOffset={6}>
-                        {vesselStatusFilters.map((option) => (
-                            <SelectItem key={option} value={option}>
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <button
-                    type="button"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 sm:w-auto"
-                >
-                    <Plus className="h-4 w-4" />
-                    Add Vessel
-                </button>
-            </div>
-        </section>
+        <div className="mb-4 flex flex-wrap gap-4">
+            {/* Your existing filter inputs/selects go here */}
+            <input 
+                placeholder="Search by vessel name, official number..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="rounded-lg border border-[#e6ebf1] px-4 py-2 text-sm focus:border-[#35ADD5] focus:outline-none"
+            />
+            <select 
+                value={type} 
+                onChange={(e) => setType(e.target.value)}
+                className="rounded-lg border border-[#e6ebf1] px-4 py-2 text-sm focus:border-[#35ADD5] focus:outline-none"
+            >
+                <option value="all">All Types</option>
+                <option value="POWER">Power</option>
+                <option value="SAIL">Sail</option>
+            </select>
+            <select 
+                value={status} 
+                onChange={(e) => setStatus(e.target.value)}
+                className="rounded-lg border border-[#e6ebf1] px-4 py-2 text-sm focus:border-[#35ADD5] focus:outline-none"
+            >
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="pending_approval">Pending Approval</option>
+                <option value="flagged">Flagged</option>
+            </select>
+        </div>
     );
 }
