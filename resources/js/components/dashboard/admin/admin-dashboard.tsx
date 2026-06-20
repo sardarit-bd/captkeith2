@@ -21,7 +21,7 @@ export function AdminDashboard() {
     const verifications = dashboardData?.pending_verifications ?? [];
     const vessels = dashboardData?.pending_vessels ?? [];
     const events = dashboardData?.compliance_events ?? [];
-
+    console.log('verifications:', verifications);
     return (
         <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
             <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">

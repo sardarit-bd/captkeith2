@@ -178,5 +178,12 @@ public function index()
 }
 
 
-
+    public function approveVessel($vesselId)
+    {
+        $vessel = Vessel::findOrFail($vesselId);
+        $vessel->update([
+            'status' => 'approved', 
+        ]);
+        return redirect()->back()->with('success', 'Vessel has been approved successfully.');
+    }
 }

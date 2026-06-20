@@ -9,12 +9,15 @@ use Illuminate\Support\Facades\DB;
 class UserManagementService
 {
     public function getUsers(array $filters = []): array
-    {
+    {   
         $query = User::with(['ownerProfile', 'captainProfile', 'deckhandProfile', 'chartererProfile'])
             ->when($filters['search'] ?? null, function (Builder $q, string $search) {
                 $q->where(function (Builder $sub) use ($search) {
-                    $sub->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                $sub->where('email', 'like', "%{$search}%")
+                        ->orWhereHas('ownerProfile', fn(Builder $p) => $p->where('full_name', 'like', "%{$search}%"))
+                        ->orWhereHas('captainProfile', fn(Builder $p) => $p->where('full_name', 'like', "%{$search}%"))
+                        ->orWhereHas('deckhandProfile', fn(Builder $p) => $p->where('full_name', 'like', "%{$search}%"))
+                        ->orWhereHas('chartererProfile', fn(Builder $p) => $p->where('full_name', 'like', "%{$search}%"));
                 });
             })
             ->when($filters['role'] ?? null, function (Builder $q, string $role) {
@@ -31,21 +34,21 @@ class UserManagementService
             });
 
         $total = $query->count();
-        
+        // dd($query);
         $users = $query->orderBy('created_at', 'desc')
             ->paginate($filters['per_page'] ?? 10)
             ->through(fn(User $user) => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $this->getFullName($user),
                 'email' => $user->email,
                 'avatar' => $user->profile_photo_url ?? null,
-                'initials' => strtoupper(substr($user->name, 0, 2)),
+                'initials' => strtoupper(substr($this->getFullName($user), 0, 2)),
                 'role' => $this->getPrimaryRole($user),
                 'status' => $user->status ?? 'active',
                 // 'key_details' => $this->getKeyDetails($user),
                 'joined' => $user->created_at->format('M d, Y'),
             ]);
-
+// dd($users);
         return [
             'users' => $users,
             'total' => $total,
@@ -65,7 +68,15 @@ class UserManagementService
         if ($user->chartererProfile) return 'Charterer';
         return 'User';
     }
-
+private function getFullName(User $user): string
+    {
+        // Pull full_name from whichever profile is attached; fall back to email if none exists yet.
+        if ($user->captainProfile) return $user->captainProfile->full_name;
+        if ($user->ownerProfile) return $user->ownerProfile->full_name;
+        if ($user->deckhandProfile) return $user->deckhandProfile->full_name;
+        if ($user->chartererProfile) return $user->chartererProfile->full_name;
+        return $user->email;
+    }
     private function getKeyDetails(User $user): array
     {
         $details = [];

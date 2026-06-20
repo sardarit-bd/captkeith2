@@ -9,15 +9,16 @@ interface Props {
 
 export default function VesselInventory({ vessels, filters }: Props) {
     return (
-        <AppLayout>
+        <>
             <Head title="Vessel Inventory" />
             <VesselInventoryPageContent vessels={vessels} initialFilters={filters} />
-        </AppLayout>
+        </>
     );
 }
 
 VesselInventory.layout = {
-    breadcrumbs: [{ title: 'Vessel Inventory', href: '/admin/vessel-inventory' }],
+    breadcrumbs: [{ title: 'Vessel Inventory', href: '/admin/vessel-inventory' 
+    }],
     pageHeader: {
         title: 'Vessel Inventory',
         description: 'Manage fleet, oversee demise compliance, and approve listings.',

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use App\Models\User;
 class DeckhandController extends Controller
 {
     public function index(Request $request): Response
@@ -158,9 +158,10 @@ class DeckhandController extends Controller
     }
 
 
-    public function showProfile(DeckhandProfile $deckhand)
-    {
-        $deckhand->load('user');
+        public function showProfile(User $deckhand)
+        {
+            $deckhandProfile = \App\Models\DeckhandProfile::where('user_id', $deckhand->id)->firstOrFail();
+            $deckhandProfile->load('user');
         
         return Inertia::render('admin/deckhands/[id]/profile', [
             'deckhand' => [

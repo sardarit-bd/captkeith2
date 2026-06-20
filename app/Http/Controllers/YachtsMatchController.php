@@ -30,6 +30,18 @@ class YachtsMatchController extends Controller
             ]);
         }
 
+
+       $isProfileRestricted = ($profile->status === 'pending') || empty($profile->is_active);
+
+        if (($isCaptain || $isDeckhand) && $isProfileRestricted) {
+            return Inertia::render('yachts-match', [
+                'vessels'                 => [],
+                'profileMissing'          => true, 
+                'interestStatuses'        => [],
+                'ownerInvitationStatuses' => [],
+            ]);
+        }
+ 
         $query = Vessel::query()
                 ->with([
                     'photos' => fn($q) => $q->orderBy('display_order'),
@@ -37,6 +49,7 @@ class YachtsMatchController extends Controller
                 ])
 
             ->where('is_active', true)
+            ->where('status', 'approved')
             ->whereNull('deleted_at');
 
         if ($isCaptain) {

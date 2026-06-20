@@ -47,7 +47,7 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
     const availableStatuses = userData?.filters?.statuses ?? ['Active', 'Verified', 'Pending Review', 'Suspended'];
 
     return (
-        <AppLayout>
+        <>
             {/* <Head title="Users Directory" /> */}
             <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
@@ -83,21 +83,21 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
 
 
-// UsersPage.layout = {
-//     breadcrumbs: [
-//         {
-//             title: 'Vessel Inventory',
-//             href: UsersPage(),
-//         },
-//     ],
-//     pageHeader: {
-//         title: 'Vessel Inventory',
-//         description:
-//             'Manage fleet, oversee demise compliance, and approve listings.',
-//     },
-// };
+UsersPage.layout = {
+    breadcrumbs: [
+        {
+            title: 'Users Directory',
+            href: '/admin/users',
+        },
+    ],
+    pageHeader: {
+        title: 'Users Directory',
+        description:
+            'Manage fleet, oversee demise compliance, and approve listings.',
+    },
+};

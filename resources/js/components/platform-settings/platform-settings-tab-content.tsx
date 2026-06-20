@@ -7,24 +7,28 @@ import { PlatformSettingsVquipTab } from './platform-settings-vquip-tab';
 
 export function PlatformSettingsTabContent({
     activeTab,
+    data,
+    setData,
 }: {
     activeTab: PlatformSettingsTabId;
+    data: any;
+    setData: any;
 }) {
     if (activeTab === 'general') {
-        return <PlatformSettingsGeneralTab />;
+        return <PlatformSettingsGeneralTab data={data} setData={setData} />;
     }
 
     if (activeTab === 'uscg') {
-        return <PlatformSettingsUscgTab />;
+        return <PlatformSettingsUscgTab data={data} setData={setData} />;
     }
 
     if (activeTab === 'vquip') {
-        return <PlatformSettingsVquipTab />;
+        return <PlatformSettingsVquipTab data={data} setData={setData} />;
     }
 
     if (activeTab === 'notifications') {
-        return <PlatformSettingsNotificationsTab />;
+        return <PlatformSettingsNotificationsTab data={data} setData={setData} />;
     }
 
-    return <PlatformSettingsSecurityTab />;
+    return <PlatformSettingsSecurityTab data={data} setData={setData} />;
 }

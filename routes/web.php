@@ -24,43 +24,6 @@
                 Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
                 Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
             });
-
-                // Captain and Deckhand approval routes
-                Route::middleware(['auth', 'verified'])->group(function () {
-                    // Captain approval
-                    // Route::put('/admin/captains/{captain}/approve', [CaptainController::class, 'approve'])
-                    //     ->name('admin.captains.approve')
-                    //     ->middleware('can:admin');
-                    
-                    // Route::put('/admin/captains/{captain}/reject', [CaptainController::class, 'reject'])
-                    //     ->name('admin.captains.reject')
-                    //     ->middleware('can:admin');
-                    
-
-                    
-                    // Deckhand approval
-                    // Route::put('/admin/deckhands/{deckhand}/approve', [DeckhandController::class, 'approve'])
-                    //     ->name('admin.deckhands.approve')
-                    //     ->middleware('can:admin');
-                    
-                    // Route::put('/admin/deckhands/{deckhand}/reject', [DeckhandController::class, 'reject'])
-                    //     ->name('admin.deckhands.reject')
-                    //     ->middleware('can:admin');
-                    
-
-                    
-                    // Vessel approval
-                    // Route::put('/admin/vessels/{vessel}/approve', [VesselInventoryController::class, 'approve'])
-                    //     ->name('admin.vessels.approve')
-                    //     ->middleware('can:admin');
-                    
-                    // Route::put('/admin/vessels/{vessel}/reject', [VesselInventoryController::class, 'reject'])
-                    //     ->name('admin.vessels.reject')
-                    //     ->middleware('can:admin');
-                    
-
-                });
-
             Route::get('/notifications', function () {
                 return Inertia::render('notifications', [
                     'notifications' => auth()->user()
@@ -84,12 +47,12 @@
             });
 
 
-            Route::middleware(['auth', 'role:admin'])->group(function () {
-                Route::patch('/vessels/{vessel}/approve', [VesselController::class, 'approve'])
-                    ->name('admin.vessels.approve');
-                Route::patch('/vessels/{vessel}/reject', [VesselController::class, 'reject'])
-                    ->name('admin.vessels.reject');
-            });
+                Route::middleware(['auth', 'role:admin'])->group(function () {
+                    Route::patch('/vessels/{vessel}/approve', [\App\Http\Controllers\Vessels\VesselController::class, 'approve'])
+                        ->name('admin.vessels.approve');
+                    Route::patch('/vessels/{vessel}/reject', [\App\Http\Controllers\Vessels\VesselController::class, 'reject'])
+                        ->name('admin.vessels.reject');
+                });
             Route::middleware('role:owner')->group(function () {
                 Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
                 Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
@@ -109,7 +72,7 @@
                     ->name('owner-settings.preferences');
                 Route::patch('owner/settings/deactivate', [\App\Http\Controllers\OwnerSettingsController::class, 'deactivate'])
                     ->name('owner-settings.deactivate');
-                    // Deckhands routes
+
                 Route::get('deckhands', [\App\Http\Controllers\DeckhandController::class, 'index'])->name('deckhands');
                 Route::post('deckhands/{deckhand}/invite', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'store'])
                     ->name('deckhands.invite.store');
@@ -157,19 +120,35 @@
                 Route::get('admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users');
                 Route::get('admin/vessel-inventory', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'index'])->name('vessel-inventory');
                 Route::inertia('admin/compliance-log', 'compliance-log')->name('compliance-log');
-                Route::inertia('admin/platform-settings', 'platform-settings')->name('platform-settings');
+                Route::get('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'index'])->name('platform-settings');
+                Route::put('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'update'])->name('platform-settings.update');
                 Route::inertia('admin/my-profile', 'admin/my-profile')->name('admin-my-profile');
                 Route::get('/admin/verifications', [\App\Http\Controllers\AdminDashboardController::class, 'verifications'])->name('admin.verifications');
-                // Captain profile view route
+           
                 Route::get('/admin/captains/{captain}/profile', [\App\Http\Controllers\CaptainController::class, 'showProfile'])
                     ->name('admin.captains.profile')
                     ->middleware('can:admin');
 
-                // Deckhand profile view route
+                Route::get('/admin/owners/{owner}/profile', [\App\Http\Controllers\OwnerProfileController::class, 'show'])
+                    ->name('admin.owners.profile')
+                    ->middleware('can:admin');
+                
+                Route::put('/admin/owners/{owner}', [\App\Http\Controllers\OwnerProfileController::class, 'update'])
+                    ->name('admin.owners.update')
+                    ->middleware('can:admin');
+                
+                // Charterer profile routes
+                Route::get('/admin/charterers/{charterer}/profile', [\App\Http\Controllers\ChartererProfileController::class, 'show'])
+                    ->name('admin.charterers.profile')
+                    ->middleware('can:admin');
+                
+                Route::put('/admin/charterers/{charterer}', [\App\Http\Controllers\ChartererProfileController::class, 'update'])
+                    ->name('admin.charterers.update')
+                    ->middleware('can:admin');
                 Route::get('/admin/deckhands/{deckhand}/profile', [\App\Http\Controllers\DeckhandController::class, 'showProfile'])
                     ->name('admin.deckhands.profile')
                     ->middleware('can:admin');
-                // Approval routes
+        
                 Route::patch('admin/vessels/{vessel}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveVessel'])->name('admin.vessels.approve');
                 Route::patch('admin/vessels/{vessel}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectVessel'])->name('admin.vessels.reject');
                 Route::patch('admin/captains/{captain}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveCaptain'])->name('admin.captains.approve');

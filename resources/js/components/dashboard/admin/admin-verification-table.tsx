@@ -13,11 +13,7 @@ import { router } from '@inertiajs/react';
 interface VerificationItem {
     id: string;
     user_id: string;
-    user?: {
-        id: string;
-        name: string;
-        email: string;
-    };
+    user_name: string;
     type: 'captain' | 'deckhand';
     full_name?: string;
     license_type?: string;
@@ -61,7 +57,7 @@ export function AdminVerificationTable({ verifications }: AdminVerificationTable
                     <TableRow className="border-b bg-muted/50">
                         <TableHead className="text-xs font-medium uppercase text-muted-foreground">User</TableHead>
                         <TableHead className="text-xs font-medium uppercase text-muted-foreground">Type</TableHead>
-                        <TableHead className="text-xs font-medium uppercase text-muted-foreground">License/Details</TableHead>
+                        {/* <TableHead className="text-xs font-medium uppercase text-muted-foreground">License/Details</TableHead> */}
                         <TableHead className="text-xs font-medium uppercase text-muted-foreground">Submitted</TableHead>
                         <TableHead className="text-right text-xs font-medium uppercase text-muted-foreground">Actions</TableHead>
                     </TableRow>
@@ -71,7 +67,7 @@ export function AdminVerificationTable({ verifications }: AdminVerificationTable
                         <TableRow key={item.id} className="border-b last:border-0">
                             <TableCell>
                                 <div className="font-medium text-[#0ea5e9]">
-                                    {item.full_name || item.user?.name || 'Unknown User'}
+                                    { item?.user_name || 'Unknown User'}
                                 </div>
                             </TableCell>
                             <TableCell>
@@ -79,9 +75,9 @@ export function AdminVerificationTable({ verifications }: AdminVerificationTable
                                     {item.type}
                                 </Badge>
                             </TableCell>
-                            <TableCell>
+                            {/* <TableCell>
                                 {item.license_type || 'N/A'}
-                            </TableCell>
+                            </TableCell> */}
                             <TableCell>
                                 {item.submitted_at ? new Date(item.submitted_at).toLocaleDateString() : 'N/A'}
                             </TableCell>

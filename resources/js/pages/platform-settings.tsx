@@ -2,11 +2,11 @@ import { Head } from '@inertiajs/react';
 import { PlatformSettingsPageContent } from '@/components/platform-settings/platform-settings-page-content';
 import { platformSettings } from '@/routes';
 
-export default function PlatformSettingsPage() {
+export default function PlatformSettingsPage({ settings }: { settings: any }) {
     return (
         <>
             <Head title="Platform Settings" />
-            <PlatformSettingsPageContent />
+            <PlatformSettingsPageContent initialSettings={settings} />
         </>
     );
 }

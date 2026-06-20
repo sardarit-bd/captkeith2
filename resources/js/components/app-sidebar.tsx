@@ -59,7 +59,7 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
             // <-- Changed adminUsers() to the hardcoded string '/admin/users'
             { title: 'Users', href: '/admin/users', icon: Users },
             { title: 'Vessel Inventory', href: vesselInventory(), icon: Ship },
-            { title: 'Compliance Log', href: complianceLog(), icon: ShieldCheck },
+            // { title: 'Compliance Log', href: complianceLog(), icon: ShieldCheck },
             { title: 'Platform Settings', href: platformSettings(), icon: Settings },
         ];
     }

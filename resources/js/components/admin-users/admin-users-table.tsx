@@ -1,20 +1,21 @@
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-
+import { router } from '@inertiajs/react';
 interface AdminUsersTableProps {
-    users: Array<{
-        id: string | number;
-        name: string;
-        email: string;
-        avatar?: string | null;
-        initials: string;
-        role: string;
-        status: string;
-        key_details: string[];
-        joined: string;
-    }>;
+    users: {
+        users:{
+            data: any[];
+            current_page: number;
+            last_page: number;
+            total: number;
+            per_page: number;
+        }
+    }
     total: number;
     perPage: number;
+    currentPage: number;
+    lastPage: number;
     onPerPageChange: (value: number) => void;
+    onPageChange: (value: number) => void;
 }
 
 const roleColors: Record<string, string> = {
@@ -31,24 +32,45 @@ const statusColors: Record<string, string> = {
     Suspended: 'text-red-600',
 };
 
-export default function AdminUsersTable({ users, total, perPage, onPerPageChange }: AdminUsersTableProps) {
+export default function AdminUsersTable({ 
+    users, 
+    total, 
+    perPage, 
+    currentPage, 
+    lastPage, 
+    onPerPageChange, 
+    onPageChange 
+}: AdminUsersTableProps) {
+
+    const data = users?.users.data || [];
+    console.log('data', data);
+    const startIndex = (currentPage-1) * perPage + 1;
+    const endIndex = Math.min(currentPage * perPage, total);
+    console.log(users.users.current_page , users.users.last_page);
     return (
         <div className="rounded-2xl border border-[#e6ebf1] bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px] border-collapse text-left">
+                <table className="w-full min-w-225 border-collapse text-left">
                     <thead>
                         <tr className="border-b border-slate-100 bg-slate-50/50 text-xs tracking-wider text-slate-500 uppercase">
-                            <th className="px-6 py-4 font-medium">User Information</th>
+                            <th className="px-6 py-4 font-medium">ID</th>
+                            <th className="px-6 py-4 font-medium">User Name</th>
+                            <th className="px-6 py-4 font-medium">User Email</th>
                             <th className="px-6 py-4 font-medium">Platform Role</th>
                             <th className="px-6 py-4 font-medium">Status</th>
-                            <th className="px-6 py-4 font-medium">Key Details</th>
                             <th className="px-6 py-4 font-medium">Joined</th>
                             <th className="px-6 py-4 text-right font-medium">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm">
-                        {users.map((user) => (
+                        {data.map((user, index) => (
                             <tr key={user.id} className="transition-colors hover:bg-slate-50/50">
+                                <td className="px-6 py-4">
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700`}>
+
+                                        {index+1}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         {user.avatar ? (
@@ -59,10 +81,14 @@ export default function AdminUsersTable({ users, total, perPage, onPerPageChange
                                             </div>
                                         )}
                                         <div>
-                                            <p className="font-medium text-[#35ADD5]">{user.name}</p>
-                                            <p className="text-xs text-slate-500">{user.email}</p>
+                                            <p className="font-medium text-[#35ADD5]">{user.name || "N/A"}</p>
                                         </div>
                                     </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700`}>
+                                        {user.email}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${roleColors[user.role] || 'bg-slate-100 text-slate-700'}`}>
@@ -75,21 +101,26 @@ export default function AdminUsersTable({ users, total, perPage, onPerPageChange
                                         {user.status}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <div className="space-y-0.5">
-                                        {user.key_details.map((detail, i) => (
-                                            <p key={i} className={`text-xs ${i === 0 ? 'font-medium text-slate-700' : 'text-slate-500'}`}>
-                                                {detail}
-                                            </p>
-                                        ))}
-                                    </div>
-                                </td>
                                 <td className="px-6 py-4 text-xs text-slate-500">{user.joined}</td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center justify-end gap-2">
-                                        <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#35ADD5]">
+                                        <button 
+                                            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#35ADD5]"
+                                            onClick={() => {
+                                                // Dynamic route based on user role
+                                                const profileRoute = {
+                                                    'Captain': `/admin/captains/${user.id}/profile`,
+                                                    'Owner': `/admin/owners/${user.id}/profile`,
+                                                    'Deckhand': `/admin/deckhands/${user.id}/profile`,
+                                                    'Charterer': `/admin/charterers/${user.id}/profile`,
+                                                }[user.role] || `/admin/users/${user.id}/profile`;
+                                                
+                                                router.visit(profileRoute);
+                                            }}
+                                        >
                                             <Eye className="h-4 w-4" />
                                         </button>
+                                        {/* /admin/captains/019ee422-edf2-7290-bd51-e84be4968f71/profile */}
                                         <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#35ADD5]">
                                             <Pencil className="h-4 w-4" />
                                         </button>
@@ -101,9 +132,10 @@ export default function AdminUsersTable({ users, total, perPage, onPerPageChange
                             </tr>
                         ))}
                         
-                        {users.length === 0 && (
+                        {data.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+
+                                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                     No users found matching your criteria.
                                 </td>
                             </tr>
@@ -112,13 +144,15 @@ export default function AdminUsersTable({ users, total, perPage, onPerPageChange
                 </table>
             </div>
 
-            {/* Pagination */}
+
             <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4">
+
                 <p className="text-sm text-slate-600">
-                    Showing <span className="font-medium">{users.length > 0 ? 1 : 0}</span> to{' '}
-                    <span className="font-medium">{users.length}</span> of{' '}
+                    Showing <span className="font-medium">{total === 0 ? 0 : perPage * (users.users.current_page - 1) + 1}</span> to{' '}
+                    <span className="font-medium">{Math.min(users.users.current_page * perPage, total)}</span> of{' '}
                     <span className="font-medium">{total}</span> results
                 </p>
+
                 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -136,12 +170,38 @@ export default function AdminUsersTable({ users, total, perPage, onPerPageChange
                     </div>
                     
                     <div className="flex gap-2">
-                        <button disabled className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-400 cursor-not-allowed">
+                 
+                             {
+                            users.users.current_page >= 2 && (
+                            <button 
+                            onClick={() => onPageChange(currentPage - 1)}
+                            disabled={currentPage <= 1}
+                            className={`rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium transition-colors ${
+                                currentPage <= 1 
+                                    ? 'text-slate-400 cursor-not-allowed' 
+                                    : 'text-slate-700 hover:bg-slate-100'
+                            }`}
+                        >
                             Previous
                         </button>
-                        <button className="rounded-lg border border-[#35ADD5] px-4 py-2 text-sm font-medium text-[#35ADD5] hover:bg-[#35ADD5] hover:text-white transition-colors">
+                            )
+                        }
+                        {
+                            users.users.current_page < users.users.last_page && (
+                            <button 
+                            onClick={() => onPageChange(currentPage + 1)}
+                            disabled={currentPage >= lastPage}
+                            className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                                currentPage >= lastPage 
+                                    ? 'border-slate-200 text-slate-400 cursor-not-allowed' 
+                                    : 'border-[#35ADD5] text-[#35ADD5] hover:bg-[#35ADD5] hover:text-white'
+                            }`}
+                        >
                             Next
                         </button>
+                            )
+                        }
+     
                     </div>
                 </div>
             </div>
