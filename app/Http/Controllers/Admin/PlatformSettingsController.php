@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Vessel;
+use App\Models\User;
 use Inertia\Inertia;
 
 class PlatformSettingsController extends Controller
@@ -58,6 +60,17 @@ class PlatformSettingsController extends Controller
 
         return Inertia::render('platform-settings', [
             'settings' => $mergedSettings,
+            "dashboardData"=>[
+            'stats' => [
+            'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                $query->where('status', 'pending');
+            })->orWhereHas('deckhandProfile', function($query) {
+                $query->where('status', 'pending');
+            })->count(),
+            'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
+            'totalUsersCount' => User::count(),
+        ]
+            ]
         ]);
     }
 

@@ -9,10 +9,10 @@ interface Props {
 
 export default function VesselInventory({ vessels, filters }: Props) {
     return (
-        <>
+        <div className='pt-10'>
             <Head title="Vessel Inventory" />
             <VesselInventoryPageContent vessels={vessels} initialFilters={filters} />
-        </>
+        </div>
     );
 }
 

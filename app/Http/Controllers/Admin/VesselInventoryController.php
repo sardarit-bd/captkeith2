@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vessel;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +14,6 @@ class VesselInventoryController extends Controller
     {
         $query = Vessel::with(['ownerProfile.user']);
 
-        // Search filter - matches migration columns
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -22,16 +22,16 @@ class VesselInventoryController extends Controller
             });
         }
 
-        // Type filter - migration uses 'vessel_type' not 'type'
+
         if ($request->filled('type') && $request->input('type') !== 'all') {
             $query->where('vessel_type', strtolower($request->input('type')));
         }
 
-        // Status filter - migration has no 'status' column, using 'is_active' instead
+  
         if ($request->filled('status') && $request->input('status') !== 'all') {
             if ($request->input('status') === 'active') {
                 $query->where('is_active', true);
-            } else {
+            } else {                                
                 $query->where('is_active', false);
             }
         }
@@ -39,8 +39,20 @@ class VesselInventoryController extends Controller
         $vessels = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('vessel-inventory', [
-            'vessels' => $vessels, // This MUST be a LengthAwarePaginator instance
+            'vessels' => $vessels, 
             'filters' => $request->only(['search', 'type', 'status']),
+
+            "dashboardData"=>[
+            'stats' => [
+            'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                $query->where('status', 'pending');
+            })->orWhereHas('deckhandProfile', function($query) {
+                $query->where('status', 'pending');
+            })->count(),
+            'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
+            'totalUsersCount' => User::count(),
+        ]
+            ]
         ]);
     }
         public function show(Vessel $vessel)

@@ -47,9 +47,11 @@ import {
 } from '@/routes';
 import type { NavItem } from '@/types';
 
-function resolveNavItems(role: string | null | undefined, pendingCaptainCount: number = 0, pendingOwnerInvitationsCount: number = 0 , pendingDeckhandRequestsCount: number = 0 , pendingCharterInvitationsCount: number = 0 , pendingOwnerInvitationsCountForDeckhand: number = 0 , pendingCaptainInvitationsCountForDeckhand: number = 0): NavItem[] {
+function resolveNavItems(role: string | null | undefined, pendingCaptainCount: number = 0, pendingOwnerInvitationsCount: number = 0 ,
+     pendingDeckhandRequestsCount: number = 0 , pendingCharterInvitationsCount: number = 0 , pendingOwnerInvitationsCountForDeckhand: number = 0 , 
+     pendingCaptainInvitationsCountForDeckhand: number = 0 , dashboardData: number = 0 , pending_verifications: number = 0,pending_vessels: number = 0 ): NavItem[] {
     const sharedItems: NavItem[] = [
-        { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+        { title: 'Dashboard', href: "/dashboard", icon: LayoutGrid },
         { title: 'Messages', href: messages(), icon: MessageCircle },
     ];
 
@@ -58,9 +60,9 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
             sharedItems[0],
             // <-- Changed adminUsers() to the hardcoded string '/admin/users'
             { title: 'Users', href: '/admin/users', icon: Users },
-            { title: 'Vessel Inventory', href: vesselInventory(), icon: Ship },
-            // { title: 'Compliance Log', href: complianceLog(), icon: ShieldCheck },
-            { title: 'Platform Settings', href: platformSettings(), icon: Settings },
+            { title: 'Vessel Inventory', href: "/admin/vessel-inventory", icon: Ship , badge: pending_vessels,},
+            { title: 'User Verifications', href: "/admin/verifications", icon: ShieldCheck ,badge: pending_verifications,},
+            { title: 'Platform Settings', href: "/admin/platform-settings", icon: Settings },
         ];
     }
 
@@ -119,18 +121,24 @@ function resolveNavItems(role: string | null | undefined, pendingCaptainCount: n
 }
 
 export function AppSidebar() {
-    const page = usePage<{ auth?: { role?: string | null }, pendingCaptainRequestsCount?: number, pendingOwnerInvitationsCount?: number , pendingDeckhandRequestsCount?: number , pendingCharterInvitationsCount?: number , pendingOwnerInvitationsCountForDeckhand?: number , pendingCaptainInvitationsCountForDeckhand?: number}>();
+    const page = usePage<{ auth?: { role?: string | null }, pendingCaptainRequestsCount?: number, 
+    pendingOwnerInvitationsCount?: number , pendingDeckhandRequestsCount?: number , pendingCharterInvitationsCount?: number , 
+    pendingOwnerInvitationsCountForDeckhand?: number , pendingCaptainInvitationsCountForDeckhand?: number , dashboardData?: {}}>();
     const cleanup = useMobileNavigation();
-    
+    // console.log('dashboardData:', page.props?.dashboardData?.stats?.pending_verifications);
     const pendingCaptainCount = page.props.pendingCaptainRequestsCount || 0;
     const pendingDeckhandRequestsCount = page.props.pendingDeckhandRequestsCount || 0;
     const pendingOwnerInvitationsCount = page.props.pendingOwnerInvitationsCount || 0;
     const pendingCharterInvitationsCount= page.props.pendingCharterInvitationsCount || 0;
     const pendingCaptainInvitationsCountForDeckhand = page.props.pendingCaptainInvitationsCountForDeckhand || 0;
     const pendingOwnerInvitationsCountForDeckhand = page.props.pendingOwnerInvitationsCountForDeckhand ;
-
-    const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount, pendingOwnerInvitationsCount , pendingDeckhandRequestsCount , pendingCharterInvitationsCount,pendingOwnerInvitationsCountForDeckhand, pendingCaptainInvitationsCountForDeckhand);
-    
+    const pending_verifications= page.props?.dashboardData?.stats?.pending_verifications || page.props.dashboardData?.stats?.pendingVerificationsCount;
+    const pending_vessels= page.props?.dashboardData?.stats?.pending_vessels || page.props.dashboardData?.stats?.vesselApprovalsCount;
+    const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount, pendingOwnerInvitationsCount ,
+         pendingDeckhandRequestsCount , pendingCharterInvitationsCount,pendingOwnerInvitationsCountForDeckhand,
+          pendingCaptainInvitationsCountForDeckhand, pending_vessels,pending_verifications
+        );
+      console.log(page.props);
     const handleLogout = () => {
         cleanup();
         router.flushAll();

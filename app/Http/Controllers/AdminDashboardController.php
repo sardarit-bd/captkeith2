@@ -136,6 +136,18 @@ class AdminDashboardController extends Controller
 
     return Inertia::render('admin/verifications', [
         'pendingVerifications' => $pendingVerifications,
+                   "dashboardData"=>[
+            'stats' => [
+            'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                $query->where('status', 'pending');
+            })->orWhereHas('deckhandProfile', function($query) {
+                $query->where('status', 'pending');
+            })->count(),
+            'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
+            'totalUsersCount' => User::count(),
+        ]
+            ]
+        
     ]);
 }
 
@@ -153,27 +165,26 @@ public function index()
         ->take(5)
         ->get();
 
-    $recentComplianceEvents = ComplianceCheck::with(['user', 'vessel'])
-        ->latest()
-        ->take(10)
-        ->get();
+    // $recentComplianceEvents = ComplianceCheck::with(['user', 'vessel'])
+    //     ->latest()
+    //     ->take(10)
+    //     ->get();
 
     return Inertia::render('Admin/Dashboard', [
         'pendingVerifications' => $pendingVerifications,
         'pendingVesselListings' => $pendingVesselListings,
-        'recentComplianceEvents' => $recentComplianceEvents,
-        'stats' => [
+        // 'recentComplianceEvents' => $recentComplianceEvents,
+            "dashboardData"=>[
+            'stats' => [
             'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
                 $query->where('status', 'pending');
             })->orWhereHas('deckhandProfile', function($query) {
                 $query->where('status', 'pending');
             })->count(),
             'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
-            'activeChartersCount' => CharterEvent::where('status', 'confirmed')
-                ->whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
-                ->count(),
             'totalUsersCount' => User::count(),
         ]
+            ]
     ]);
 }
 
@@ -184,6 +195,11 @@ public function index()
         $vessel->update([
             'status' => 'approved', 
         ]);
+                // Notify the owner about the approval
+        $vessel->load('ownerProfile.user');
+        if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
+            $vessel->ownerProfile->user->notify(new \App\Notifications\VesselStatusUpdatedNotification($vessel, 'approved'));
+        }
         return redirect()->back()->with('success', 'Vessel has been approved successfully.');
     }
 
@@ -195,6 +211,11 @@ public function index()
         $vessel->update([
             'status' => 'rejected',
         ]);
+                // Notify the owner about the rejection
+        $vessel->load('ownerProfile.user');
+        if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
+            $vessel->ownerProfile->user->notify(new \App\Notifications\VesselStatusUpdatedNotification($vessel, 'rejected'));
+        }
         return redirect()->back()->with('success', 'Vessel has been rejected.');
     }
 
@@ -204,6 +225,11 @@ public function index()
         $captain->update([
             'status' => 'approved',
         ]);
+
+        // Notify the captain about the approval
+        if ($captain->user) {
+            $captain->user->notify(new \App\Notifications\ProfileApprovedNotification('captain'));
+        }
         return redirect()->back()->with('success', 'Captain has been approved successfully.');
     }
 
@@ -222,6 +248,10 @@ public function index()
         $deckhand->update([
             'status' => 'approved',
         ]);
+        // Notify the deckhand about the approval
+        if ($deckhand->user) {
+            $deckhand->user->notify(new \App\Notifications\ProfileApprovedNotification('deckhand'));
+        }
         return redirect()->back()->with('success', 'Deckhand has been approved successfully.');
     }
 
@@ -231,6 +261,10 @@ public function index()
         $deckhand->update([
             'status' => 'rejected',
         ]);
+                // Notify the deckhand about the approval
+        if ($deckhand->user) {
+            $deckhand->user->notify(new \App\Notifications\ProfileApprovedNotification('deckhand'));
+        }
         return redirect()->back()->with('success', 'Deckhand has been rejected.');
     }
 }

@@ -43,10 +43,10 @@ export default function AdminUsersTable({
 }: AdminUsersTableProps) {
 
     const data = users?.users.data || [];
-    console.log('data', data);
+    // console.log('data', data);
     const startIndex = (currentPage-1) * perPage + 1;
     const endIndex = Math.min(currentPage * perPage, total);
-    console.log(users.users.current_page , users.users.last_page);
+    // console.log(users.users.current_page , users.users.last_page);
     return (
         <div className="rounded-2xl border border-[#e6ebf1] bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">

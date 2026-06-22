@@ -17,13 +17,14 @@ export function AdminDashboard() {
           const data = usePage<{ }>()
               .props;
         const dashboardData : dashboardDataType = data.dashboardData;
+        // console.log('dashboardData:', dashboardData.stats.pending_verifications);
     const stats = dashboardData?dashboardData.stats : {}
     const verifications = dashboardData?.pending_verifications ?? [];
     const vessels = dashboardData?.pending_vessels ?? [];
     const events = dashboardData?.compliance_events ?? [];
     console.log('verifications:', verifications);
     return (
-        <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
+        <div className="flex h-full flex-1 pt-10 flex-col overflow-hidden bg-[#F6FDFF]">
             <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                 <div className="mx-auto w-full space-y-8 py-4">
                     <AdminStatsCards stats={stats} />

@@ -130,24 +130,24 @@ export default function MessagesPage() {
 
     useEffect(() => {
         if (!auth?.user?.id) {
-            console.log('❌ No user ID for Echo');
+            console.log(' No user ID for Echo');
             return;
         }
 
         if (!window.Echo) {
-            console.log('❌ Echo not initialized');
+            console.log(' Echo not initialized');
             return;
         }
 
-        console.log('✅ Setting up Echo for user:', auth.user.id);
+        console.log(' Setting up Echo for user:', auth.user.id);
         const channelName = `messages.${auth.user.id}`;
-        console.log('📡 Subscribing to channel:', channelName);
+        console.log(' Subscribing to channel:', channelName);
 
         const channel = window.Echo.private(channelName);
 
         console.log('👂 Listening for .message.sent event');
         channel.listen('.message.sent', (payload: BroadcastPayload) => {
-            console.log('📨 Received message event:', payload);
+            console.log(' Received message event:', payload);
             
             const isRelevant =
                 (payload.sender_id === selectedUserId &&
@@ -176,7 +176,6 @@ export default function MessagesPage() {
             });
         });
 
-        // ✅ Corrected method name:
         channel.subscribed(() => {
             console.log('✅ Successfully subscribed to channel');
         });

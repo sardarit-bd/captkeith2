@@ -68,8 +68,10 @@ class VesselController extends Controller
             // Notify the owner that their vessel has been submitted and is awaiting admin approval.
             // Vessel matching runs only after admin approves the vessel.
             $owner->user->notify(new YachtListedNotification($vessel));
+                        // Notify all admins about the new pending vessel
+            $admins = \App\Models\User::role('admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewPendingVesselNotification($vessel));
         }
-
         return redirect()
             ->route('my-yachts')
             ->with('success', 'Vessel added successfully.');

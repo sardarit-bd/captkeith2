@@ -20,9 +20,11 @@ interface UsersPageProps extends PageProps {
         role?: string;
         status?: string;
     };
+     dashboardData?: {
+    };
 }
 
-export default function UsersPage({ userData, filters }: UsersPageProps) {
+export default function UsersPage({ userData, filters, dashboardData }: UsersPageProps) {
     const [search, setSearch] = useState(filters?.search || '');
     const [role, setRole] = useState(filters?.role || 'all');
     const [status, setStatus] = useState(filters?.status || 'all');
@@ -45,20 +47,14 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
     const total = userData?.total ?? 0;
     const availableRoles = userData?.filters?.roles ?? ['Captain', 'Owner', 'Deckhand', 'Charterer'];
     const availableStatuses = userData?.filters?.statuses ?? ['Active', 'Verified', 'Pending Review', 'Suspended'];
-
+    console.log("this is dash",dashboardData)
     return (
         <>
             {/* <Head title="Users Directory" /> */}
             <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                     <div className="mx-auto w-full max-w-7xl space-y-6 py-6">
-                        {/* Header */}
-                        {/* <div>
-                            <h1 className="text-3xl font-bold text-[#35ADD5]">Users Directory</h1>
-                            <p className="mt-1 text-sm text-slate-600">
-                                Manage platform users, roles, and compliance status.
-                            </p>
-                        </div> */}
+
 
                         {/* Dynamic Filters */}
                         <AdminUsersFilters

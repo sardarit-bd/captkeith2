@@ -62,7 +62,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 <Separator className="my-6 lg:hidden" />
 
                 <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
+                    <section className="max-w-xl space-y-12 bg-red-500">
                         {children}
                     </section>
                 </div>
