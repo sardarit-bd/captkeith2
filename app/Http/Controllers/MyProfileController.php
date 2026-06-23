@@ -231,4 +231,57 @@ class MyProfileController extends Controller
 
         return to_route('my-profile');
     }
+
+
+
+    public function requestApproval(Request $request): RedirectResponse
+{
+    $user = $request->user();
+
+    if ($user->hasRole('captain')) {
+        $profile = $user->captainProfile;
+        if (!$profile) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
+        }
+
+        // Check if all required fields are filled based on your validation rules
+        $requiredFields = [
+            'full_name', 'phone', 'address', 'city', 'state', 'zip_code', 
+            'travel_radius_miles', 'license_type', 'endorsement', 
+            'tonnage_rating', 'years_experience', 'hourly_rate'
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($profile->$field)) {
+                return back()->with('toast', ['type' => 'error', 'message' => 'Please fill in all required profile fields before requesting approval.']);
+            }
+        }
+
+        $profile->update(['status' => 'pending']);
+        
+    } elseif ($user->hasRole('deckhand')) {
+        $profile = $user->deckhandProfile;
+        if (!$profile) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
+        }
+
+        $requiredFields = [
+            'full_name', 'phone', 'address', 'city', 'state', 'zip_code', 
+            'travel_radius_miles', 'years_experience', 'hourly_rate'
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($profile->$field)) {
+                return back()->with('toast', ['type' => 'error', 'message' => 'Please fill in all required profile fields before requesting approval.']);
+            }
+        }
+
+        $profile->update(['status' => 'pending']);
+        
+    } else {
+        return back()->with('toast', ['type' => 'error', 'message' => 'Invalid role for approval.']);
+    }
+
+    return back()->with('toast', ['type' => 'success', 'message' => 'Your approval request has been sent to the admin.']);
+}
 }

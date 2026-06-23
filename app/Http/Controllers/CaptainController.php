@@ -222,4 +222,10 @@ class CaptainController extends Controller
             ],
         ]);
     }
+
+
+
+    public function apply(CaptainProfile $captain){
+
+    }
 }

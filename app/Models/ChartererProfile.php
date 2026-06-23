@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'phone',
     'photo_path',
     'preferences',
+    'date_of_birth',
+    'country',
 ])]
 class ChartererProfile extends Model
 {
@@ -63,5 +65,9 @@ class ChartererProfile extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(CharterPayment::class, 'charterer_id');
+    }
+        public function charters(): HasMany
+    {
+        return $this->hasMany(CharterEvent::class, 'charterer_id');
     }
 }

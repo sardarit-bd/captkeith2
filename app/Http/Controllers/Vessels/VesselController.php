@@ -14,7 +14,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
 use App\Services\VesselMatchingService;
-use App\Notifications\YachtListedNotification;
+// use App\Notifications\YachtListedNotification;
+use App\Notifications\YachtListedRequestNotification;
 class VesselController extends Controller
 {
     public function store(StoreVesselRequest $request): RedirectResponse
@@ -67,7 +68,7 @@ class VesselController extends Controller
         if ($vessel) {
             // Notify the owner that their vessel has been submitted and is awaiting admin approval.
             // Vessel matching runs only after admin approves the vessel.
-            $owner->user->notify(new YachtListedNotification($vessel));
+            $owner->user->notify(new YachtListedRequestNotification($vessel));
                         // Notify all admins about the new pending vessel
             $admins = \App\Models\User::role('admin')->get();
             \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewPendingVesselNotification($vessel));

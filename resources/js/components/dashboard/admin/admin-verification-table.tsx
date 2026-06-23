@@ -38,7 +38,8 @@ export function AdminVerificationTable({ verifications }: AdminVerificationTable
     };
 
     const handleViewProfile = (userId: string, profileType: 'captain' | 'deckhand') => {
-        router.visit(`/admin/${profileType}s/${userId}/profile`);
+        router.visit(`/${profileType}s/${userId}/`);
+        console.log(`/${profileType}s/${userId}/`)
     };
 
     return (

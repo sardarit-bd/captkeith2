@@ -570,8 +570,8 @@ class CharterController extends Controller
     public function saveInformation(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'first_name' => ['required', 'string', 'max:75'],
-            'last_name'  => ['required', 'string', 'max:75'],
+            'full_name' => ['required', 'string', 'max:75'],
+            // 'last_name'  => ['required', 'string', 'max:75'],
             'phone'      => ['required', 'string', 'max:20'],
             'address'    => ['required', 'string', 'max:255'],
             'city'       => ['required', 'string', 'max:100'],
@@ -580,7 +580,7 @@ class CharterController extends Controller
             'photo'      => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $full_name = trim($validated['first_name'] . ' ' . $validated['last_name']);
+        // $full_name = trim($validated['first_name'] . ' ' . $validated['last_name']);
 
         $profile = ChartererProfile::where('user_id', auth()->id())->first();
 
@@ -596,7 +596,7 @@ class CharterController extends Controller
    
         if ($profile) {
             $profile->update([
-                'full_name'  => $full_name,
+                'full_name'  => $validated['full_name'],
                 'phone'      => $validated['phone'],
                 'address'    => $validated['address'],
                 'city'       => $validated['city'],

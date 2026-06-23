@@ -6,6 +6,7 @@
             use Illuminate\Http\Request;
             use Laravel\Fortify\Features;
             use Inertia\Inertia;
+            use App\Http\Controllers\MyProfileController;
             Route::inertia('/', 'welcome', [
                 'canRegister' => Features::enabled(Features::registration()),
             ])->name('home');
@@ -45,7 +46,7 @@
                     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
                     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
                 });
-
+                Route::post('/my-profile/request-approval', [MyProfileController::class, 'requestApproval'])->name('my-profile.request-approval');
 
                     // Route::middleware(['auth', 'role:admin'])->group(function () {
                     //     Route::patch('/vessels/{vessel}/approve', [\App\Http\Controllers\Vessels\VesselController::class, 'approve'])
@@ -169,6 +170,7 @@
                 Route::middleware('role:owner|captain|deckhand')->group(function () {
                     Route::get('my-profile', [\App\Http\Controllers\MyProfileController::class, 'edit'])
                         ->name('my-profile');
+                        Route::post('/my-profile/request-approval', [\App\Http\Controllers\MyProfileController::class, 'requestApproval'])->name('my-profile.request-approval');
                     Route::post('my-profile', [\App\Http\Controllers\MyProfileController::class, 'update'])
                         ->name('my-profile.update');
                 });
@@ -176,6 +178,7 @@
                 Route::middleware('role:captain|deckhand')->group(function () {
                     Route::get('yachts-match', [\App\Http\Controllers\YachtsMatchController::class, 'index'])
                         ->name('yachts-match');
+          
                     Route::get('requests', [\App\Http\Controllers\RequestsController::class, 'index'])->name('requests');
                     Route::patch('requests/{crewResponse}/respond', [\App\Http\Controllers\RequestsController::class, 'respond'])->name('requests.respond');
                     Route::patch('/requests/{crewResponse}/select-deckhand', [\App\Http\Controllers\RequestsController::class, 'selectDeckhand'])->name('requests.select-deckhand');

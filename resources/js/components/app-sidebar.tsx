@@ -49,12 +49,12 @@ import type { NavItem } from '@/types';
 
 function resolveNavItems(role: string | null | undefined, pendingCaptainCount: number = 0, pendingOwnerInvitationsCount: number = 0 ,
      pendingDeckhandRequestsCount: number = 0 , pendingCharterInvitationsCount: number = 0 , pendingOwnerInvitationsCountForDeckhand: number = 0 , 
-     pendingCaptainInvitationsCountForDeckhand: number = 0 , dashboardData: number = 0 , pending_verifications: number = 0,pending_vessels: number = 0 ): NavItem[] {
+     pendingCaptainInvitationsCountForDeckhand: number = 0  , pending_verifications: number = 0, pending_vessels: number = 0 ): NavItem[] {
     const sharedItems: NavItem[] = [
         { title: 'Dashboard', href: "/dashboard", icon: LayoutGrid },
         { title: 'Messages', href: messages(), icon: MessageCircle },
     ];
-
+    console.log('pending_verifications:', pending_verifications);
     if (role === 'admin') {
         return [
             sharedItems[0],
@@ -133,10 +133,11 @@ export function AppSidebar() {
     const pendingCaptainInvitationsCountForDeckhand = page.props.pendingCaptainInvitationsCountForDeckhand || 0;
     const pendingOwnerInvitationsCountForDeckhand = page.props.pendingOwnerInvitationsCountForDeckhand ;
     const pending_verifications= page.props?.dashboardData?.stats?.pending_verifications || page.props.dashboardData?.stats?.pendingVerificationsCount;
-    const pending_vessels= page.props?.dashboardData?.stats?.pending_vessels || page.props.dashboardData?.stats?.vesselApprovalsCount;
+    const pending_vessels= page.props?.dashboardData?.stats?.vessel_approvals || page.props.dashboardData?.stats?.vesselApprovalsCount;
+    console.log('pending_verifications:', pending_verifications);
     const mainNavItems = resolveNavItems(page.props.auth?.role, pendingCaptainCount, pendingOwnerInvitationsCount ,
          pendingDeckhandRequestsCount , pendingCharterInvitationsCount,pendingOwnerInvitationsCountForDeckhand,
-          pendingCaptainInvitationsCountForDeckhand, pending_vessels,pending_verifications
+          pendingCaptainInvitationsCountForDeckhand, pending_verifications,pending_vessels
         );
       console.log(page.props);
     const handleLogout = () => {

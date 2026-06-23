@@ -1,10 +1,10 @@
 export const chartererInformationInitialValues = {
-    firstName: '',
-    lastName: '',
-    email: '',
+    fullName: '',
     phone: '',
+    dateOfBirth: '',
+    country: '',
     address: '',
     city: '',
     state: '',
-    zipCode: '',
+    zip: '',
 };

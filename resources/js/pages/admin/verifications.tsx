@@ -44,7 +44,7 @@ export default function Verifications({ pendingVerifications }: VerificationsPag
         });
     };
         const handleViewProfile = (userId: string, profileType: 'captain' | 'deckhand') => {
-        router.visit(`/admin/${profileType}s/${userId}/profile`);
+        router.visit(`/${profileType}s/${userId}`);
     };
 
     return (

@@ -19,9 +19,9 @@ class AdminUserController extends Controller
             "dashboardData"=>[
             'stats' => [
             'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
-                $query->where('status', 'pending');
+                $query->where('is_verified', 'pending');
             })->orWhereHas('deckhandProfile', function($query) {
-                $query->where('status', 'pending');
+                $query->where('is_verified', 'pending');
             })->count(),
             'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
             'totalUsersCount' => User::count(),

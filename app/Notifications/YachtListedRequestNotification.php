@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class YachtListedNotification extends Notification implements ShouldQueue
+class YachtListedRequestNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -24,8 +24,8 @@ class YachtListedNotification extends Notification implements ShouldQueue
     {
         return [
             'type' => 'yacht_listed',
-            'title' => 'Yacht Listed Successfully',
-            'message' => "Your yacht '{$this->vessel->name}' has been approved and listed.",
+            'title' => 'Yacht Request Successfully',
+            'message' => "Your yacht '{$this->vessel->name}' has been Request to admin for listing.",
             'icon' => 'yacht',
             'url' => route('my-yachts'),
             'vessel_id' => $this->vessel->id,

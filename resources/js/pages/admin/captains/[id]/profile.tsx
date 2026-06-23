@@ -39,7 +39,7 @@ interface CaptainProfilePageProps extends PageProps {
 
 export default function CaptainProfile({ captain }: CaptainProfilePageProps) {
     const handleApprove = () => {
-        router.put(`/admin/captains/${captain.id}/approve`, {}, {
+        router.patch(`/admin/captains/${captain.id}/approve`, {}, {
             preserveScroll: true,
             onSuccess: () => {
                 // Optionally redirect or show success message
@@ -48,7 +48,7 @@ export default function CaptainProfile({ captain }: CaptainProfilePageProps) {
     };
 
     const handleReject = () => {
-        router.put(`/admin/captains/${captain.id}/reject`, {}, {
+        router.patch(`/admin/captains/${captain.id}/reject`, {}, {
             preserveScroll: true,
         });
     };
@@ -56,7 +56,7 @@ export default function CaptainProfile({ captain }: CaptainProfilePageProps) {
     const handleBack = () => {
         router.visit('/admin/verifications');
     };
-
+    console.log(captain)
     return (
         <>
             {/* <Head title={`Captain Profile - ${captain.full_name}`} /> */}
@@ -289,6 +289,6 @@ CaptainProfile.layout = {
     ],
     pageHeader: {
         title: 'My Profile',
-        description: 'Manage your personal information and security preferences.',
+        description: 'Manage your personal information and security preferences. yup yup',
     },
 };

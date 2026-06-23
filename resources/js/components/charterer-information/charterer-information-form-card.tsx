@@ -6,15 +6,17 @@ import {
     Phone,
     UploadCloud,
     User,
+    Calendar,
+    Globe,
 } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import { save } from '@/routes/charterer/information';
-import charterer from '@/routes/charterer/index';
 
 interface Profile {
-    first_name: string;
-    last_name: string;
+    full_name: string;
     phone: string;
+    date_of_birth: string;
+    country: string;
     address: string;
     city: string;
     state: string;
@@ -38,13 +40,14 @@ export function ChartererInformationFormCard({ profile }: Props) {
     const { auth } = usePage<SharedProps>().props;
 
     const { data, setData, post, processing, errors } = useForm({
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        phone: profile.phone,
-        address: profile.address,
-        city: profile.city,
-        state: profile.state,
-        zip_code: profile.zip_code,
+        full_name: profile.full_name || '',
+        phone: profile.phone || '',
+        date_of_birth: profile.date_of_birth || '',
+        country: profile.country || '',
+        address: profile.address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip_code: profile.zip_code || '',
         photo: null as File | null,
     });
 
@@ -63,13 +66,14 @@ export function ChartererInformationFormCard({ profile }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        console.log(save.url());
         post(save.url(), {
             forceFormData: true,
         });
     }
 
     return (
-        <section className="overflow-hidden rounded-[24px] border border-[#edf2f7] bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
+        <section className="overflow-hidden rounded-3xl border border-[#edf2f7] bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
             <div className="border-b border-[#f3f4f6] p-6 sm:p-8 lg:p-10">
                 <header className="mb-8 flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
@@ -85,38 +89,90 @@ export function ChartererInformationFormCard({ profile }: Props) {
                     onSubmit={handleSubmit}
                     className="space-y-6"
                 >
+                    {/* Row 1: Full Name & Phone */}
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <FormField
-                            label="First Name"
+                            label="Full Name"
                             required
-                            error={errors.first_name}
+                            error={errors.full_name}
                         >
                             <TextInput
-                                placeholder="e.g. John"
-                                value={data.first_name}
+                                placeholder="e.g. John Doe"
+                                value={data.full_name}
                                 onChange={(e) =>
-                                    setData('first_name', e.target.value)
+                                    setData('full_name', e.target.value)
                                 }
-                                hasError={!!errors.first_name}
+                                hasError={!!errors.full_name}
                             />
                         </FormField>
 
                         <FormField
-                            label="Last Name"
+                            label="Phone Number"
                             required
-                            error={errors.last_name}
+                            error={errors.phone}
                         >
-                            <TextInput
-                                placeholder="e.g. Doe"
-                                value={data.last_name}
-                                onChange={(e) =>
-                                    setData('last_name', e.target.value)
-                                }
-                                hasError={!!errors.last_name}
-                            />
+                            <InputWithIcon
+                                icon={<Phone className="h-4 w-4 text-[#9ca3af]" />}
+                            >
+                                <TextInput
+                                    type="tel"
+                                    placeholder="+1 (555) 000-0000"
+                                    value={data.phone}
+                                    onChange={(e) =>
+                                        setData('phone', e.target.value)
+                                    }
+                                    withIcon
+                                    hasError={!!errors.phone}
+                                />
+                            </InputWithIcon>
                         </FormField>
                     </div>
 
+                    {/* Row 2: Date of Birth & Country */}
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <FormField
+                            label="Date of Birth"
+                            required
+                            error={errors.date_of_birth}
+                        >
+                            <InputWithIcon
+                                icon={<Calendar className="h-4 w-4 text-[#9ca3af]" />}
+                            >
+                                <TextInput
+                                    type="date"
+                                    placeholder=""
+                                    value={data.date_of_birth}
+                                    onChange={(e) =>
+                                        setData('date_of_birth', e.target.value)
+                                    }
+                                    withIcon
+                                    hasError={!!errors.date_of_birth}
+                                />
+                            </InputWithIcon>
+                        </FormField>
+
+                        <FormField
+                            label="Country"
+                            required
+                            error={errors.country}
+                        >
+                            <InputWithIcon
+                                icon={<Globe className="h-4 w-4 text-[#9ca3af]" />}
+                            >
+                                <TextInput
+                                    placeholder="e.g. United States"
+                                    value={data.country}
+                                    onChange={(e) =>
+                                        setData('country', e.target.value)
+                                    }
+                                    withIcon
+                                    hasError={!!errors.country}
+                                />
+                            </InputWithIcon>
+                        </FormField>
+                    </div>
+
+                    {/* Row 3: Email (Read-only) */}
                     <FormField label="Email" required>
                         <InputWithIcon
                             icon={<Mail className="h-4 w-4 text-[#9ca3af]" />}
@@ -131,27 +187,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                         </InputWithIcon>
                     </FormField>
 
-                    <FormField
-                        label="Phone Number"
-                        required
-                        error={errors.phone}
-                    >
-                        <InputWithIcon
-                            icon={<Phone className="h-4 w-4 text-[#9ca3af]" />}
-                        >
-                            <TextInput
-                                type="tel"
-                                placeholder="+1 (555) 000-0000"
-                                value={data.phone}
-                                onChange={(e) =>
-                                    setData('phone', e.target.value)
-                                }
-                                withIcon
-                                hasError={!!errors.phone}
-                            />
-                        </InputWithIcon>
-                    </FormField>
-
+                    {/* Row 4: Address */}
                     <FormField label="Address" required error={errors.address}>
                         <InputWithIcon
                             icon={<MapPin className="h-4 w-4 text-[#9ca3af]" />}
@@ -168,6 +204,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                         </InputWithIcon>
                     </FormField>
 
+                    {/* Row 5: City, State, ZIP */}
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
                         <FormField label="City" required error={errors.city}>
                             <TextInput
@@ -207,6 +244,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
                         </FormField>
                     </div>
 
+                    {/* Photo Upload */}
                     <div className="pt-4">
                         <label className="mb-3 block text-sm font-semibold text-[#374151]">
                             Photo (Optional)

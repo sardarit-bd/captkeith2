@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'photo_path',
     'hourly_rate',
     'status',
+    'is_verified', 
     'preferences',
 ])]
 class DeckhandProfile extends Model
@@ -108,6 +109,7 @@ class DeckhandProfile extends Model
             'has_server_experience'     => 'boolean',
             'has_bartending_experience' => 'boolean',
             'hourly_rate'               => 'decimal:2',
+            'is_verified'               => 'boolean',  
             'preferences'               => 'array',
             'deleted_at'                => 'datetime',
         ];

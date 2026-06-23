@@ -26,8 +26,8 @@ const inputErrCls =
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
     return (
-        <p className="mt-1.5 flex items-center gap-1 text-[12px] text-red-500">
-            <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
+        <p className="mt-1.5 flex items-center gap-1 text-[12px]">
+            <span className="inline-block h-1 w-1 rounded-full " />
             {message}
         </p>
     );

@@ -3,16 +3,16 @@ import { ChartererInformationPageContent } from '@/components/charterer-informat
 import { information } from '@/routes/charterer';
 
 interface Profile {
-    first_name: string;
-    last_name: string;
+    full_name: string;
     phone: string;
+    date_of_birth: string;
+    country: string;
     address: string;
     city: string;
     state: string;
     zip_code: string;
     photo_path: string | null;
 }
-
 interface Props {
     profile: Profile;
 }

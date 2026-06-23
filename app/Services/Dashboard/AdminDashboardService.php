@@ -19,7 +19,7 @@ class AdminDashboardService
     {
         // ── Pending Captain & Deckhand Verifications ──────────────────────────
 
-        $pendingCaptains = CaptainProfile::where('status', 'pending')
+        $pendingCaptains = CaptainProfile::where('is_verified', 'pending')
             ->with('user')
             ->get()
             ->map(fn(CaptainProfile $profile) => [
@@ -30,9 +30,10 @@ class AdminDashboardService
                 'document_type' => 'Captain License',
                 'submitted_at' => $profile->created_at->format('M d, Y'),
                 'initials'     => $this->initials($profile->full_name),
-            ]);
+            ])
+             ->values();
 
-        $pendingDeckhands = DeckhandProfile::where('status', 'pending')
+        $pendingDeckhands = DeckhandProfile::where('is_verified', 'pending')
             ->with('user')
             ->get()
             ->map(fn(DeckhandProfile $profile) => [
@@ -43,9 +44,13 @@ class AdminDashboardService
                 'document_type' => 'Deckhand Application',
                 'submitted_at' => $profile->created_at->format('M d, Y'),
                 'initials'     => $this->initials($profile->full_name),
-            ]);
+            ])
+            ->values();
 
-        $pendingVerifications = $pendingCaptains->merge($pendingDeckhands)->values()->all();
+        $pendingVerifications = collect($pendingCaptains->all())
+    ->merge($pendingDeckhands->all())
+    ->values()
+    ->all();
 
         // ── Pending Vessel Listings ───────────────────────────────────────────
 
