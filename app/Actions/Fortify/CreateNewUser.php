@@ -136,6 +136,12 @@ class CreateNewUser implements CreatesNewUsers
                 default => null,
             };
 
+            // Notify admins if a new captain or deckhand registered
+            if (in_array($selectedRole, ['captain', 'deckhand'])) {
+                $admins = \App\Models\User::role('admin')->get();
+                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewPendingProfileNotification($user, $selectedRole));
+            }
+
 
             return $user;
         });

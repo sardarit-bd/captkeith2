@@ -18,6 +18,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'avatar_path',
     'payment_account_id',
     'preferences',
+    // Added missing fields for mass assignment
+    'address',
+    'city',
+    'state',
+    'zip',
+    'country',
+    'date_of_birth',
+    'marina_name',
+    'marina_city',
+    'marina_state',
 ])]
 class OwnerProfile extends Model
 {

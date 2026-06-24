@@ -130,7 +130,7 @@ class CaptainProfile extends Model
             'hourly_rate'          => 'decimal:2',
             'can_provide_deckhand' => 'boolean',
             'deckhand_hourly_rate' => 'decimal:2',
-            'is_verified'          => 'boolean',
+            // 'is_verified'          => 'boolean',
             'preferences'          => 'array',
             'deleted_at'           => 'datetime',
         ];

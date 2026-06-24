@@ -34,7 +34,9 @@ return new class extends Migration
             $table->boolean('can_provide_deckhand')->default(false);
             $table->decimal('deckhand_hourly_rate', 8, 2)->nullable();
             $table->string('photo_path', 500)->nullable();
-            $table->boolean('is_verified')->default(false);
+            $table->enum('is_verified', ['pending', 'approved', 'rejected'])
+            ->nullable()
+            ->default(null);
             $table->timestamps();
             $table->softDeletes();
 

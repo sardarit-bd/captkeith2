@@ -6,7 +6,7 @@ import { Link, usePage } from '@inertiajs/react'
 
 export function NavMain({ items }: { items: NavItem[] }) {
   const { url } = usePage()
-
+  console.log(items)
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Menu</SidebarGroupLabel>

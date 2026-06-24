@@ -19,7 +19,7 @@ class ChartererProfileController extends Controller
         
         // Get total charters count
         $totalCharters = $charterer->chartererProfile 
-            ? $charterer->chartererProfile->charters()->where('end_date', '<', now())->count()
+            ? $charterer->chartererProfile->charters()->where('charter_date', '<', now()->toDateString())->count()
             : 0;
         
         return Inertia::render('admin/charterers/[id]/profile', [
@@ -37,7 +37,7 @@ class ChartererProfileController extends Controller
                 'address' => $chartererProfile->address,
                 'city' => $chartererProfile->city,
                 'state' => $chartererProfile->state,
-                'zip' => $chartererProfile->zip,
+                'zip' => $chartererProfile->zip_code,
                 'country' => $chartererProfile->country,
                 'date_of_birth' => $chartererProfile->date_of_birth ? $chartererProfile->date_of_birth->format('Y-m-d') : null,
                 'total_charters' => $totalCharters,
@@ -83,7 +83,9 @@ class ChartererProfileController extends Controller
                 'address' => $validated['address'],
                 'city' => $validated['city'],
                 'state' => $validated['state'],
-                'zip' => $validated['zip'],
+                'zip_code' => $validated['zip'],
+                'country' => $validated['country'],
+                'date_of_birth' => $validated['date_of_birth'] ?: null,
                 'country' => $validated['country'],
                 'date_of_birth' => $validated['date_of_birth'] ?: null,
             ]

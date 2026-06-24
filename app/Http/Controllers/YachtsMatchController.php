@@ -31,8 +31,8 @@ class YachtsMatchController extends Controller
         }
 
 
-       $isProfileRestricted = ($profile->status === 'pending') || empty($profile->is_active);
-
+       $isProfileRestricted = ($profile->status === 'pending') || ($profile->is_verified === false);
+        // dd($isProfileRestricted);
         if (($isCaptain || $isDeckhand) && $isProfileRestricted) {
             return Inertia::render('yachts-match', [
                 'vessels'                 => [],

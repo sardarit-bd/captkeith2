@@ -31,6 +31,7 @@ interface VerificationsPageProps extends PageProps {
 }
 
 export default function Verifications({ pendingVerifications }: VerificationsPageProps) {
+    console.log('pendingVerifications:', pendingVerifications); 
     const handleApprove = (id: string, profileType: 'captain' | 'deckhand') => {
         router.patch(`/admin/${profileType}s/${id}/approve`, {}, {
             preserveScroll: true,
@@ -43,13 +44,13 @@ export default function Verifications({ pendingVerifications }: VerificationsPag
         });
     };
         const handleViewProfile = (userId: string, profileType: 'captain' | 'deckhand') => {
-        router.visit(`/admin/${profileType}s/${userId}/profile`);
+        router.visit(`/${profileType}s/${userId}`);
     };
 
     return (
         <>
             {/* <Head title="Credential Verifications" /> */}
-            <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
+            <div className="flex h-full pt-10 flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                     <div className="mx-auto w-full space-y-8 py-4">
                         <div className="rounded-lg border bg-white shadow-sm">

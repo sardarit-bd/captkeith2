@@ -40,7 +40,7 @@ export default function AdminVesselsTable({ vessels }: AdminVesselsTableProps) {
     };
 
         const handleViewProfile = (userId: string, profileType: 'captain' | 'deckhand') => {
-        router.visit(`/admin/${profileType}s/${userId}/profile`);
+        router.visit(`/${profileType}s/${userId}/`);
     };
 
 

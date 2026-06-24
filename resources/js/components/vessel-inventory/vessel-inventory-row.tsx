@@ -9,6 +9,17 @@ import {
     Trash2,
 } from 'lucide-react';
 import type { VesselInventoryRecord } from './vessel-inventory-data';
+import { useState } from 'react';
+import { router, Link } from '@inertiajs/react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const statusStyleMap: Record<string, { wrapper: string; dot: string; label: string }> = {
     Active: { wrapper: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Active' },
@@ -41,6 +52,8 @@ const roleStyleMap: Record<string, string> = {
 };
 
 export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventoryRecord  ,  index: number }) {
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
     const statusStyle = statusStyleMap[vessel.status] || defaultStyle;
     const typeStyle = vesselTypeStyleMap[vessel.vesselType] || 'border-slate-200 bg-slate-50 text-slate-600';
     const ownerRole = vessel.owner_profile?.user?.role || 'Owner';
@@ -69,122 +82,148 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
         : 'OW';
 
     return (
-        <tr className={`group border-b border-slate-100 transition-colors ${rowHoverClass}`}>
-            {/* ID Column */}
-            <td className="px-6 py-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600">
-                    {index + 1}
-                </div>
-            </td>
-
-            {/* Vessel Name & Owner Column */}
-            <td className="px-6 py-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
-                        {ownerInitials}
+        <>
+            <tr className={`group border-b border-slate-100 transition-colors ${rowHoverClass}`}>
+                {/* ID Column */}
+                <td className="px-6 py-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600">
+                        {index + 1}
                     </div>
-                    <div>
-                        {/* <p className={`text-sm font-medium ${isFlagged ? 'text-slate-600' : 'text-[#35ADD5]'}`}>
-                            {vessel.vesselName}
-                        </p> */}
-                        <p className={`text-xs ${isFlagged ? 'text-slate-400' : 'text-slate-500'}`}>
-                            {vessel.owner_profile?.full_name || 'Unknown Owner'}
-                        </p>
+                </td>
+
+                {/* Vessel Name & Owner Column */}
+                <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+                            {ownerInitials}
+                        </div>
+                        <div>
+                            {/* <p className={`text-sm font-medium ${isFlagged ? 'text-slate-600' : 'text-[#35ADD5]'}`}>
+                                {vessel.vesselName}
+                            </p> */}
+                            <p className={`text-xs ${isFlagged ? 'text-slate-400' : 'text-slate-500'}`}>
+                                {vessel.owner_profile?.full_name || 'Not Mentioned'}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </td>
+                </td>
 
-            {/* Email / Official Number Column */}
-            <td className="px-6 py-4">
-                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
-                    {vessel.official_number || 'Unverified'}
-                </span>
-            </td>
+                {/* Email / Official Number Column */}
+                <td className="px-6 py-4">
+                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
+                        {vessel.official_number || 'Unverified'}
+                    </span>
+                </td>
 
-            {/* Platform Role / Vessel Type Column */}
-            {/* <td className="px-6 py-4">
-                <span
-                    className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${typeStyle}`}
-                >
-                    {vessel.vesselType}
-                </span>
-            </td> */}
+                {/* Platform Role / Vessel Type Column */}
+                {/* <td className="px-6 py-4">
+                    <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${typeStyle}`}
+                    >
+                        {vessel.vesselType}
+                    </span>
+                </td> */}
 
-            {/* Status Column */}
-            {/* <td className="px-6 py-4">
-                <div className="flex items-center gap-1.5">
-                    <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
-                    <span className={`text-sm ${statusStyle.wrapper}`}>{statusStyle.label}</span>
-                </div>
-            </td> */}
-
-            {/* Joined / Capacity Column */}
-             <td className="px-6 py-4">
-                <div className="text-sm text-slate-600">
-                    <div className="flex items-center gap-1">
-                        {/* <span className="text-slate-500">Length:</span> */}
-                        <span className="font-medium">{vessel.length_ft || "unknown"} </span>
+                {/* Status Column */}
+                {/* <td className="px-6 py-4">
+                    <div className="flex items-center gap-1.5">
+                        <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
+                        <span className={`text-sm ${statusStyle.wrapper}`}>{statusStyle.label}</span>
                     </div>
-                </div>
-             </td>
-            <td className="px-6 py-4">
-                <div className="text-sm text-slate-600">
-                    {/* <div className="flex items-center gap-1">
-                        <span className="text-slate-500">Length:</span>
-                        <span className="font-medium">{vessel.length}</span>
-                    </div> */}
-                    <div className="flex items-center gap-1">
-                        {/* <span className="text-slate-500">Capacity:</span> */}
-                        <span className="font-medium">{vessel.passenger_capacity || "unknown"}</span>
-                    </div>
-                </div>
-            </td>
+                </td> */}
 
-            {/* Actions Column */}
-            <td className="px-6 py-4">
-                <div className="flex items-center justify-end gap-1">
-                    {isPending ? (
-                        <button
-                            type="button"
-                            className="rounded-lg bg-[#35ADD5] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800"
-                        >
-                            Review
-                        </button>
-                    ) : isFlagged ? (
-                        <button
-                            type="button"
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
-                            title="View Issue"
-                        >
-                            <AlertTriangle className="h-3.5 w-3.5" />
-                        </button>
-                    ) : (
-                        <>
+                {/* Joined / Capacity Column */}
+                <td className="px-6 py-4">
+                    <div className="text-sm text-slate-600">
+                        <div className="flex items-center gap-1">
+                            {/* <span className="text-slate-500">Length:</span> */}
+                            <span className="font-medium">{vessel.length_ft || "Not Mentioned"} </span>
+                        </div>
+                    </div>
+                </td>
+                <td className="px-6 py-4">
+                    <div className="text-sm text-slate-600">
+                        {/* <div className="flex items-center gap-1">
+                            <span className="text-slate-500">Length:</span>
+                            <span className="font-medium">{vessel.length}</span>
+                        </div> */}
+                        <div className="flex items-center gap-1">
+                            {/* <span className="text-slate-500">Capacity:</span> */}
+                            <span className="font-medium">{vessel.passenger_capacity || "Not Mentioned"}</span>
+                        </div>
+                    </div>
+                </td>
+
+                {/* Actions Column */}
+                <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-1">
+                        {isPending ? (
                             <button
                                 type="button"
-                                title="View Details"
-                                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#35ADD5]"
+                                className="rounded-lg bg-[#35ADD5] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800"
                             >
-                                <Eye className="h-4 w-4" />
+                                Review
                             </button>
+                        ) : isFlagged ? (
                             <button
                                 type="button"
-                                title="Edit Vessel"
-                                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#35ADD5]"
+                                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
+                                title="View Issue"
                             >
-                                <Edit3 className="h-4 w-4" />
+                                <AlertTriangle className="h-3.5 w-3.5" />
                             </button>
-                            <button
-                                type="button"
-                                title="Delete Vessel"
-                                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                        ) : (
+                            <>
+                                      <Link
+                                    href={`/admin/vessels/${vessel.id}`}
+                                    title="View Details"
+                                    className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#35ADD5]"
+                                >
+                                    <Eye className="h-4 w-4" />
+                                </Link>
+                                <button
+                                    type="button"
+                                    title="Delete Vessel"
+                                    className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                                    onClick={() => setIsDeleteModalOpen(true)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </td>
+            </tr>
+
+            {/* Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Vessel Deletion</DialogTitle>
+                            <DialogDescription>
+                                Are you sure you want to delete the vessel <strong>{vessel.vesselName || vessel.official_number || 'this vessel'}</strong>? 
+                                This action will remove it from the active inventory list.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button 
+                                className="bg-red-600 text-white hover:bg-red-700" 
+                                onClick={() => {
+                                    router.delete(`/admin/vessel-inventory/${vessel.id}`, {
+                                        onSuccess: () => setIsDeleteModalOpen(false),
+                                    });
+                                }}
                             >
-                                <Trash2 className="h-4 w-4" />
-                            </button>
-                        </>
-                    )}
-                </div>
-            </td>
-        </tr>
+                                Delete Vessel
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
+        </>
     );
 }

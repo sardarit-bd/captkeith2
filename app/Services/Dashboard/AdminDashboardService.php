@@ -17,9 +17,8 @@ class AdminDashboardService
      */
     public function getOverviewData(): array
     {
-        // ── Pending Captain & Deckhand Verifications ──────────────────────────
 
-        $pendingCaptains = CaptainProfile::where('status', 'pending')
+        $pendingCaptains = CaptainProfile::where('is_verified', 'pending')
             ->with('user')
             ->get()
             ->map(fn(CaptainProfile $profile) => [
@@ -30,9 +29,11 @@ class AdminDashboardService
                 'document_type' => 'Captain License',
                 'submitted_at' => $profile->created_at->format('M d, Y'),
                 'initials'     => $this->initials($profile->full_name),
-            ]);
+                'is_verified'  => $profile->is_verified,
+            ])
+             ->values();
 
-        $pendingDeckhands = DeckhandProfile::where('status', 'pending')
+        $pendingDeckhands = DeckhandProfile::where('is_verified', 'pending')
             ->with('user')
             ->get()
             ->map(fn(DeckhandProfile $profile) => [
@@ -43,11 +44,14 @@ class AdminDashboardService
                 'document_type' => 'Deckhand Application',
                 'submitted_at' => $profile->created_at->format('M d, Y'),
                 'initials'     => $this->initials($profile->full_name),
-            ]);
+            ])
+            ->values();
 
-        $pendingVerifications = $pendingCaptains->merge($pendingDeckhands)->values()->all();
+        $pendingVerifications = collect($pendingCaptains->all())
+        ->merge($pendingDeckhands->all())
+        ->values()
+        ->all();
 
-        // ── Pending Vessel Listings ───────────────────────────────────────────
 
         $pendingVessels = Vessel::where('status', 'pending')
             ->with('ownerProfile')
@@ -67,13 +71,12 @@ class AdminDashboardService
             ])
             ->all();
 
-        // ── Stats ─────────────────────────────────────────────────────────────
 
         $activeChartersThisWeek = CharterEvent::whereBetween(
             'created_at',
             [now()->startOfWeek(), now()->endOfWeek()]
         )->count();
-
+        // dd($pendingCaptains);
         return [
             'stats' => [
                 'pending_verifications' => count($pendingVerifications),

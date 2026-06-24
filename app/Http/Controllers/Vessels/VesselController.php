@@ -14,7 +14,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
 use App\Services\VesselMatchingService;
-use App\Notifications\YachtListedNotification;
+// use App\Notifications\YachtListedNotification;
+use App\Notifications\YachtListedRequestNotification;
 class VesselController extends Controller
 {
     public function store(StoreVesselRequest $request): RedirectResponse
@@ -67,9 +68,11 @@ class VesselController extends Controller
         if ($vessel) {
             // Notify the owner that their vessel has been submitted and is awaiting admin approval.
             // Vessel matching runs only after admin approves the vessel.
-            $owner->user->notify(new YachtListedNotification($vessel));
+            $owner->user->notify(new YachtListedRequestNotification($vessel));
+                        // Notify all admins about the new pending vessel
+            $admins = \App\Models\User::role('admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewPendingVesselNotification($vessel));
         }
-
         return redirect()
             ->route('my-yachts')
             ->with('success', 'Vessel added successfully.');
@@ -92,6 +95,7 @@ public function index(): Response
                         'type'           => ucfirst(str_replace('_', ' ', $agreement->agreement_type ?? 'agreement')),
                         'agreement_type' => $agreement->agreement_type, 
                         'signedAt'       => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
+                        'status'         => $agreement->status
                     ];
                 });
             })->values();
@@ -112,6 +116,7 @@ public function index(): Response
                     ])->filter()->implode(', ')) ?: '—',
                     'operatingArea' => $v->operating_area ?? '—',
                     'deckhandRequired' => $v->requires_deckhand ? 'Yes' : 'No',
+                    'status' => $v->status,
                 ],
                 'captainRequirementsRaw' => [
                     'license_type'      => $v->required_license_type,
@@ -263,17 +268,19 @@ public function index(): Response
 
     public function destroy(Vessel $vessel): RedirectResponse
     {
-        $owner = OwnerProfile::where('user_id', auth()->id())->firstOrFail();
-        abort_if($vessel->owner_id !== $owner->id, 403);
-
-        DB::transaction(function () use ($vessel) {
-            foreach ($vessel->photos as $photo) {
-                Storage::disk('public')->delete($photo->image_path);
-            }
-            $vessel->photos()->delete();
-            $vessel->delete();
-        });
+        Vessel::destroy($vessel->id);
 
         return redirect()->route('my-yachts')->with('success', 'Vessel deleted successfully.');
     }
+
+
+
+    public function requestForApproval(Vessel $vessel){
+        $vessel->update(['status' => 'pending']);
+
+        return back()->with('success', 'Approval request sent.');
+    }
+
+
+    
 }

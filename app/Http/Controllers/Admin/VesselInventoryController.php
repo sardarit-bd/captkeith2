@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vessel;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +14,6 @@ class VesselInventoryController extends Controller
     {
         $query = Vessel::with(['ownerProfile.user']);
 
-        // Search filter - matches migration columns
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -22,16 +22,16 @@ class VesselInventoryController extends Controller
             });
         }
 
-        // Type filter - migration uses 'vessel_type' not 'type'
+
         if ($request->filled('type') && $request->input('type') !== 'all') {
             $query->where('vessel_type', strtolower($request->input('type')));
         }
 
-        // Status filter - migration has no 'status' column, using 'is_active' instead
+  
         if ($request->filled('status') && $request->input('status') !== 'all') {
             if ($request->input('status') === 'active') {
                 $query->where('is_active', true);
-            } else {
+            } else {                                
                 $query->where('is_active', false);
             }
         }
@@ -39,8 +39,20 @@ class VesselInventoryController extends Controller
         $vessels = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('vessel-inventory', [
-            'vessels' => $vessels, // This MUST be a LengthAwarePaginator instance
+            'vessels' => $vessels, 
             'filters' => $request->only(['search', 'type', 'status']),
+
+            "dashboardData"=>[
+            'stats' => [
+            'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                $query->where('is_verified', 'pending');
+            })->orWhereHas('deckhandProfile', function($query) {
+                $query->where('is_verified', 'pending');
+            })->count(),
+            'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
+            'totalUsersCount' => User::count(),
+        ]
+            ]
         ]);
     }
         public function show(Vessel $vessel)
@@ -51,7 +63,18 @@ class VesselInventoryController extends Controller
             'vessel' => $vessel,
         ]);
     }
-
+    public function downloadDocument(Vessel $vessel, string $filename)
+    {
+        // Sanitize filename to prevent directory traversal attacks
+        $filename = basename($filename);
+        $path = "vessels/{$vessel->id}/documents/{$filename}";
+        
+        if (!Storage::disk('private')->exists($path)) {
+            abort(404);
+        }
+        
+        return Storage::disk('private')->download($path, $filename);
+    }
     public function approve(Vessel $vessel)
     {
         $vessel->update(['status' => 'approved']);
@@ -64,5 +87,12 @@ class VesselInventoryController extends Controller
         $vessel->update(['status' => 'rejected']);
         
         return back()->with('success', 'Vessel rejected');
+    }
+
+
+    public function destroy(Vessel $vessel)
+    {
+        $vessel->delete();
+        return redirect()->back()->with('success', 'Vessel deleted successfully.');
     }
 }

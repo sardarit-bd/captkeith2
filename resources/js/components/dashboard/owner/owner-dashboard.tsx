@@ -5,7 +5,7 @@ import { OwnerYachtsList } from './owner-yachts-list';
 
 export function OwnerDashboard() {
     return (
-        <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto bg-[#F6FDFF] p-5">
+        <div className="flex h-full pt-10 flex-1 flex-col gap-5 overflow-x-auto bg-[#F6FDFF] p-5">
             <OwnerStatsCards />
             <OwnerQuickActions />
 

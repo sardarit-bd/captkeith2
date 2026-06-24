@@ -39,7 +39,7 @@ interface CaptainProfilePageProps extends PageProps {
 
 export default function CaptainProfile({ captain }: CaptainProfilePageProps) {
     const handleApprove = () => {
-        router.put(`/admin/captains/${captain.id}/approve`, {}, {
+        router.patch(`/admin/captains/${captain.id}/approve`, {}, {
             preserveScroll: true,
             onSuccess: () => {
                 // Optionally redirect or show success message
@@ -48,7 +48,7 @@ export default function CaptainProfile({ captain }: CaptainProfilePageProps) {
     };
 
     const handleReject = () => {
-        router.put(`/admin/captains/${captain.id}/reject`, {}, {
+        router.patch(`/admin/captains/${captain.id}/reject`, {}, {
             preserveScroll: true,
         });
     };
@@ -56,10 +56,10 @@ export default function CaptainProfile({ captain }: CaptainProfilePageProps) {
     const handleBack = () => {
         router.visit('/admin/verifications');
     };
-
+    console.log(captain)
     return (
         <>
-            <Head title={`Captain Profile - ${captain.full_name}`} />
+            {/* <Head title={`Captain Profile - ${captain.full_name}`} /> */}
             <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                     <div className="mx-auto w-full max-w-5xl space-y-6 py-6">
@@ -284,11 +284,11 @@ CaptainProfile.layout = {
     breadcrumbs: [
         {
             title: 'My Profile',
-            href: '/admin/deckhands',
+            href: '/captains/[id]',
         },
     ],
     pageHeader: {
         title: 'My Profile',
-        description: 'Manage your personal information and security preferences.',
+        description: 'Manage your personal information and security preferences. yup yup',
     },
 };

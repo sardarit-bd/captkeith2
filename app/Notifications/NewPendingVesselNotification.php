@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class YachtListedNotification extends Notification implements ShouldQueue
+class NewPendingVesselNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -23,11 +23,11 @@ class YachtListedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => 'yacht_listed',
-            'title' => 'Yacht Listed Successfully',
-            'message' => "Your yacht '{$this->vessel->name}' has been approved and listed.",
+            'type' => 'new_pending_vessel',
+            'title' => 'New Vessel Pending Review',
+            'message' => "A new vessel '{$this->vessel->name}' has been added and is pending approval.",
             'icon' => 'yacht',
-            'url' => route('my-yachts'),
+            'url' => route('admin.dashboard'),
             'vessel_id' => $this->vessel->id,
         ];
     }

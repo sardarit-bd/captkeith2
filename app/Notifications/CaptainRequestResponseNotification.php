@@ -25,8 +25,6 @@ class CaptainRequestResponseNotification extends Notification implements ShouldQ
     {
         $statusText = $this->status === 'accepted' ? 'accepted' : 'declined';
         $vesselName = $this->invitation->vessel->name ?? 'the vessel';
-        
-
         $ownerName = $this->invitation->vessel->owner->user->name ?? 'The owner';
 
         return [

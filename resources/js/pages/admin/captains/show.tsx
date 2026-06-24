@@ -34,7 +34,7 @@ interface CaptainShowProps {
 
 export default function CaptainShow({ captain }: CaptainShowProps) {
     const handleApprove = () => {
-        router.put(`/admin/captains/${captain.id}/approve`, {}, {
+        router.patch(`/admin/captains/${captain.id}/approve`, {}, {
             onSuccess: () => {
                 // Success handled by Inertia
             },
@@ -42,7 +42,7 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
     };
 
     const handleReject = () => {
-        router.put(`/admin/captains/${captain.id}/reject`, {}, {
+        router.patch(`/admin/captains/${captain.id}/reject`, {}, {
             onSuccess: () => {
                 // Success handled by Inertia
             },
@@ -64,8 +64,8 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
     };
 
     return (
-        <AppLayout>
-            <Head title={`Captain Profile - ${captain.full_name}`} />
+        <>
+            {/* <Head title={`Captain Profile - ${captain.full_name}`} /> */}
             
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-6">
@@ -250,6 +250,19 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
                     </Card>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+CaptainShow.layout = {
+    breadcrumbs: [
+        {
+            title: 'My Profile',
+            href: '/captains/[id]',
+        },
+    ],
+    pageHeader: {
+        title: 'My Profile',
+        description: 'Manage your personal information and security preferences. yoyo',
+    },
+};

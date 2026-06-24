@@ -90,7 +90,7 @@ function InviteModal({
     const currentStatus = selectedVessel
         ? existingInvitations[selectedVessel]?.status
         : undefined;
-
+    console.log("this is modal console ",vessels);
     function handleSend() {
         if (!selectedVessel || isLoading) {
             return;

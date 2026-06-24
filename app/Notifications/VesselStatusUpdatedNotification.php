@@ -7,12 +7,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class YachtListedNotification extends Notification implements ShouldQueue
+class VesselStatusUpdatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
-        public Vessel $vessel
+        public Vessel $vessel,
+        public string $status
     ) {}
 
     public function via(object $notifiable): array
@@ -23,9 +24,9 @@ class YachtListedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => 'yacht_listed',
-            'title' => 'Yacht Listed Successfully',
-            'message' => "Your yacht '{$this->vessel->name}' has been approved and listed.",
+            'type' => 'vessel_status_updated',
+            'title' => 'Vessel Status Updated',
+            'message' => "Your vessel '{$this->vessel->name}' has been {$this->status} by the admin.",
             'icon' => 'yacht',
             'url' => route('my-yachts'),
             'vessel_id' => $this->vessel->id,

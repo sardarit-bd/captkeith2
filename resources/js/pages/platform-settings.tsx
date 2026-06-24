@@ -4,10 +4,10 @@ import { platformSettings } from '@/routes';
 
 export default function PlatformSettingsPage({ settings }: { settings: any }) {
     return (
-        <>
+        <div className="pt-10">
             <Head title="Platform Settings" />
             <PlatformSettingsPageContent initialSettings={settings} />
-        </>
+        </div>
     );
 }
 

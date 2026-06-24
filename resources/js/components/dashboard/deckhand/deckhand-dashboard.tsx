@@ -5,7 +5,7 @@ import { DeckhandStatsCards } from './deckhand-stats-cards';
 
 export function DeckhandDashboard() {
     return (
-        <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto bg-[#F6FDFF] p-5">
+        <div className="flex h-full pt-10 flex-1 flex-col gap-6 overflow-x-auto bg-[#F6FDFF] p-5">
             <DeckhandStatsCards />
             <DeckhandPendingRequests />
             <DeckhandConfirmedCharters />
