@@ -46,7 +46,7 @@
                     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
                     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
                 });
-                Route::post('/my-profile/request-approval', [MyProfileController::class, 'requestApproval'])->name('my-profile.request-approval');
+                // Route::post('/my-profile/request-approval', [MyProfileController::class, 'requestApproval'])->name('my-profile.request-approval');
 
                     // Route::middleware(['auth', 'role:admin'])->group(function () {
                     //     Route::patch('/vessels/{vessel}/approve', [\App\Http\Controllers\Vessels\VesselController::class, 'approve'])
@@ -56,8 +56,10 @@
                     // });
                 Route::middleware('role:owner')->group(function () {
                     Route::get('my-yachts', [\App\Http\Controllers\Vessels\VesselController::class, 'index'])->name('my-yachts');
+                    Route::patch('my-yachts-requests-for-approval/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'requestForApproval'])
+                    ->name('my-yachts.requests-for-approval');
                     Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
-                    Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
+                    Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');    
                     Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
                     Route::get('owner/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('owner.agreement.download');
                     Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
@@ -125,18 +127,16 @@
                     Route::put('admin/platform-settings', [\App\Http\Controllers\Admin\PlatformSettingsController::class, 'update'])->name('platform-settings.update');
                     Route::inertia('admin/my-profile', 'admin/my-profile')->name('admin-my-profile');
                     Route::get('/admin/verifications', [\App\Http\Controllers\AdminDashboardController::class, 'verifications'])->name('admin.verifications');
-            
+                    Route::delete('admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
                     Route::get('/admin/captains/{captain}/profile', [\App\Http\Controllers\CaptainController::class, 'showProfile'])
                         ->name('admin.captains.profile')
                         ->middleware('can:admin');
 
                     Route::get('/admin/owners/{owner}/profile', [\App\Http\Controllers\OwnerProfileController::class, 'show'])
-                        ->name('admin.owners.profile')
-                        ->middleware('can:admin');
-                    
+                        ->name('admin.owners.profile');
+                        
                     Route::put('/admin/owners/{owner}', [\App\Http\Controllers\OwnerProfileController::class, 'update'])
-                        ->name('admin.owners.update')
-                        ->middleware('can:admin');
+                        ->name('admin.owners.update');  
                     
                     // Charterer profile routes
                     Route::get('/admin/charterers/{charterer}/profile', [\App\Http\Controllers\ChartererProfileController::class, 'show'])
@@ -159,18 +159,22 @@
                     Route::get('/admin/vessels/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'show'])
                             ->name('admin.vessels.show')
                             ->middleware('can:admin');
+                    Route::get('/admin/vessels/{vessel}/documents/{filename}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'downloadDocument'])
+                            ->name('admin.vessels.documents.download')
+                            ->middleware('can:admin');
                     Route::get('/admin/deckhands/{deckhand}', [\App\Http\Controllers\DeckhandController::class, 'show'])
                             ->name('admin.deckhands.show')
                             ->middleware('can:admin');
                     Route::get('/admin/captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])
                             ->name('admin.captains.show')
                             ->middleware('can:admin');
+                    Route::delete('admin/vessel-inventory/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'destroy'])->name('admin.vessel-inventory.destroy');
                 });
 
                 Route::middleware('role:owner|captain|deckhand')->group(function () {
                     Route::get('my-profile', [\App\Http\Controllers\MyProfileController::class, 'edit'])
                         ->name('my-profile');
-                        Route::post('/my-profile/request-approval', [\App\Http\Controllers\MyProfileController::class, 'requestApproval'])->name('my-profile.request-approval');
+                    Route::post('/my-profile/request-approval', [\App\Http\Controllers\MyProfileController::class, 'requestApproval'])->name('my-profile.request-approval');
                     Route::post('my-profile', [\App\Http\Controllers\MyProfileController::class, 'update'])
                         ->name('my-profile.update');
                 });

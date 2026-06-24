@@ -216,10 +216,11 @@ class AdminDashboardController extends Controller
 
     public function approveCaptain($captainId)
     {
+        // dd("hiteded here");
         $captain = CaptainProfile::findOrFail($captainId);
         $captain->update([
             'status' => 'approved',
-            'is_verified' => true,
+            'is_verified' => 'approved',
         ]);
 
         // Notify the captain about the approval
@@ -235,7 +236,7 @@ class AdminDashboardController extends Controller
         $captain = CaptainProfile::findOrFail($captainId);
         $captain->update([
             'status' => 'rejected',
-            'is_verified' => false,
+            'is_verified' => "rejected",
         ]);
         
         // Note: Consider creating a ProfileRejectedNotification class if you want specific rejection messaging
@@ -251,7 +252,7 @@ class AdminDashboardController extends Controller
         $deckhand = DeckhandProfile::findOrFail($deckhandId);
         $deckhand->update([
             'status' => 'approved',
-            'is_verified' => true,
+            'is_verified' => 'approved',
         ]);
         
         // Notify the deckhand about the approval
@@ -267,7 +268,7 @@ class AdminDashboardController extends Controller
         $deckhand = DeckhandProfile::findOrFail($deckhandId);
         $deckhand->update([
             'status' => 'rejected',
-            'is_verified' => false,
+            'is_verified' => "rejected",
         ]);
         
         // Note: Consider creating a ProfileRejectedNotification class if you want specific rejection messaging

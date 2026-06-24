@@ -33,6 +33,9 @@ return new class extends Migration
             $table->enum('required_endorsement', ['inland', 'near_coastal', 'unlimited']);
             $table->unsignedSmallInteger('required_tonnage_rating');
             $table->unsignedSmallInteger('required_years_experience')->default(0);
+            $table->enum('is_verified', ['pending', 'approved', 'rejected'])
+            ->nullable()
+            ->default(null);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();

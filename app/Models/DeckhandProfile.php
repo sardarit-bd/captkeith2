@@ -109,7 +109,7 @@ class DeckhandProfile extends Model
             'has_server_experience'     => 'boolean',
             'has_bartending_experience' => 'boolean',
             'hourly_rate'               => 'decimal:2',
-            'is_verified'               => 'boolean',  
+            // 'is_verified'               => 'boolean',  
             'preferences'               => 'array',
             'deleted_at'                => 'datetime',
         ];

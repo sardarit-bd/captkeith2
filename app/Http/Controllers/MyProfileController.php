@@ -243,22 +243,22 @@ class MyProfileController extends Controller
         if (!$profile) {
             return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
         }
-
+  
         // Check if all required fields are filled based on your validation rules
         $requiredFields = [
             'full_name', 'phone', 'address', 'city', 'state', 'zip_code', 
-            'travel_radius_miles', 'license_type', 'endorsement', 
+            'travel_radius_miles', 'license_type', 'endorsement', "is_verified",
             'tonnage_rating', 'years_experience', 'hourly_rate'
         ];
 
-        foreach ($requiredFields as $field) {
-            if (empty($profile->$field)) {
-                return back()->with('toast', ['type' => 'error', 'message' => 'Please fill in all required profile fields before requesting approval.']);
-            }
-        }
-
-        $profile->update(['status' => 'pending']);
-        
+        // foreach ($requiredFields as $field) {
+        //     if (empty($profile->$field)) {
+        //         return back()->with('error', 'Please fill in all required profile fields before requesting approval.');
+        //     }
+        // }
+        // dd($profile);
+        $uss = $profile->update(['is_verified' => 'pending']);
+        // dd($uss);
     } elseif ($user->hasRole('deckhand')) {
         $profile = $user->deckhandProfile;
         if (!$profile) {

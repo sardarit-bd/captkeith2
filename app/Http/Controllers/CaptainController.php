@@ -55,10 +55,11 @@ class CaptainController extends Controller
         $vesselIds = $owner
             ? Vessel::where('owner_id', $owner->id)
             ->whereNull('deleted_at')
+            ->where('status', "approved")
             ->pluck('id')
             : collect();
 
-       
+    //    dd($vesselIds);
 
             $invitations = $owner
                 ? OwnerCaptainInvitation::where('owner_id', $owner->id)
@@ -98,7 +99,7 @@ class CaptainController extends Controller
             'vessels'                => $owner
                 ? Vessel::where('owner_id', $owner->id)
                 ->whereNull('deleted_at')
-                ->where('is_active', true)
+                ->where('status', 'approved')
                 ->orderBy('name')
                 ->get()
                 ->map(fn($v) => ['value' => $v->id, 'label' => $v->name])

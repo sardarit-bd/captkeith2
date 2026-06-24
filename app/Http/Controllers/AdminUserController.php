@@ -8,7 +8,7 @@ use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
-
+ 
 class AdminUserController extends Controller
 {
     public function index(Request $request, UserManagementService $service): Response
@@ -28,5 +28,15 @@ class AdminUserController extends Controller
         ]
             ]
         ]);
+    }
+
+
+
+        public function destroy(User $user)
+    {
+  
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', 'User deleted successfully.');
     }
 }

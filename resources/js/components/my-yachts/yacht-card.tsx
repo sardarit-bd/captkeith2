@@ -63,7 +63,7 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
     if (raw.min_experience) {
         params.set('min_experience', String(raw.min_experience));
     }
-
+    console.log("check check : ",yacht)
     const captainsUrl = `/captains?${params.toString()}`;
 
     return (
@@ -122,13 +122,70 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
                     value={yacht.captainRequirements.minimumExperience}
                 />
             </div>
+                <div>
+                                {
+                yacht.specs?.status == "pending" && (
+                <>
+                    <p className="mt-6 mb-1 text-[12px] font-bold text-red-400">
+                        ** for finding captain must be approved by admin **
+                    </p>
+                <button
+                // href={captainsUrl}
 
+                disabled={true}
+                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/30 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/30 cursor-pointer hover:shadow-md"
+            >
+                Find Matching Captains
+            </button>
+            </>
+                )
+            }
+
+
+                        {
+                yacht.specs?.status == "rejected" && (
+                <>
+                    <p className="mt-6 mb-1 text-[12px] font-bold text-red-500">
+                        ** your approval is rejected, please update and try again **
+                    </p>
+                    <div className='flex gap-2'>
+                <button
+                // href={captainsUrl}
+
+                disabled={true}
+                    className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/30 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/30 cursor-pointer hover:shadow-md"
+                >
+                    Find Matching Captains
+                </button>
+                    <button
+                    onClick={() => {
+                        console.log(yacht.id);
+                        router.patch(`/my-yachts-requests-for-approval/${yacht.id}`);
+                    }}
+                    className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 cursor-pointer hover:shadow-md"
+                >
+                    Request Again
+                </button>
+                </div>
+            </>
+                )
+            }
+
+            {
+                yacht.specs?.status == "approved" && (
+                <>
             <Link
                 href={captainsUrl}
+                disabled={true}
                 className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
             >
                 Find Matching Captains
             </Link>
+            </>
+                )
+            }
+                </div>
+
         </div>
     );
 }
@@ -156,13 +213,56 @@ function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
                     No charters scheduled yet
                 </div>
             )}
+                    {
+                yacht.specs?.status == "pending" && (
+                <>
+                    <p className="mt-6 mb-1 text-[12px] font-bold text-red-400">
+                        ** for finding captain must be approved by admin **
+                    </p>
+                <button
+                // href={captainsUrl}
 
+                disabled={true}
+                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/10 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/10 cursor-pointer hover:shadow-md"
+            >
+                Create Charter
+            </button>
+            </>
+                )
+            }
+
+
+                        {
+                yacht.specs?.status == "rejected" && (
+                <>
+                    <p className="mt-6 mb-1 text-[12px] font-bold text-red-500">
+                        ** your approval is rejected, please update and try again **
+                    </p>
+                <button
+                // href={captainsUrl}
+
+                disabled={true}
+                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/10 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/10 cursor-pointer hover:shadow-md"
+            >
+                Create Charter
+            </button>
+            </>
+                )
+            }
+
+            {
+                yacht.specs?.status == "approved" && (
+                <>
             <Link
                 href={createCharterUrl}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
             >
                 Create Charter
             </Link>
+            </>
+                )
+            }
+
         </div>
     );
 }

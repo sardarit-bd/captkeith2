@@ -63,7 +63,18 @@ class VesselInventoryController extends Controller
             'vessel' => $vessel,
         ]);
     }
-
+    public function downloadDocument(Vessel $vessel, string $filename)
+    {
+        // Sanitize filename to prevent directory traversal attacks
+        $filename = basename($filename);
+        $path = "vessels/{$vessel->id}/documents/{$filename}";
+        
+        if (!Storage::disk('private')->exists($path)) {
+            abort(404);
+        }
+        
+        return Storage::disk('private')->download($path, $filename);
+    }
     public function approve(Vessel $vessel)
     {
         $vessel->update(['status' => 'approved']);
@@ -76,5 +87,12 @@ class VesselInventoryController extends Controller
         $vessel->update(['status' => 'rejected']);
         
         return back()->with('success', 'Vessel rejected');
+    }
+
+
+    public function destroy(Vessel $vessel)
+    {
+        $vessel->delete();
+        return redirect()->back()->with('success', 'Vessel deleted successfully.');
     }
 }

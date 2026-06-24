@@ -17,7 +17,6 @@ class AdminDashboardService
      */
     public function getOverviewData(): array
     {
-        // ── Pending Captain & Deckhand Verifications ──────────────────────────
 
         $pendingCaptains = CaptainProfile::where('is_verified', 'pending')
             ->with('user')
@@ -30,6 +29,7 @@ class AdminDashboardService
                 'document_type' => 'Captain License',
                 'submitted_at' => $profile->created_at->format('M d, Y'),
                 'initials'     => $this->initials($profile->full_name),
+                'is_verified'  => $profile->is_verified,
             ])
              ->values();
 
@@ -48,11 +48,10 @@ class AdminDashboardService
             ->values();
 
         $pendingVerifications = collect($pendingCaptains->all())
-    ->merge($pendingDeckhands->all())
-    ->values()
-    ->all();
+        ->merge($pendingDeckhands->all())
+        ->values()
+        ->all();
 
-        // ── Pending Vessel Listings ───────────────────────────────────────────
 
         $pendingVessels = Vessel::where('status', 'pending')
             ->with('ownerProfile')
@@ -72,13 +71,12 @@ class AdminDashboardService
             ])
             ->all();
 
-        // ── Stats ─────────────────────────────────────────────────────────────
 
         $activeChartersThisWeek = CharterEvent::whereBetween(
             'created_at',
             [now()->startOfWeek(), now()->endOfWeek()]
         )->count();
-
+        // dd($pendingCaptains);
         return [
             'stats' => [
                 'pending_verifications' => count($pendingVerifications),
