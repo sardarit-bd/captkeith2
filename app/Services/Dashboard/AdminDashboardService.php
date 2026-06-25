@@ -22,7 +22,7 @@ class AdminDashboardService
             ->with('user')
             ->get()
             ->map(fn(CaptainProfile $profile) => [
-                'id'           => $profile->id,
+                'id'           => $profile->user_id,
                 'type'         => 'captain',
                 'user_name'    => $profile->full_name,
                 'user_role'    => 'Captain',
@@ -37,7 +37,8 @@ class AdminDashboardService
             ->with('user')
             ->get()
             ->map(fn(DeckhandProfile $profile) => [
-                'id'           => $profile->id,
+         
+                'id'           => $profile->user_id, 
                 'type'         => 'deckhand',
                 'user_name'    => $profile->full_name,
                 'user_role'    => 'Deckhand',

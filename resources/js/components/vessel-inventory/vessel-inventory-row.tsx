@@ -77,10 +77,24 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
             .slice(0, 2);
     };
 
-    const ownerInitials = vessel.owner_profile?.user?.name
-        ? getInitials(vessel.owner_profile.user.name)
+    const ownerInitials = vessel?.owner_profile?.user?.name
+        ? getInitials(vessel?.owner_profile?.user?.name)
         : 'OW';
+    const handleApprove = (id: string, ) => {
+        router.patch(`/admin/vessels/${id}/approve`, {}, {
+            preserveScroll: true,
+        });
+    };
 
+    const handleReject = (id: string, ) => {
+        router.patch(`admin/vessels/${id}/reject`, {}, {
+            preserveScroll: true,
+        });
+    };
+        const handleViewProfile = (Id: string, ) => {
+        router.visit(`/admin/vessels/${Id}`);
+    };
+    console.log(isPending)
     return (
         <>
             <tr className={`group border-b border-slate-100 transition-colors ${rowHoverClass}`}>
@@ -102,7 +116,7 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                                 {vessel.vesselName}
                             </p> */}
                             <p className={`text-xs ${isFlagged ? 'text-slate-400' : 'text-slate-500'}`}>
-                                {vessel.owner_profile?.full_name || 'Not Mentioned'}
+                                {vessel?.owner_profile?.full_name || 'Not Mentioned'}
                             </p>
                         </div>
                     </div>
@@ -111,7 +125,7 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                 {/* Email / Official Number Column */}
                 <td className="px-6 py-4">
                     <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
-                        {vessel.official_number || 'Unverified'}
+                        {vessel?.official_number || 'Unverified'}
                     </span>
                 </td>
 
@@ -137,7 +151,7 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                     <div className="text-sm text-slate-600">
                         <div className="flex items-center gap-1">
                             {/* <span className="text-slate-500">Length:</span> */}
-                            <span className="font-medium">{vessel.length_ft || "Not Mentioned"} </span>
+                            <span className="font-medium">{vessel?.length_ft || "Not Mentioned"} </span>
                         </div>
                     </div>
                 </td>
@@ -149,7 +163,7 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                         </div> */}
                         <div className="flex items-center gap-1">
                             {/* <span className="text-slate-500">Capacity:</span> */}
-                            <span className="font-medium">{vessel.passenger_capacity || "Not Mentioned"}</span>
+                            <span className="font-medium">{vessel?.passenger_capacity || "Not Mentioned"}</span>
                         </div>
                     </div>
                 </td>
@@ -158,12 +172,36 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                 <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
                         {isPending ? (
-                            <button
-                                type="button"
-                                className="rounded-lg bg-[#35ADD5] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800"
-                            >
-                                Review
-                            </button>
+                                <div className='flex gap-2'>
+
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-[#0ea5e9] text-[#0ea5e9] hover:bg-[#0ea5e9] hover:text-white"
+                                    onClick={() => handleViewProfile(vessel?.id)}
+                                    >
+                                    view profile
+                                    </Button>
+
+                                    <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="bg-[#0ea5e9] hover:bg-[#0284c7]"
+                                    onClick={() => handleApprove(vessel?.id)}
+                                    >
+                                    Approve
+                                    </Button>
+
+                                    <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-red-500 text-red-500 hover:bg-red-50"
+                                    onClick={() => handleReject(vessel?.id)}
+                                    >
+                                    Reject
+                                    </Button>
+                                             {/* handleReject        */}
+                                    </div>
                         ) : isFlagged ? (
                             <button
                                 type="button"

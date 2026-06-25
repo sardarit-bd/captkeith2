@@ -6,25 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     public function up(): void
     {
         Schema::table('vessels', function (Blueprint $table) {
-          
-            if (!Schema::hasColumn('vessels', 'passenger_capacity')) {
-                $table->unsignedSmallInteger('passenger_capacity')->nullable()->after('operating_area');
-            }
+            $table->decimal('rental_cost', 10, 2)->default(0)->after('passenger_capacity');
         });
     }
 
-  
     public function down(): void
     {
         Schema::table('vessels', function (Blueprint $table) {
-          
-            if (Schema::hasColumn('vessels', 'passenger_capacity')) {
-                $table->dropColumn('passenger_capacity');
-            }
+            $table->dropColumn('rental_cost');
         });
     }
 };

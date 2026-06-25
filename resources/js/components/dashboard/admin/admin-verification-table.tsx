@@ -30,7 +30,7 @@ export function AdminVerificationTable({ verifications }: AdminVerificationTable
             preserveScroll: true,
         });
     };
-
+    console.log('verifications:', verifications);
     const handleReject = (id: string, profileType: 'captain' | 'deckhand') => {
         router.patch(`/admin/${profileType}s/${id}/reject`, {}, {
             preserveScroll: true,
@@ -38,7 +38,7 @@ export function AdminVerificationTable({ verifications }: AdminVerificationTable
     };
 
     const handleViewProfile = (userId: string, profileType: 'captain' | 'deckhand') => {
-        router.visit(`/${profileType}s/${userId}/`);
+        router.visit(`admin/${profileType}s/${userId}/profile`);
         console.log(`/${profileType}s/${userId}/`)
     };
 

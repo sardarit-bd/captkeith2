@@ -302,7 +302,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
             },
         });
     };
-
+    console.log(yacht);
     return (
         <>
             {showDeleteModal && (

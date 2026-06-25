@@ -18,11 +18,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'charter_date',
     'start_time',
     'duration_minutes',
+    'rental_cost',
     'special_notes',
     'status',
     'invite_token',
     'invite_token_expires_at',
-    'passengerCapacity', // New field added without _
+    'passengerCapacity', 
 ])]
 class CharterEvent extends Model
 {
@@ -81,12 +82,13 @@ class CharterEvent extends Model
         return $this->hasOne(InsurancePolicy::class, 'charter_event_id');
     }
 
-    protected function casts(): array
+protected function casts(): array
     {
         return [
             'charter_date' => 'date',
             'start_time' => 'string',
             'duration_minutes' => 'integer',
+            'rental_cost' => 'decimal:2',
             'invite_token_expires_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];

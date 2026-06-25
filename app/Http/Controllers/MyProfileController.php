@@ -237,7 +237,7 @@ class MyProfileController extends Controller
     public function requestApproval(Request $request): RedirectResponse
 {
     $user = $request->user();
-
+    
     if ($user->hasRole('captain')) {
         $profile = $user->captainProfile;
         if (!$profile) {
@@ -261,6 +261,7 @@ class MyProfileController extends Controller
         // dd($uss);
     } elseif ($user->hasRole('deckhand')) {
         $profile = $user->deckhandProfile;
+      
         if (!$profile) {
             return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
         }
@@ -276,8 +277,12 @@ class MyProfileController extends Controller
             }
         }
 
-        $profile->update(['status' => 'pending']);
-        
+        $profile->update([
+            'status' => 'pending',
+            'is_verified' => 'pending'
+            
+            ]);
+        //   dd('done');
     } else {
         return back()->with('toast', ['type' => 'error', 'message' => 'Invalid role for approval.']);
     }

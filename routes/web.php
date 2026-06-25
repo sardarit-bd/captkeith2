@@ -119,7 +119,7 @@
                 });
 
                 Route::middleware('role:admin')->group(function () {
-                    Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+                    // Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
                     Route::get('admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users');
                     Route::get('admin/vessel-inventory', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'index'])->name('vessel-inventory');
                     Route::inertia('admin/compliance-log', 'compliance-log')->name('compliance-log');
@@ -245,6 +245,7 @@
                     Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])
                     ->name('charterer.agreement.download');
                     Route::get('charterer/insurance', [\App\Http\Controllers\CharterController::class, 'insurance'])->name('charterer.insurance');
+                    Route::get('charterer/checkout', [\App\Http\Controllers\CharterController::class, 'checkout'])->name('charterer.checkout');
                     Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
                     Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
                     Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');

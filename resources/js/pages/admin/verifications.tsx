@@ -46,7 +46,7 @@ export default function Verifications({ pendingVerifications }: VerificationsPag
         const handleViewProfile = (userId: string, profileType: 'captain' | 'deckhand') => {
         router.visit(`/${profileType}s/${userId}`);
     };
-
+    // console.log(pendingVerifications[0].id)
     return (
         <>
             {/* <Head title="Credential Verifications" /> */}
@@ -95,7 +95,7 @@ export default function Verifications({ pendingVerifications }: VerificationsPag
                                                         size="sm"
                                                         variant="outline"
                                                         className="border-[#0ea5e9] text-[#0ea5e9] hover:bg-[#0ea5e9] hover:text-white"
-                                                        onClick={() => handleViewProfile(item.id, item.type)}
+                                                        onClick={() => handleViewProfile(item?.user_id, item.type)}
                                                     >
                                                         view profile
                                                     </Button>
@@ -103,7 +103,7 @@ export default function Verifications({ pendingVerifications }: VerificationsPag
                                                         size="sm"
                                                         variant="default"
                                                         className="bg-[#0ea5e9] hover:bg-[#0284c7]"
-                                                        onClick={() => handleApprove(item.id, item.type)}
+                                                        onClick={() => handleApprove(item?.user_id, item.type)}
                                                     >
                                                         Approve
                                                     </Button>
@@ -111,7 +111,7 @@ export default function Verifications({ pendingVerifications }: VerificationsPag
                                                         size="sm"
                                                         variant="outline"
                                                         className="border-red-500 text-red-500 hover:bg-red-50"
-                                                        onClick={() => handleReject(item.id, item.type)}
+                                                        onClick={() => handleReject(item?.user_id, item.type)}
                                                     >
                                                         Reject
                                                     </Button>
