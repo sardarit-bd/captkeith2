@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'marina_city',
     'marina_state',
     'marina_zip',
+    "rental_cost",
     'latitude',
     'longitude',
     'operating_area',
@@ -97,6 +98,7 @@ class Vessel extends Model
             'required_years_experience' => 'integer',
             'is_active' => 'boolean',
             'deleted_at' => 'datetime',
+            'rental_cost' => 'decimal:2',
         ];
     }
 }

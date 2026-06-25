@@ -672,7 +672,96 @@ class CharterController extends Controller
             'agreements' => $agreements,
         ]);
     }
+public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
+    {
+        $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->first();
 
+        if (! $charterer) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Please complete your charterer profile first.');
+        }
+
+        $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->with(['vessel.photos', 'crewResponses.captainProfile', 'crewResponses.deckhandProfile'])
+            ->latest('created_at')
+            ->first();
+
+        if (! $event) {
+            return redirect()->route('dashboard')
+                ->with('error', 'No active charter event found.');
+        }
+
+        $vessel = $event->vessel;
+        $hours  = $event->duration_minutes ? round($event->duration_minutes / 60, 1) : 0;
+
+        // Yacht rental cost lives on the charter event and is nullable for now —
+        // no pricing UI exists yet. Treat null as "pending" rather than silently
+        // charging $0, so the charterer never sees an inaccurate total.
+        $rentalCostPending = is_null($event->rental_cost);
+        $rentalCost        = $rentalCostPending ? 0.0 : (float) $event->rental_cost;
+
+        $acceptedCaptains = $event->crewResponses
+            ->where('crew_role', 'captain')
+            ->where('response', 'available')
+            ->take(2)
+            ->values();
+
+        $captains = $acceptedCaptains->map(function ($response) use ($hours) {
+            $profile = $response->captainProfile;
+            $rate    = $profile?->hourly_rate !== null ? (float) $profile->hourly_rate : null;
+            $fee     = $rate !== null ? round($rate * $hours, 2) : 0.0;
+
+            return [
+                'id'          => $profile?->id,
+                'name'        => $profile?->full_name ?? '—',
+                'hourlyRate'  => $rate,
+                'hours'       => $hours,
+                'fee'         => $fee,
+                'ratePending' => $rate === null,
+            ];
+        })->values();
+
+        $deckhandResponse = $event->crewResponses
+            ->where('crew_role', 'deckhand')
+            ->where('response', 'available')
+            ->first();
+
+        $deckhand = null;
+        if ($deckhandResponse) {
+            $profile = $deckhandResponse->deckhandProfile;
+            $rate    = $profile?->hourly_rate !== null ? (float) $profile->hourly_rate : null;
+            $fee     = $rate !== null ? round($rate * $hours, 2) : 0.0;
+
+            $deckhand = [
+                'id'          => $profile?->id,
+                'name'        => $profile?->full_name ?? '—',
+                'hourlyRate'  => $rate,
+                'hours'       => $hours,
+                'fee'         => $fee,
+                'ratePending' => $rate === null,
+            ];
+        }
+
+        $total = round($rentalCost + $captains->sum('fee') + ($deckhand['fee'] ?? 0.0), 2);
+
+        return \Inertia\Inertia::render('charterer/checkout', [
+            'charterEventId'    => $event->id,
+            'vessel'            => [
+                'name'  => $vessel?->name ?? '—',
+                'image' => $vessel?->photos->first()
+                    ? Storage::url($vessel->photos->first()->image_path)
+                    : null,
+            ],
+            'hours'             => $hours,
+            'rentalCost'        => $rentalCost,
+            'rentalCostPending' => $rentalCostPending,
+            'captains'          => $captains,
+            'deckhand'          => $deckhand,
+            'total'             => $total,
+        ]);
+    }
 
     public function agreement(): \Inertia\Response|\Illuminate\Http\RedirectResponse
     {

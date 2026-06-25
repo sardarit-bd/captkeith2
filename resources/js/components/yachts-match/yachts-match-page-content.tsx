@@ -13,13 +13,16 @@ interface PageProps {
             captain_profile?: {
                 is_verified: VerificationStatus;
             } | null;
+            deckhand_profile?: {
+                is_verified: VerificationStatus;
+            } | null;
         };
     };
 }
 
 export function YachtsMatchPageContent() {
     const page = usePage<PageProps>();
-    const isVerified = page.props.auth?.user?.captain_profile?.is_verified ?? null;
+    const isVerified = page.props.auth?.user?.captain_profile?.is_verified || page.props.auth?.user?.deckhand_profile?.is_verified ||null;
     const flash =page.props.flash;
     const { post, processing } = useForm({});
     let error=null;
@@ -27,7 +30,7 @@ export function YachtsMatchPageContent() {
         console.log(requestApproval.url());
         try {
               const result=post(requestApproval.url());
-      
+                
         } catch (error) {
            alert("Something went wrong. Please try again.");
         }

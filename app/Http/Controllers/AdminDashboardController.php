@@ -182,12 +182,13 @@ class AdminDashboardController extends Controller
 
     public function approveVessel($vesselId)
     {
+        // dd("vessel");
         $vessel = Vessel::findOrFail($vesselId);
         $vessel->update([
             'status' => 'approved', 
             'is_verified' => true,
         ]);
-        
+        //  
         // Notify the owner about the approval
         $vessel->load('ownerProfile.user');
         if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
@@ -216,14 +217,13 @@ class AdminDashboardController extends Controller
 
     public function approveCaptain($captainId)
     {
-        // dd("hiteded here");
-        $captain = CaptainProfile::findOrFail($captainId);
+//  dd("captain", $captainId);
+        $captain = CaptainProfile::where('user_id', $captainId)->firstOrFail(); 
+       
         $captain->update([
             'status' => 'approved',
             'is_verified' => 'approved',
         ]);
-
-        // Notify the captain about the approval
         if ($captain->user) {
             $captain->user->notify(new \App\Notifications\ProfileApprovedNotification('captain'));
         }
@@ -233,7 +233,9 @@ class AdminDashboardController extends Controller
 
     public function rejectCaptain($captainId)
     {
-        $captain = CaptainProfile::findOrFail($captainId);
+        // dd($captainId);
+        $captain = CaptainProfile::where('user_id', $captainId)->firstOrFail(); 
+        // dd($captain);
         $captain->update([
             'status' => 'rejected',
             'is_verified' => "rejected",
@@ -247,19 +249,18 @@ class AdminDashboardController extends Controller
         return redirect()->back()->with('success', 'Captain has been rejected.');
     }
 
-    public function approveDeckhand($deckhandId)
+    public function approveDeckhand($userId)
     {
-        $deckhand = DeckhandProfile::findOrFail($deckhandId);
+        // dd($userId);
+        $deckhand = DeckhandProfile::where('user_id', $userId)->firstOrFail();   
+        // dd($deckhand);
         $deckhand->update([
             'status' => 'approved',
             'is_verified' => 'approved',
         ]);
-        
-        // Notify the deckhand about the approval
         if ($deckhand->user) {
             $deckhand->user->notify(new \App\Notifications\ProfileApprovedNotification('deckhand'));
         }
-        
         return redirect()->back()->with('success', 'Deckhand has been approved successfully.');
     }
 
