@@ -18,7 +18,7 @@ class LoginResponse implements LoginResponseContract
         $user = $request->user();
 
         if ($user && $user->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('dashboard'));
         }
 
         return redirect()->intended(config('fortify.home'));

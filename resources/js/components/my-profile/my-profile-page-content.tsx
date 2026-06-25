@@ -51,17 +51,17 @@ const handleRequestApproval = () => {
         }
 
         // Not verified and not pending (could be null or rejected)
-        return (
-            <div className="mt-6 flex justify-center">
-                <Button 
-                    onClick={handleRequestApproval} 
-                    disabled={!isProfileComplete || processing}
-                    className="bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {processing ? 'Sending...' : 'Request Admin Approval'}
-                </Button>
-            </div>
-        );
+        // return (
+        //     <div className="mt-6 flex justify-center">
+        //         <Button 
+        //             onClick={handleRequestApproval} 
+        //             disabled={!isProfileComplete || processing}
+        //             className="bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        //         >
+        //             {processing ? 'Sending...' : 'Request Admin Approval'}
+        //         </Button>
+        //     </div>
+        // );
     };
 
     if (role === 'deckhand') {
