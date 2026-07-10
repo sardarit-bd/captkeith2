@@ -1,5 +1,18 @@
-import { ArrowRight, Calendar, Clock, Download, MapPin, MessageSquare, RefreshCw, Shield, Star, User } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import {
+    ArrowRight,
+    Calendar,
+    Clock,
+    Download,
+    MapPin,
+    MessageSquare,
+    RefreshCw,
+    Shield,
+    Star,
+    User,
+    Users,
+    FileText,
+} from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
 import type { BookingCardRecord } from './my-booking-data';
 
 const statusStyles: Record<BookingCardRecord['status'], string> = {
@@ -10,160 +23,181 @@ const statusStyles: Record<BookingCardRecord['status'], string> = {
 };
 
 const actionIcons = {
-    'messageSquare': MessageSquare,
-    'arrowRight': ArrowRight,
-    'download': Download,
-    'refreshCw': RefreshCw,
+    messageSquare: MessageSquare,
+    arrowRight: ArrowRight,
+    download: Download,
+    refreshCw: RefreshCw,
 };
 
 export function MyBookingCard({ booking }: { booking: BookingCardRecord }) {
+    // Handler for existing Agreement button
+    const handleAgreementClick = (id: string) => {
+        // Add your existing logic here, e.g., router.get(...)
+        console.log('Agreement clicked for:', id);
+    };
+
+    const handleConfirmCompletion = (id: string) => {
+        if (
+            confirm('Are you sure you want to mark this charter as complete?')
+        ) {
+            // Pass the URL directly instead of using a route() helper
+            router.post(`/my-booking/${id}/confirm-completion`);
+        }
+    };
+
+    // Handler for Charterer to Decline Completion
+    const handleDeclineCompletion = (id: string) => {
+        if (
+            confirm('Are you sure you want to decline this completion request?')
+        ) {
+            // Pass the URL directly
+            router.post(`/my-booking/${id}/decline-completion`);
+        }
+    };
+
     return (
-        <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md md:flex-row">
-            <div className="relative h-56 w-full shrink-0 md:h-auto md:w-80 lg:w-96">
-                <img
-                    src={booking.image}
-                    alt={booking.yachtName}
-                    className="h-full w-full object-cover"
-                />
-            </div>
-
-            <div className="flex flex-1 flex-col justify-between p-6 sm:p-8">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            {/* Header Section */}
+            <div className="mb-4 flex items-start justify-between">
                 <div>
-                    <header className="mb-6 flex items-start justify-between gap-4">
-                        <div>
-                            <h3 className="text-xl leading-tight font-bold text-gray-900">
-                                {booking.yachtName}
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Confirmation #{booking.confirmationCode}
-                            </p>
-                        </div>
-
-                        <span
-                            className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${statusStyles[booking.status]}`}
-                        >
-                            {booking.statusLabel}
-                        </span>
-                    </header>
-
-                    <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-                        <div className="space-y-5">
-                    <div className="flex items-center gap-3">
-                        {booking.captainAvatar ? (
-                            <img
-                                src={booking.captainAvatar}
-                                alt={booking.captainName}
-                                className="h-10 w-10 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                <User className="h-6 w-6 text-gray-500" />
-                            </div>
-                        )}
-                        <div>
-                            <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                Captain
-                            </p>
-                            <p className="text-sm font-bold text-gray-900">
-                                {booking.captainName}
-                            </p>
-                        </div>
-                    </div>
-
-                            <div>
-                                <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                    Location
-                                </p>
-                                <p className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                    <MapPin className="h-4 w-4 text-gray-400" />
-                                    {booking.location}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <p className="flex items-center gap-1.5">
-                                    <User className="h-4 w-4 text-gray-400" />
-                                    Charter: {booking.passengers || 'Not mentioned'}
-                                </p>
-                                <span className="text-gray-300">•</span>
-                                <p className="flex items-center gap-1.5">
-                                    <Shield className="h-4 w-4 text-gray-400" />
-                                    Capacity: {booking.yachtCapacity || 'Not mentioned'}
-                                </p>
-                            </div>
-
-                            {booking.rating ? (
-                                <div className="flex items-center gap-2 pt-1">
-                                    <p className="text-sm text-gray-600">
-                                        Your Rating:
-                                    </p>
-                                    <div className="flex items-center gap-1">
-                                        {Array.from({
-                                            length: booking.rating,
-                                        }).map((item, index) => (
-                                            <Star
-                                                key={`${booking.id}-star-${index}`}
-                                                className="h-4 w-4 fill-orange-400 text-orange-400"
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : null}
-                        </div>
-
-                        <div className="space-y-5">
-                            <div>
-                                <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                    Date & Time
-                                </p>
-                                <div className="space-y-1.5">
-                                    <p className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                        <Calendar className="h-4 w-4 text-gray-400" />
-                                        {booking.date}
-                                    </p>
-                                    <p className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                        <Clock className="h-4 w-4 text-gray-400" />
-                                        {booking.time}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div>
-                                <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                    Total Paid
-                                </p>
-                                <p className="text-2xl font-bold text-cyan-500">
-                                    {booking.totalPaid}
-                                </p>
-                            </div>
-                        </div>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                        {booking.vessel_name || 'Maiores autem numquaaaaaaaaa'}
+                    </h3>
+                    <div className="mt-1 flex items-center gap-3 text-sm text-gray-600">
+                        <span>{booking.vessel_type || 'Sailing'}</span>
+                        <span>•</span>
+                        <span>{booking.vessel_length || '85.00'} ft</span>
                     </div>
                 </div>
-
-                <footer className="mt-8 flex items-center gap-3 border-t border-slate-100 pt-5">
-                <Link
-                    href={`/charterer/request/${booking.id}`} 
-                    className="inline-flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-cyan-600"
+                <span
+                    className={`rounded-full px-3 py-1 text-sm font-medium ${
+                        statusStyles[booking.status] ||
+                        'bg-gray-100 text-gray-800'
+                    }`}
                 >
-                    <ArrowRight className="h-4 w-4" />
-                    Learn More
-                </Link>
-                    {booking.actions?.map((action) => {
-                        const Icon = actionIcons[action.icon as keyof typeof actionIcons];
-
-                        return (
-                            <button
-                                key={`${booking.id}-${action.id}`}
-                                type="button"
-                                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
-                            >
-                                <Icon className="h-4 w-4" />
-                                {action.label}
-                            </button>
-                        );
-                    })}
-                </footer>
+                    {booking.statusLabel || 'Pending'}
+                </span>
             </div>
-        </article>
+
+            {/* Date and Time */}
+            <div className="mb-6 flex items-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{booking.start_date || 'Jul 17, 2026'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>
+                        {booking.start_time || '18:17:00'} (
+                        {booking.duration || '6'} hrs)
+                    </span>
+                </div>
+            </div>
+
+            {/* Charterer Section */}
+            <div className="mb-4 rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+                            <User className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div>
+                            <p className="text-xs tracking-wide text-gray-500 uppercase">
+                                Charterer
+                            </p>
+                            <p className="font-medium text-gray-900">
+                                {booking.charterer_name || 'Pending'}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => handleAgreementClick(booking.id)}
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                    >
+                        Agreement
+                    </button>
+                </div>
+            </div>
+
+            {/* Assigned Crew Section */}
+            <div className="mb-6 rounded-lg bg-gray-50 p-4">
+                <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <Users className="h-4 w-4" />
+                    Assigned Crew
+                </h4>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {booking.captains?.map((captain: any, index: number) => (
+                        <div
+                            key={index}
+                            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
+                        >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                                <User className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-medium text-blue-600">
+                                    CAPTAIN {index + 1}
+                                </p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {captain.name}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                    {booking.deckhands?.map((deckhand: any, index: number) => (
+                        <div
+                            key={index}
+                            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
+                        >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                                <User className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-medium text-green-600">
+                                    DECKHAND
+                                </p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {deckhand.name}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {booking.agreements && booking.agreements.length > 0 ? (
+                <div className="mb-4 rounded-lg border border-gray-200 p-4">
+                    <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <FileText className="h-4 w-4" />
+                        Signed Agreements ({booking.agreements.length})
+                    </h4>
+                    <div className="space-y-2">
+                        {booking.agreements.map((agreement) => (
+                            <div
+                                key={agreement.id}
+                                className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                            >
+                                <span className="text-sm font-medium text-gray-700">
+                                    {agreement.name}
+                                </span>
+                                <a
+                                    href={agreement.downloadUrl}
+                                    className="flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+                                >
+                                    <Download className="h-3 w-3" />
+                                    Download
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <div className="mb-4 rounded-lg border border-gray-200 p-4">
+                    <p className="text-sm text-gray-500">
+                        No signed agreements available yet.
+                    </p>
+                </div>
+            )}
+        </div>
     );
 }

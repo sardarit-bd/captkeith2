@@ -248,119 +248,79 @@ function AgreementCard({
     );
 }
 
-export function ChartererAgreementPageContent() {
-    const { agreements, vessel, charterEventId, flash } =
-        usePage<PageProps>().props;
-    console.log('agreements', agreements);
-    const [signedIds, setSignedIds] = useState<Set<string>>(
-        new Set(agreements.filter(a => a.isSigned).map(a => a.id))
-    );
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const allSigned = useMemo(
-        () =>
-            agreements.length > 0 &&
-            agreements.every((a) => signedIds.has(a.id)),
-        [agreements, signedIds],
-    );
-
-    function handleSign(id: string) {
-        setSignedIds((prev) => new Set([...prev, id]));
-    }
-
-    function handleSubmit() {
-        if (!allSigned) return;
-
-        setIsSubmitting(true);
-        router.post(
-            '/charterer/agreement',
-            { acknowledged: true },
-            {
-                onError: () => setIsSubmitting(false),
-                onFinish: () => setIsSubmitting(false),
-            },
-        );
-    }
+export default function ChartererAgreementPageContent({
+    charter,
+}: {
+    charter: CharterEvent;
+}) {
+    const agreements = [
+        {
+            id: 1,
+            type: 'Captain',
+            name: charter.captain1?.name,
+            status: charter.captain1_agreement_status,
+            downloadUrl: route('agreements.download', {
+                charter,
+                role: 'captain1',
+            }),
+        },
+        {
+            id: 2,
+            type: 'Captain',
+            name: charter.captain2?.name,
+            status: charter.captain2_agreement_status,
+            downloadUrl: route('agreements.download', {
+                charter,
+                role: 'captain2',
+            }),
+        },
+        {
+            id: 3,
+            type: 'Owner',
+            name: charter.owner?.name,
+            status: charter.owner_agreement_status,
+            downloadUrl: route('agreements.download', {
+                charter,
+                role: 'owner',
+            }),
+        },
+    ];
 
     return (
-        <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] font-poppins">
-            <div className="flex-1 overflow-y-auto px-4 pb-10 sm:px-6 lg:px-8">
-                <div className="mx-auto mt-2 max-w-[850px] space-y-6">
-                    {flash?.error && (
-                        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {flash.error}
+        <div className="space-y-4">
+            {agreements.map((agreement) => (
+                <div key={agreement.id} className="rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="font-semibold">
+                                {agreement.type} Agreement
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                                {agreement.name}
+                            </p>
+                            <span
+                                className={`inline-block rounded px-2 py-1 text-xs ${
+                                    agreement.status === 'signed'
+                                        ? 'bg-green-100 text-green-800'
+                                        : agreement.status === 'pending'
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : 'bg-gray-100 text-gray-800'
+                                }`}
+                            >
+                                {agreement.status}
+                            </span>
                         </div>
-                    )}
-
-                    {agreements.map((doc) => (
-                        <AgreementCard
-                            key={doc.id}
-                            doc={doc}
-                            vessel={vessel}
-                            isSigned={signedIds.has(doc.id)}
-                            onSign={handleSign}
-                        />
-                    ))}
-
-                    <label className="group mt-8 flex cursor-pointer items-start gap-4 rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-sm transition-colors hover:bg-[#f9fafb] sm:p-6">
-                        <div className="shrink-0 pt-0.5">
-                            <input
-                                type="checkbox"
-                                checked={allSigned}
-                                readOnly
-                                className="h-5 w-5 cursor-pointer rounded border-[#d1d5db] text-[#35ADD5]"
-                            />
-                        </div>
-                        <span className="text-sm leading-relaxed text-[#374151] italic transition-colors group-hover:text-[#111827]">
-                            I have read, understood, and agree to the terms of
-                            all agreements above. I understand that I am
-                            directly hiring the captain as an independent
-                            contractor and that the captain is not an employee
-                            or agent of the vessel owner.
-                        </span>
-                    </label>
-
-                    {!allSigned && agreements.length > 0 && (
-                        <p className="text-center text-xs text-[#9ca3af]">
-                            Please sign all {agreements.length} agreement
-                            {agreements.length > 1 ? 's' : ''} above to continue
-                            ({signedIds.size} of {agreements.length} signed)
-                        </p>
-                    )}
-
-                    <footer className="mt-8 flex flex-col-reverse items-center justify-between gap-4 pt-6 sm:flex-row">
-                        <Link
-                            href={information()}
-                            className="w-full rounded-xl border border-[#e5e7eb] bg-white px-6 py-3 text-sm font-semibold text-[#4b5563] shadow-sm transition-all duration-200 hover:border-[#d1d5db] hover:bg-[#f3f4f6] sm:w-auto"
-                        >
-                            Back
-                        </Link>
-
-                        <button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={!allSigned || isSubmitting}
-                            className={`flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-semibold shadow-sm transition-all duration-200 sm:w-auto ${
-                                allSigned && !isSubmitting
-                                    ? 'bg-[#35ADD5] text-white hover:-translate-y-0.5 hover:bg-[#35ADD5]/70 hover:shadow-md'
-                                    : 'cursor-not-allowed bg-[#35ADD5] text-white opacity-50'
-                            }`}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                    Saving…
-                                </>
-                            ) : (
-                                <>
-                                    <Download className="h-4 w-4" />
-                                    Continue to Insurance
-                                </>
-                            )}
-                        </button>
-                    </footer>
+                        {agreement.status === 'signed' && (
+                            <a
+                                href={agreement.downloadUrl}
+                                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                            >
+                                Download Agreement
+                            </a>
+                        )}
+                    </div>
                 </div>
-            </div>
+            ))}
         </div>
     );
 }

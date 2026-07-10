@@ -52,6 +52,10 @@ class PlatformSettingsController extends Controller
                 'webhook_secret' => 'whsec_abcdef123456',
                 'strict_enforcement' => true,
             ],
+            'withdrawals' => [
+                'min_amount' => 50.00,
+                'fee_percentage' => 2.5,
+            ],
         ];
 
         $currentSettings = $settings ? json_decode($settings->settings, true) : [];

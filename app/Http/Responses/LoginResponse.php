@@ -7,12 +7,7 @@ use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
 {
-    /**
-     * Create an HTTP response that represents the object.
-     *
-     * Admin users are redirected to the admin dashboard.
-     * All other roles keep the default Fortify "home" redirect.
-     */
+ 
     public function toResponse($request): RedirectResponse
     {
         $user = $request->user();

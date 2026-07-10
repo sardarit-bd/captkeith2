@@ -6,7 +6,11 @@ export type BookingFilter = {
     count: number;
     active: boolean;
 };
-
+export interface BookingAgreement {
+    id: string;
+    name: string;
+    downloadUrl: string;
+}
 export type BookingStatus = 'pending' | 'confirmed' | 'completed';
 
 export type BookingCardRecord = {
@@ -25,6 +29,9 @@ export type BookingCardRecord = {
     time: string;
     totalPaid: string;
     rating?: number | null;
+    completionRequestedAt?: string | null;
+    completedAt?: string | null;
+    agreements?: BookingAgreement[];
     // actions: Array<{
     //     id: string;
     //     label: string;

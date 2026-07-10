@@ -18,16 +18,39 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
-const statusStyleMap: Record<string, { wrapper: string; dot: string; label: string }> = {
-    Active: { wrapper: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Active' },
-    'Pending Approval': { wrapper: 'text-orange-700', dot: 'bg-orange-500', label: 'Pending Approval' },
+const statusStyleMap: Record<
+    string,
+    { wrapper: string; dot: string; label: string }
+> = {
+    Active: {
+        wrapper: 'text-emerald-700',
+        dot: 'bg-emerald-500',
+        label: 'Active',
+    },
+    'Pending Approval': {
+        wrapper: 'text-orange-700',
+        dot: 'bg-orange-500',
+        label: 'Pending Approval',
+    },
     Flagged: { wrapper: 'text-red-700', dot: 'bg-red-500', label: 'Flagged' },
-    active: { wrapper: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Active' },
-    pending_approval: { wrapper: 'text-orange-700', dot: 'bg-orange-500', label: 'Pending Approval' },
-    pending: { wrapper: 'text-orange-700', dot: 'bg-orange-500', label: 'Pending Approval' },
+    active: {
+        wrapper: 'text-emerald-700',
+        dot: 'bg-emerald-500',
+        label: 'Active',
+    },
+    pending_approval: {
+        wrapper: 'text-orange-700',
+        dot: 'bg-orange-500',
+        label: 'Pending Approval',
+    },
+    pending: {
+        wrapper: 'text-orange-700',
+        dot: 'bg-orange-500',
+        label: 'Pending Approval',
+    },
     flagged: { wrapper: 'text-red-700', dot: 'bg-red-500', label: 'Flagged' },
 };
 
@@ -51,21 +74,31 @@ const roleStyleMap: Record<string, string> = {
     User: 'border-slate-200 bg-slate-50 text-slate-600',
 };
 
-export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventoryRecord  ,  index: number }) {
+export function VesselInventoryRow({
+    vessel,
+    index,
+}: {
+    vessel: VesselInventoryRecord;
+    index: number;
+}) {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const statusStyle = statusStyleMap[vessel.status] || defaultStyle;
-    const typeStyle = vesselTypeStyleMap[vessel.vesselType] || 'border-slate-200 bg-slate-50 text-slate-600';
+    const typeStyle =
+        vesselTypeStyleMap[vessel.vesselType] ||
+        'border-slate-200 bg-slate-50 text-slate-600';
     const ownerRole = vessel.owner_profile?.user?.role || 'Owner';
-    const roleStyle = roleStyleMap[ownerRole] || 'border-slate-200 bg-slate-50 text-slate-600';
+    const roleStyle =
+        roleStyleMap[ownerRole] ||
+        'border-slate-200 bg-slate-50 text-slate-600';
 
     const isPending = vessel.status?.toLowerCase().includes('pending');
     const isFlagged = vessel.status?.toLowerCase() === 'flagged';
     const rowHoverClass = isPending
         ? 'hover:bg-orange-50/30'
         : isFlagged
-        ? 'hover:bg-red-50/20'
-        : 'hover:bg-slate-50';
+          ? 'hover:bg-red-50/20'
+          : 'hover:bg-slate-50';
 
     // Generate initials from owner name
     const getInitials = (name: string) => {
@@ -80,24 +113,35 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
     const ownerInitials = vessel?.owner_profile?.user?.name
         ? getInitials(vessel?.owner_profile?.user?.name)
         : 'OW';
-    const handleApprove = (id: string, ) => {
-        router.patch(`/admin/vessels/${id}/approve`, {}, {
-            preserveScroll: true,
-        });
+    const handleApprove = (id: string) => {
+        router.patch(
+            `/admin/vessels/${id}/approve`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
-    const handleReject = (id: string, ) => {
-        router.patch(`admin/vessels/${id}/reject`, {}, {
-            preserveScroll: true,
-        });
+    const handleReject = (id: string) => {
+        console.log('Rejecting vessel with ID:', id);
+        router.patch(
+            `admin/vessels/${id}/reject`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
-        const handleViewProfile = (Id: string, ) => {
+    const handleViewProfile = (Id: string) => {
         router.visit(`/admin/vessels/${Id}`);
     };
-    console.log(isPending)
+    console.log(isPending);
     return (
         <>
-            <tr className={`group border-b border-slate-100 transition-colors ${rowHoverClass}`}>
+            <tr
+                className={`group border-b border-slate-100 transition-colors ${rowHoverClass}`}
+            >
                 {/* ID Column */}
                 <td className="px-6 py-4">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600">
@@ -115,8 +159,11 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                             {/* <p className={`text-sm font-medium ${isFlagged ? 'text-slate-600' : 'text-[#35ADD5]'}`}>
                                 {vessel.vesselName}
                             </p> */}
-                            <p className={`text-xs ${isFlagged ? 'text-slate-400' : 'text-slate-500'}`}>
-                                {vessel?.owner_profile?.full_name || 'Not Mentioned'}
+                            <p
+                                className={`text-xs ${isFlagged ? 'text-slate-400' : 'text-slate-500'}`}
+                            >
+                                {vessel?.owner_profile?.full_name ||
+                                    'Not Mentioned'}
                             </p>
                         </div>
                     </div>
@@ -151,7 +198,9 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                     <div className="text-sm text-slate-600">
                         <div className="flex items-center gap-1">
                             {/* <span className="text-slate-500">Length:</span> */}
-                            <span className="font-medium">{vessel?.length_ft || "Not Mentioned"} </span>
+                            <span className="font-medium">
+                                {vessel?.length_ft || 'Not Mentioned'}{' '}
+                            </span>
                         </div>
                     </div>
                 </td>
@@ -163,7 +212,9 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                         </div> */}
                         <div className="flex items-center gap-1">
                             {/* <span className="text-slate-500">Capacity:</span> */}
-                            <span className="font-medium">{vessel?.passenger_capacity || "Not Mentioned"}</span>
+                            <span className="font-medium">
+                                {vessel?.passenger_capacity || 'Not Mentioned'}
+                            </span>
                         </div>
                     </div>
                 </td>
@@ -172,36 +223,37 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                 <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
                         {isPending ? (
-                                <div className='flex gap-2'>
-
+                            <div className="flex gap-2">
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     className="border-[#0ea5e9] text-[#0ea5e9] hover:bg-[#0ea5e9] hover:text-white"
-                                    onClick={() => handleViewProfile(vessel?.id)}
-                                    >
+                                    onClick={() =>
+                                        handleViewProfile(vessel?.id)
+                                    }
+                                >
                                     view profile
-                                    </Button>
+                                </Button>
 
-                                    <Button
+                                <Button
                                     size="sm"
                                     variant="default"
                                     className="bg-[#0ea5e9] hover:bg-[#0284c7]"
                                     onClick={() => handleApprove(vessel?.id)}
-                                    >
+                                >
                                     Approve
-                                    </Button>
+                                </Button>
 
-                                    <Button
+                                <Button
                                     size="sm"
                                     variant="outline"
                                     className="border-red-500 text-red-500 hover:bg-red-50"
                                     onClick={() => handleReject(vessel?.id)}
-                                    >
+                                >
                                     Reject
-                                    </Button>
-                                             {/* handleReject        */}
-                                    </div>
+                                </Button>
+                                {/* handleReject        */}
+                            </div>
                         ) : isFlagged ? (
                             <button
                                 type="button"
@@ -212,7 +264,7 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
                             </button>
                         ) : (
                             <>
-                                      <Link
+                                <Link
                                     href={`/admin/vessels/${vessel.id}`}
                                     title="View Details"
                                     className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#35ADD5]"
@@ -235,25 +287,41 @@ export function VesselInventoryRow({ vessel , index }: { vessel: VesselInventory
 
             {/* Confirmation Modal */}
             {isDeleteModalOpen && (
-                <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+                <Dialog
+                    open={isDeleteModalOpen}
+                    onOpenChange={setIsDeleteModalOpen}
+                >
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Confirm Vessel Deletion</DialogTitle>
                             <DialogDescription>
-                                Are you sure you want to delete the vessel <strong>{vessel.vesselName || vessel.official_number || 'this vessel'}</strong>? 
-                                This action will remove it from the active inventory list.
+                                Are you sure you want to delete the vessel{' '}
+                                <strong>
+                                    {vessel.vesselName ||
+                                        vessel.official_number ||
+                                        'this vessel'}
+                                </strong>
+                                ? This action will remove it from the active
+                                inventory list.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
                                 Cancel
                             </Button>
-                            <Button 
-                                className="bg-red-600 text-white hover:bg-red-700" 
+                            <Button
+                                className="bg-red-600 text-white hover:bg-red-700"
                                 onClick={() => {
-                                    router.delete(`/admin/vessel-inventory/${vessel.id}`, {
-                                        onSuccess: () => setIsDeleteModalOpen(false),
-                                    });
+                                    router.delete(
+                                        `/admin/vessel-inventory/${vessel.id}`,
+                                        {
+                                            onSuccess: () =>
+                                                setIsDeleteModalOpen(false),
+                                        },
+                                    );
                                 }}
                             >
                                 Delete Vessel
