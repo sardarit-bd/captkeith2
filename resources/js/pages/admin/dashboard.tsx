@@ -16,16 +16,10 @@ interface DashboardPageProps extends PageProps {
 }
 
 export default function Dashboard(props: DashboardPageProps) {
-    // Debug: Check what we actually receive
-    console.log('Full props object:', props);
-    console.log('dashboardData:', props.dashboardData);
-    console.log('dashboard:', props.dashboard);
-    
     return (
         <AppLayout>
             <Head title="Admin Dashboard" />
             <AdminDashboard data={props} />
-            
         </AppLayout>
     );
 }

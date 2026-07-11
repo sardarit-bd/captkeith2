@@ -13,6 +13,7 @@ type FormData = {
     start_time: string;
     duration_hours: string;
     special_notes: string;
+    rental_cost: string;
 };
 
 function FormField({
@@ -41,7 +42,6 @@ function FormField({
 }
 
 export function CharterersFormCard({ vessels }: Props) {
-  
     const preselectedVesselId =
         new URLSearchParams(window.location.search).get('vessel_id') ?? '';
 
@@ -52,6 +52,7 @@ export function CharterersFormCard({ vessels }: Props) {
             start_time: '',
             duration_hours: '6',
             special_notes: '',
+            rental_cost: '',
         });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -179,6 +180,30 @@ export function CharterersFormCard({ vessels }: Props) {
                             }
                             className={
                                 errors.duration_hours ? inputErrCls : inputCls
+                            }
+                        />
+                    </FormField>
+
+                    <FormField
+                        label={
+                            <>
+                                Rental Cost (USD){' '}
+                                <span className="text-red-500">*</span>
+                            </>
+                        }
+                        htmlFor="charter-rental-cost"
+                        error={errors.rental_cost}
+                    >
+                        <input
+                            id="charter-rental-cost"
+                            type="number"
+                            min={1}
+                            value={data.rental_cost}
+                            onChange={(e) =>
+                                setData('rental_cost', e.target.value)
+                            }
+                            className={
+                                errors.rental_cost ? inputErrCls : inputCls
                             }
                         />
                     </FormField>

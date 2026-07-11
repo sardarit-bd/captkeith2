@@ -235,58 +235,75 @@ class MyProfileController extends Controller
 
 
     public function requestApproval(Request $request): RedirectResponse
-{
-    $user = $request->user();
-    
-    if ($user->hasRole('captain')) {
-        $profile = $user->captainProfile;
-        if (!$profile) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
-        }
-  
-        // Check if all required fields are filled based on your validation rules
-        $requiredFields = [
-            'full_name', 'phone', 'address', 'city', 'state', 'zip_code', 
-            'travel_radius_miles', 'license_type', 'endorsement', "is_verified",
-            'tonnage_rating', 'years_experience', 'hourly_rate'
-        ];
+    {
+        $user = $request->user();
 
-        // foreach ($requiredFields as $field) {
-        //     if (empty($profile->$field)) {
-        //         return back()->with('error', 'Please fill in all required profile fields before requesting approval.');
-        //     }
-        // }
-        // dd($profile);
-        $uss = $profile->update(['is_verified' => 'pending']);
-        // dd($uss);
-    } elseif ($user->hasRole('deckhand')) {
-        $profile = $user->deckhandProfile;
-      
-        if (!$profile) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
-        }
-
-        $requiredFields = [
-            'full_name', 'phone', 'address', 'city', 'state', 'zip_code', 
-            'travel_radius_miles', 'years_experience', 'hourly_rate'
-        ];
-
-        foreach ($requiredFields as $field) {
-            if (empty($profile->$field)) {
-                return back()->with('toast', ['type' => 'error', 'message' => 'Please fill in all required profile fields before requesting approval.']);
+        if ($user->hasRole('captain')) {
+            $profile = $user->captainProfile;
+            if (!$profile) {
+                return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
             }
+            // dd($profile);
+            // Check if all required fields are filled based on your validation rules
+            $requiredFields = [
+                'full_name',
+                'phone',
+                'address',
+                'city',
+                'state',
+                'zip_code',
+                'travel_radius_miles',
+                'license_type',
+                'endorsement',
+                "is_verified",
+                'tonnage_rating',
+                'years_experience',
+                'hourly_rate'
+            ];
+
+            // foreach ($requiredFields as $field) {
+            //     if (empty($profile->$field)) {
+            //         return back()->with('error', 'Please fill in all required profile fields before requesting approval.');
+            //     }
+            // }
+            // dd($profile);
+            $uss = $profile->update(['is_verified' => 'pending']);
+            // dd($uss);
+        } elseif ($user->hasRole('deckhand')) {
+            $profile = $user->deckhandProfile;
+
+            if (!$profile) {
+                return back()->with('toast', ['type' => 'error', 'message' => 'Please create your profile first.']);
+            }
+
+            $requiredFields = [
+                'full_name',
+                'phone',
+                'address',
+                'city',
+                'state',
+                'zip_code',
+                'travel_radius_miles',
+                'years_experience',
+                'hourly_rate'
+            ];
+
+            foreach ($requiredFields as $field) {
+                if (empty($profile->$field)) {
+                    return back()->with('toast', ['type' => 'error', 'message' => 'Please fill in all required profile fields before requesting approval.']);
+                }
+            }
+
+            $profile->update([
+                'status' => 'pending',
+                'is_verified' => 'pending'
+
+            ]);
+            //   dd('done');
+        } else {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Invalid role for approval.']);
         }
 
-        $profile->update([
-            'status' => 'pending',
-            'is_verified' => 'pending'
-            
-            ]);
-        //   dd('done');
-    } else {
-        return back()->with('toast', ['type' => 'error', 'message' => 'Invalid role for approval.']);
+        return back()->with('toast', ['type' => 'success', 'message' => 'Your approval request has been sent to the admin.']);
     }
-
-    return back()->with('toast', ['type' => 'success', 'message' => 'Your approval request has been sent to the admin.']);
-}
 }

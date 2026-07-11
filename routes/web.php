@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Laravel\Fortify\Features;
 use Inertia\Inertia;
-use App\Http\Controllers\MyProfileController;
+use App\Http\Controllers\MyBookingController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -22,12 +22,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('messages', [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
     Route::post('messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
     Route::get('charterer/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('charterer.agreement.download');
-    
+
     Route::middleware('role:owner|captain|deckhand|charterer|admin')->group(function () {
         Route::get('captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])->name('captains.show');
+        Route::post('captains/{captain}/accept-request', [\App\Http\Controllers\CaptainController::class, 'acceptRequest'])->name('captains.accept-request');
         Route::get('vessels/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'show'])->name('vessels.show');
     });
+    Route::get('/my-booking/{charterEvent}/check-charter', [MyBookingController::class, 'checkCharter'])
+        ->name('charterer.check-charter');
 
+    Route::post('/my-booking/{id}/cancel', [MyBookingController::class, 'cancel'])
+        ->name('my-booking.cancel');
     Route::get('/notifications', function () {
         return Inertia::render('notifications', [
             'notifications' => auth()->user()
@@ -58,10 +63,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('my-yachts-requests-for-approval/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'requestForApproval'])
             ->name('my-yachts.requests-for-approval');
         Route::post('/charterers/{charter}/request-completion', [\App\Http\Controllers\ChartererController::class, 'requestCompletion'])
-        ->name('charterers.request-completion')
-        ->middleware(['auth', 'verified']);
+            ->name('charterers.request-completion')
+            ->middleware(['auth', 'verified']);
         Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
-        Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');    
+        Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
         Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
         Route::get('owner/agreement/{agreementId}/download', [\App\Http\Controllers\CharterController::class, 'downloadAgreement'])->name('owner.agreement.download');
         Route::post('charterers', [\App\Http\Controllers\CharterController::class, 'store'])->name('charterers.store');
@@ -112,7 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'captain-requests/{interest}/respond',
             [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'respond']
         )->name('captain-requests.respond');
-        
+
         Route::delete(
             'captains/{captain}/revoke-acceptance',
             [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'revokeAcceptance']
@@ -138,15 +143,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/admin/owners/{owner}/profile', [\App\Http\Controllers\OwnerProfileController::class, 'show'])
             ->name('admin.owners.profile');
-            
+
         Route::put('/admin/owners/{owner}', [\App\Http\Controllers\OwnerProfileController::class, 'update'])
-            ->name('admin.owners.update');  
-        
+            ->name('admin.owners.update');
+
         // Charterer profile routes
         Route::get('/admin/charterers/{charterer}/profile', [\App\Http\Controllers\ChartererProfileController::class, 'show'])
             ->name('admin.charterers.profile')
             ->middleware('can:admin');
-        
+
         Route::put('/admin/charterers/{charterer}', [\App\Http\Controllers\ChartererProfileController::class, 'update'])
             ->name('admin.charterers.update')
             ->middleware('can:admin');
@@ -161,17 +166,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('admin/deckhands/{deckhand}/approve', [\App\Http\Controllers\AdminDashboardController::class, 'approveDeckhand'])->name('admin.deckhands.approve');
         Route::patch('admin/deckhands/{deckhand}/reject', [\App\Http\Controllers\AdminDashboardController::class, 'rejectDeckhand'])->name('admin.deckhands.reject');
         Route::get('/admin/vessels/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'show'])
-                ->name('admin.vessels.show')
-                ->middleware('can:admin');
+            ->name('admin.vessels.show')
+            ->middleware('can:admin');
         Route::get('/admin/vessels/{vessel}/documents/{filename}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'downloadDocument'])
-                ->name('admin.vessels.documents.download')
-                ->middleware('can:admin');
+            ->name('admin.vessels.documents.download')
+            ->middleware('can:admin');
         Route::get('/admin/deckhands/{deckhand}', [\App\Http\Controllers\DeckhandController::class, 'show'])
-                ->name('admin.deckhands.show')
-                ->middleware('can:admin');
+            ->name('admin.deckhands.show')
+            ->middleware('can:admin');
         Route::get('/admin/captains/{captain}', [\App\Http\Controllers\CaptainController::class, 'show'])
-                ->name('admin.captains.show')
-                ->middleware('can:admin');
+            ->name('admin.captains.show')
+            ->middleware('can:admin');
         Route::delete('admin/vessel-inventory/{vessel}', [\App\Http\Controllers\Admin\VesselInventoryController::class, 'destroy'])->name('admin.vessel-inventory.destroy');
 
         // --- ADMIN WITHDRAWAL ROUTES ---
@@ -232,8 +237,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         )->name('invitations.respond');
         Route::get('invitations', [\App\Http\Controllers\OwnerCaptainInvitationController::class, 'index'])->name('invitations');
         Route::patch(
-        'deckhand-invitations/{invitation}/respond',
-        [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
+            'deckhand-invitations/{invitation}/respond',
+            [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'respond']
         )->name('deckhand-invitations.respond');
         Route::get('deckhand-invitations', [\App\Http\Controllers\OwnerDeckhandInvitationController::class, 'index'])->name('deckhand-invitations');
         Route::post('/requests/deckhand/send', [\App\Http\Controllers\RequestsController::class, 'sendDeckhandRequest'])
@@ -270,7 +275,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('my-booking/{id}/decline-completion', [\App\Http\Controllers\MyBookingController::class, 'declineCompletion'])->name('my-booking.decline-completion');
         // --- CHARTERER CHECKOUT PROCESS ROUTE ---
         Route::post('charterer/checkout/process', [\App\Http\Controllers\CharterController::class, 'processCheckout'])->name('charterer.checkout.process');
-        
+
         Route::inertia('charterer/confirmed', 'charterer/confirmed')->name('charterer.confirmed');
         Route::get('charterer/settings', [\App\Http\Controllers\ChartererSettingsController::class, 'index'])->name('charterer-settings');
         Route::patch('charterer/settings/preferences', [\App\Http\Controllers\ChartererSettingsController::class, 'updatePreferences'])->name('charterer-settings.preferences');

@@ -15,10 +15,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'crew_role',
     'captain_profile_id',
     'deckhand_profile_id',
-    'initiated_by', 
+    'owner_profile_id',
+    'initiated_by',
     'payor',
     's3_key',
-    'pdf_path',      
+    'pdf_path',
     'agreement_type',
     'esign_envelope_id',
     'sign_status',
@@ -50,6 +51,11 @@ class CharterHireAgreement extends Model
     public function deckhandProfile(): BelongsTo
     {
         return $this->belongsTo(DeckhandProfile::class, 'deckhand_profile_id');
+    }
+
+    public function ownerProfile(): BelongsTo
+    {
+        return $this->belongsTo(OwnerProfile::class, 'owner_profile_id');
     }
 
     public function payment(): HasOne

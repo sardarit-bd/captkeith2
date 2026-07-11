@@ -248,79 +248,103 @@ function AgreementCard({
     );
 }
 
-export default function ChartererAgreementPageContent({
-    charter,
-}: {
-    charter: CharterEvent;
-}) {
-    const agreements = [
-        {
-            id: 1,
-            type: 'Captain',
-            name: charter.captain1?.name,
-            status: charter.captain1_agreement_status,
-            downloadUrl: route('agreements.download', {
-                charter,
-                role: 'captain1',
-            }),
-        },
-        {
-            id: 2,
-            type: 'Captain',
-            name: charter.captain2?.name,
-            status: charter.captain2_agreement_status,
-            downloadUrl: route('agreements.download', {
-                charter,
-                role: 'captain2',
-            }),
-        },
-        {
-            id: 3,
-            type: 'Owner',
-            name: charter.owner?.name,
-            status: charter.owner_agreement_status,
-            downloadUrl: route('agreements.download', {
-                charter,
-                role: 'owner',
-            }),
-        },
-    ];
+export default function ChartererAgreementPageContent() {
+    const { agreements, vessel, charterEventId, flash } =
+        usePage<PageProps>().props;
+
+    const [signedIds, setSignedIds] = useState<Set<string>>(() => {
+        const preSigned = new Set<string>();
+        agreements?.forEach((a) => {
+            if (a.isSigned) preSigned.add(a.id);
+        });
+        return preSigned;
+    });
+
+    const allSigned = useMemo(
+        () =>
+            agreements?.length > 0 &&
+            agreements.every((a) => signedIds.has(a.id)),
+        [agreements, signedIds],
+    );
+
+    const handleSign = (id: string) => {
+        if (signedIds.has(id)) return;
+        router.post(
+            '/charterer/agreement',
+            { acknowledged: true },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSignedIds(() => {
+                        const all = new Set<string>();
+                        agreements?.forEach((a) => all.add(a.id));
+                        return all;
+                    });
+                },
+            },
+        );
+    };
 
     return (
-        <div className="space-y-4">
-            {agreements.map((agreement) => (
-                <div key={agreement.id} className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="font-semibold">
-                                {agreement.type} Agreement
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                                {agreement.name}
-                            </p>
-                            <span
-                                className={`inline-block rounded px-2 py-1 text-xs ${
-                                    agreement.status === 'signed'
-                                        ? 'bg-green-100 text-green-800'
-                                        : agreement.status === 'pending'
-                                          ? 'bg-yellow-100 text-yellow-800'
-                                          : 'bg-gray-100 text-gray-800'
-                                }`}
-                            >
-                                {agreement.status}
-                            </span>
-                        </div>
-                        {agreement.status === 'signed' && (
-                            <a
-                                href={agreement.downloadUrl}
-                                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                            >
-                                Download Agreement
-                            </a>
-                        )}
-                    </div>
+        <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
+            {flash?.success && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    {flash.success}
                 </div>
-            ))}
+            )}
+            {flash?.error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {flash.error}
+                </div>
+            )}
+
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-lg font-semibold text-[#111827]">
+                        Charter Agreements
+                    </h2>
+                    <p className="text-sm text-[#6b7280]">
+                        Review and sign all required documents for{' '}
+                        <strong>{vessel?.name}</strong> on{' '}
+                        <strong>{vessel?.charterDate}</strong>
+                    </p>
+                </div>
+                {allSigned && (
+                    <Link
+                        href={insurance.url()}
+                        className="rounded-xl bg-[#35ADD5] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#35ADD5]/80"
+                    >
+                        Continue to Insurance
+                    </Link>
+                )}
+            </div>
+
+            <div className="space-y-4">
+                {agreements?.map((doc) => (
+                    <AgreementCard
+                        key={doc.id}
+                        doc={doc}
+                        vessel={vessel}
+                        isSigned={signedIds.has(doc.id)}
+                        onSign={handleSign}
+                    />
+                ))}
+            </div>
+
+            {!allSigned && (
+                <div className="rounded-lg border border-[#e5e7eb] bg-[#f8fbff] p-4 text-center text-sm text-[#6b7280]">
+                    Sign all agreements above to unlock the next step.
+                </div>
+            )}
+
+            <div className="flex justify-center">
+                <Link
+                    href={information.url()}
+                    className="text-sm text-[#35ADD5] underline underline-offset-2 hover:text-[#2a8fb0]"
+                >
+                    Back to Information
+                </Link>
+            </div>
         </div>
     );
 }

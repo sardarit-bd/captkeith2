@@ -58,7 +58,6 @@ function resolveNavItems(
         { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
         { title: 'Messages', href: messages(), icon: MessageCircle },
     ];
-    console.log('pending_verifications:', pending_verifications);
     if (role === 'admin') {
         return [
             sharedItems[0],
@@ -176,7 +175,7 @@ export function AppSidebar() {
         dashboardData?: {};
     }>();
     const cleanup = useMobileNavigation();
-    // console.log('dashboardData:', page.props?.dashboardData?.stats?.pending_verifications);
+
     const pendingCaptainCount = page.props.pendingCaptainRequestsCount || 0;
     const pendingDeckhandRequestsCount =
         page.props.pendingDeckhandRequestsCount || 0;
@@ -194,7 +193,7 @@ export function AppSidebar() {
     const pending_vessels =
         page.props?.dashboardData?.stats?.vessel_approvals ||
         page.props.dashboardData?.stats?.vesselApprovalsCount;
-    console.log('pending_verifications:', pending_verifications);
+
     const mainNavItems = resolveNavItems(
         page.props.auth?.role,
         pendingCaptainCount,
@@ -206,7 +205,7 @@ export function AppSidebar() {
         pending_verifications,
         pending_vessels,
     );
-    console.log(page.props);
+
     const handleLogout = () => {
         cleanup();
         router.flushAll();

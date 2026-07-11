@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('charter_events', function (Blueprint $table) {
-            $table->decimal('rental_cost', 10, 2)->default(0)->after('status');
+            $table->decimal('yacht_cost', 10, 2)->default(0)->after('rental_cost');
         });
     }
 
     public function down(): void
     {
         Schema::table('charter_events', function (Blueprint $table) {
-            $table->dropColumn('rental_cost');
+            $table->dropColumn('yacht_cost');
         });
     }
 };

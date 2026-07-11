@@ -66,7 +66,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        console.log(save.url());
+
         post(save.url(), {
             forceFormData: true,
         });
@@ -76,7 +76,7 @@ export function ChartererInformationFormCard({ profile }: Props) {
         <section className="overflow-hidden rounded-3xl border border-[#edf2f7] bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
             <div className="border-b border-[#f3f4f6] p-6 sm:p-8 lg:p-10">
                 <header className="mb-8 flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#35AED5]">
                         <User className="h-5 w-5" />
                     </div>
                     <h3 className="text-lg font-bold text-[#111827]">
@@ -112,7 +112,9 @@ export function ChartererInformationFormCard({ profile }: Props) {
                             error={errors.phone}
                         >
                             <InputWithIcon
-                                icon={<Phone className="h-4 w-4 text-[#9ca3af]" />}
+                                icon={
+                                    <Phone className="h-4 w-4 text-[#9ca3af]" />
+                                }
                             >
                                 <TextInput
                                     type="tel"
@@ -136,7 +138,9 @@ export function ChartererInformationFormCard({ profile }: Props) {
                             error={errors.date_of_birth}
                         >
                             <InputWithIcon
-                                icon={<Calendar className="h-4 w-4 text-[#9ca3af]" />}
+                                icon={
+                                    <Calendar className="h-4 w-4 text-[#9ca3af]" />
+                                }
                             >
                                 <TextInput
                                     type="date"
@@ -157,7 +161,9 @@ export function ChartererInformationFormCard({ profile }: Props) {
                             error={errors.country}
                         >
                             <InputWithIcon
-                                icon={<Globe className="h-4 w-4 text-[#9ca3af]" />}
+                                icon={
+                                    <Globe className="h-4 w-4 text-[#9ca3af]" />
+                                }
                             >
                                 <TextInput
                                     placeholder="e.g. United States"

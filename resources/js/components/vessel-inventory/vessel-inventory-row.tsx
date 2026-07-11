@@ -124,7 +124,6 @@ export function VesselInventoryRow({
     };
 
     const handleReject = (id: string) => {
-        console.log('Rejecting vessel with ID:', id);
         router.patch(
             `admin/vessels/${id}/reject`,
             {},
@@ -136,7 +135,7 @@ export function VesselInventoryRow({
     const handleViewProfile = (Id: string) => {
         router.visit(`/admin/vessels/${Id}`);
     };
-    console.log(isPending);
+
     return (
         <>
             <tr

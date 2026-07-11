@@ -42,7 +42,7 @@ export function ChartererConfirmedPageContent() {
                         <div className="space-y-4">
                             <SummaryCard
                                 icon={<Ship className="h-5 w-5" />}
-                                iconColor="text-blue-500"
+                                iconColor="text-[#35AED5]"
                                 bgColor="bg-[#F4F7FB]"
                                 title={confirmationSummary.yacht.name}
                                 subtitle={confirmationSummary.yacht.details}

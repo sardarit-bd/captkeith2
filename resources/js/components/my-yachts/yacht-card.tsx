@@ -1,6 +1,6 @@
 import { show as showVessel } from '@/routes/vessels';
 import { Link, router } from '@inertiajs/react';
-import { AlertTriangle, Edit2, Ship, Trash2, X } from 'lucide-react'; 
+import { AlertTriangle, Edit2, Ship, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import type { YachtRecord, YachtTab } from './my-yachts-data';
 import {
@@ -33,7 +33,10 @@ function DetailsPanel({ yacht }: { yacht: YachtRecord }) {
             </h4>
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 md:grid-cols-3">
                 <SectionLabel label="Type" value={yacht.specs?.type ?? ''} />
-                <SectionLabel label="Length" value={yacht.specs?.length ?? ''} />
+                <SectionLabel
+                    label="Length"
+                    value={yacht.specs?.length ?? ''}
+                />
                 <SectionLabel label="Draft" value={yacht.specs?.draft ?? ''} />
                 <SectionLabel
                     label="Mooring Location"
@@ -63,7 +66,7 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
     if (raw.min_experience) {
         params.set('min_experience', String(raw.min_experience));
     }
-    console.log("check check : ",yacht)
+
     const captainsUrl = `/captains?${params.toString()}`;
 
     return (
@@ -122,70 +125,64 @@ function CaptainRequirementsPanel({ yacht }: { yacht: YachtRecord }) {
                     value={yacht.captainRequirements.minimumExperience}
                 />
             </div>
-                <div>
-                                {
-                yacht.specs?.status == "pending" && (
-                <>
-                    <p className="mt-6 mb-1 text-[12px] font-bold text-red-400">
-                        ** for finding captain must be approved by admin **
-                    </p>
-                <button
-                // href={captainsUrl}
+            <div>
+                {yacht.specs?.status == 'pending' && (
+                    <>
+                        <p className="mt-6 mb-1 text-[12px] font-bold text-red-400">
+                            ** for finding captain must be approved by admin **
+                        </p>
+                        <button
+                            // href={captainsUrl}
 
-                disabled={true}
-                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/30 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/30 cursor-pointer hover:shadow-md"
-            >
-                Find Matching Captains
-            </button>
-            </>
-                )
-            }
+                            disabled={true}
+                            className="mt-6 inline-flex w-auto cursor-pointer items-center gap-2 self-start rounded-xl bg-[#35ADD5]/30 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/30 hover:shadow-md"
+                        >
+                            Find Matching Captains
+                        </button>
+                    </>
+                )}
 
+                {yacht.specs?.status == 'rejected' && (
+                    <>
+                        <p className="mt-6 mb-1 text-[12px] font-bold text-red-500">
+                            ** your approval is rejected, please update and try
+                            again **
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                // href={captainsUrl}
 
-                        {
-                yacht.specs?.status == "rejected" && (
-                <>
-                    <p className="mt-6 mb-1 text-[12px] font-bold text-red-500">
-                        ** your approval is rejected, please update and try again **
-                    </p>
-                    <div className='flex gap-2'>
-                <button
-                // href={captainsUrl}
+                                disabled={true}
+                                className="mt-6 inline-flex w-auto cursor-pointer items-center gap-2 self-start rounded-xl bg-[#35ADD5]/30 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/30 hover:shadow-md"
+                            >
+                                Find Matching Captains
+                            </button>
+                            <button
+                                onClick={() => {
+                                    router.patch(
+                                        `/my-yachts-requests-for-approval/${yacht.id}`,
+                                    );
+                                }}
+                                className="mt-6 inline-flex w-auto cursor-pointer items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
+                            >
+                                Request Again
+                            </button>
+                        </div>
+                    </>
+                )}
 
-                disabled={true}
-                    className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/30 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/30 cursor-pointer hover:shadow-md"
-                >
-                    Find Matching Captains
-                </button>
-                    <button
-                    onClick={() => {
-                        console.log(yacht.id);
-                        router.patch(`/my-yachts-requests-for-approval/${yacht.id}`);
-                    }}
-                    className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 cursor-pointer hover:shadow-md"
-                >
-                    Request Again
-                </button>
-                </div>
-            </>
-                )
-            }
-
-            {
-                yacht.specs?.status == "approved" && (
-                <>
-            <Link
-                href={captainsUrl}
-                disabled={true}
-                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
-            >
-                Find Matching Captains
-            </Link>
-            </>
-                )
-            }
-                </div>
-
+                {yacht.specs?.status == 'approved' && (
+                    <>
+                        <Link
+                            href={captainsUrl}
+                            disabled={true}
+                            className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
+                        >
+                            Find Matching Captains
+                        </Link>
+                    </>
+                )}
+            </div>
         </div>
     );
 }
@@ -213,56 +210,49 @@ function ChartersPanel({ yacht }: { yacht: YachtRecord }) {
                     No charters scheduled yet
                 </div>
             )}
-                    {
-                yacht.specs?.status == "pending" && (
+            {yacht.specs?.status == 'pending' && (
                 <>
                     <p className="mt-6 mb-1 text-[12px] font-bold text-red-400">
                         ** for finding captain must be approved by admin **
                     </p>
-                <button
-                // href={captainsUrl}
+                    <button
+                        // href={captainsUrl}
 
-                disabled={true}
-                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/10 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/10 cursor-pointer hover:shadow-md"
-            >
-                Create Charter
-            </button>
-            </>
-                )
-            }
+                        disabled={true}
+                        className="mt-6 inline-flex w-auto cursor-pointer items-center gap-2 self-start rounded-xl bg-[#35ADD5]/10 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/10 hover:shadow-md"
+                    >
+                        Create Charter
+                    </button>
+                </>
+            )}
 
-
-                        {
-                yacht.specs?.status == "rejected" && (
+            {yacht.specs?.status == 'rejected' && (
                 <>
                     <p className="mt-6 mb-1 text-[12px] font-bold text-red-500">
-                        ** your approval is rejected, please update and try again **
+                        ** your approval is rejected, please update and try
+                        again **
                     </p>
-                <button
-                // href={captainsUrl}
+                    <button
+                        // href={captainsUrl}
 
-                disabled={true}
-                className="mt-6 inline-flex w-auto items-center gap-2 self-start rounded-xl bg-[#35ADD5]/10 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/10 cursor-pointer hover:shadow-md"
-            >
-                Create Charter
-            </button>
-            </>
-                )
-            }
+                        disabled={true}
+                        className="mt-6 inline-flex w-auto cursor-pointer items-center gap-2 self-start rounded-xl bg-[#35ADD5]/10 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/10 hover:shadow-md"
+                    >
+                        Create Charter
+                    </button>
+                </>
+            )}
 
-            {
-                yacht.specs?.status == "approved" && (
+            {yacht.specs?.status == 'approved' && (
                 <>
-            <Link
-                href={createCharterUrl}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
-            >
-                Create Charter
-            </Link>
-            </>
-                )
-            }
-
+                    <Link
+                        href={createCharterUrl}
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#35ADD5] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#35ADD5]/70 hover:shadow-md"
+                    >
+                        Create Charter
+                    </Link>
+                </>
+            )}
         </div>
     );
 }
@@ -290,8 +280,8 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-  
-    const bareboatAgreements = yacht.agreements?.filter((a) => a.type === 'Bareboat') ?? [];
+    const bareboatAgreements =
+        yacht.agreements?.filter((a) => a.type === 'Bareboat') ?? [];
 
     const handleDelete = () => {
         setDeleting(true);
@@ -302,7 +292,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
             },
         });
     };
-    console.log(yacht);
+
     return (
         <>
             {showDeleteModal && (
@@ -388,7 +378,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
             )}
 
             <article className="overflow-hidden rounded-2xl border border-[#edf0f7] bg-white shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex flex-col-reverse lg:flex-row lg:items-center lg:justify-between border-b border-[#f1f5f9] bg-linear-to-r from-[#f8faff] to-white px-5 py-4 sm:px-6">
+                <div className="flex flex-col-reverse border-b border-[#f1f5f9] bg-linear-to-r from-[#f8faff] to-white px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <Link
                             href={showVessel.url(yacht.id)}
@@ -402,8 +392,6 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                     </div>
 
                     <div className="flex gap-2">
-                      
-     
                         <Link
                             href={editVessel({ vessel: yacht.id }).url}
                             className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#e5e7eb] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#374151] shadow-sm transition-all hover:border-[#3DB3DE] hover:text-[#3DB3DE]"
@@ -420,7 +408,7 @@ export function YachtCard({ yacht }: { yacht: YachtRecord }) {
                             Delete
                         </button>
                     </div>
-                </div> 
+                </div>
 
                 <div className="flex flex-col lg:flex-row">
                     <div className="relative h-64 w-full shrink-0 lg:h-auto lg:w-96 xl:w-105">

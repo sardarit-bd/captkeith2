@@ -17,18 +17,36 @@ return new class extends Migration
         // Any status not in our final list will be safely reset to 'draft'
         DB::table('charter_events')
             ->whereNotIn('status', [
-                'draft', 
-                'awaiting_responses', 
-                'agreements_signed', 
-                'confirmed', 
-                'completed', 
-                'cancelled', 
-                'deleted'
+            'draft',
+            'awaiting_responses',
+            'ready_for_charterer',
+            'captain_selected',
+            'agreements_pending',
+            'agreements_signed',
+            'insurance_pending',
+            'insurance_complete',
+            'confirmed',
+            'completed',
+            'cancelled',
+            'deleted',
             ])
             ->update(['status' => 'draft']);
 
-        // Step 3: Safely convert back to ENUM with the new 'confirmed' value included
-        DB::statement("ALTER TABLE `charter_events` MODIFY COLUMN `status` ENUM('draft', 'awaiting_responses', 'agreements_signed', 'confirmed', 'completed', 'cancelled', 'deleted') NOT NULL DEFAULT 'draft'");
+              // Step 3: Safely convert back to ENUM with the full, correct list of values
+        DB::statement("ALTER TABLE `charter_events` MODIFY COLUMN `status` ENUM(
+            'draft',
+            'awaiting_responses',
+            'ready_for_charterer',
+            'captain_selected',
+            'agreements_pending',
+            'agreements_signed',
+            'insurance_pending',
+            'insurance_complete',
+            'confirmed',
+            'completed',
+            'cancelled',
+            'deleted'
+        ) NOT NULL DEFAULT 'draft'");
     }
 
     /**
@@ -44,7 +62,21 @@ return new class extends Migration
             ->where('status', 'confirmed')
             ->update(['status' => 'draft']);
 
-        // Step 3: Revert back to the original ENUM (without 'confirmed')
-        DB::statement("ALTER TABLE `charter_events` MODIFY COLUMN `status` ENUM('draft', 'awaiting_responses', 'agreements_signed', 'completed', 'cancelled', 'deleted') NOT NULL DEFAULT 'draft'");
+
+        // Step 3: Safely convert back to ENUM with the full, correct list of values
+        DB::statement("ALTER TABLE `charter_events` MODIFY COLUMN `status` ENUM(
+            'draft',
+            'awaiting_responses',
+            'ready_for_charterer',
+            'captain_selected',
+            'agreements_pending',
+            'agreements_signed',
+            'insurance_pending',
+            'insurance_complete',
+            'confirmed',
+            'completed',
+            'cancelled',
+            'deleted'
+        ) NOT NULL DEFAULT 'draft'");
     }
 };
