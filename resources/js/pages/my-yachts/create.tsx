@@ -151,15 +151,49 @@ export default function CreateYachtPage() {
             documents: [],
         });
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files ?? []);
-        const previews: PreviewPhoto[] = files.map((file) => ({
-            id: crypto.randomUUID(),
-            url: URL.createObjectURL(file),
-            file,
-        }));
-        setNewPhotos((prev) => [...prev, ...previews]);
+        const validPreviews: PreviewPhoto[] = [];
+        let errorMessages: string[] = [];
 
+        files.forEach((file) => {
+            // 1. Validate File Type
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                errorMessages.push(
+                    `"${file.name}" is not a valid image type (JPG, PNG, WEBP).`,
+                );
+                return;
+            }
+
+            // 2. Validate File Size
+            if (file.size > MAX_FILE_SIZE) {
+                errorMessages.push(
+                    `"${file.name}" is too large. Maximum size is 10MB.`,
+                );
+                return;
+            }
+
+            // If valid, add to previews
+            validPreviews.push({
+                id: crypto.randomUUID(),
+                url: URL.createObjectURL(file),
+                file,
+            });
+        });
+
+        if (errorMessages.length > 0) {
+            // You can set this to a state variable to show an alert/toast to the user
+            alert(errorMessages.join('\n'));
+        }
+
+        if (validPreviews.length > 0) {
+            setNewPhotos((prev) => [...prev, ...validPreviews]);
+        }
+
+        // Reset input so the same file can be selected again if removed
         if (photoInputRef.current) {
             photoInputRef.current.value = '';
         }

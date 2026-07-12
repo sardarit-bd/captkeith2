@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CharterEvent;
 use App\Models\ChartererProfile;
+use App\Models\CrewResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -33,13 +34,16 @@ class MyBookingController extends Controller
                 'hireAgreements.deckhandProfile',
                 'hireAgreements.ownerProfile',
                 'payments',
+                'crewResponses.captainProfile',
+                'crewResponses.deckhandProfile',
             ])
-            ->latest('charter_date')
+            ->latest()
             ->get();
 
         $bookings = $events->map(function (CharterEvent $event) {
             $vessel = $event->vessel;
             $photo = $vessel?->photos->first();
+            $id = $event->id;
 
             $totalPaid = $event->payments
                 ->where('status', 'paid')
@@ -73,56 +77,6 @@ class MyBookingController extends Controller
                 ? $event->start_time . ' · ' . $durationHours . ' hrs'
                 : ($event->start_time ?? '—');
 
-            // Build captains array from selectedCaptain + any additional captains from agreements
-            $captains = collect();
-
-            // Primary selected captain
-            if ($event->selectedCaptain) {
-                $captains->push([
-                    'id' => $event->selectedCaptain->id,
-                    'name' => $event->selectedCaptain->full_name ?? 'Pending',
-                    'photo' => $event->selectedCaptain->photo_path ? Storage::url($event->selectedCaptain->photo_path) : null,
-                    'role' => 'Captain',
-                    'licenseType' => $event->selectedCaptain->license_type,
-                    'yearsExperience' => $event->selectedCaptain->years_experience,
-                ]);
-            }
-
-            // Secondary captains from hire agreements (for 2-captain charters)
-            $agreementCaptains = $event->hireAgreements
-                ->where('crew_role', 'captain')
-                ->whereNotNull('captain_profile_id')
-                ->where('captain_profile_id', '!=', $event->selected_captain_id)
-                ->map(fn($a) => [
-                    'id' => $a->captainProfile?->id,
-                    'name' => $a->captainProfile?->full_name ?? 'Pending',
-                    'photo' => $a->captainProfile?->photo_path ? Storage::url($a->captainProfile->photo_path) : null,
-                    'role' => 'Captain',
-                    'licenseType' => $a->captainProfile?->license_type,
-                    'yearsExperience' => $a->captainProfile?->years_experience,
-                ])
-                ->filter(fn($c) => $c['id'] !== null)
-                ->values();
-
-            foreach ($agreementCaptains as $captain) {
-                if ($captains->count() < 2) {
-                    $captains->push($captain);
-                }
-            }
-
-            // Selected deckhand
-            $deckhand = null;
-            if ($event->selectedDeckhand) {
-                $deckhand = [
-                    'id' => $event->selectedDeckhand->id,
-                    'name' => $event->selectedDeckhand->full_name ?? 'Pending',
-                    'photo' => $event->selectedDeckhand->photo_path ? Storage::url($event->selectedDeckhand->photo_path) : null,
-                    'role' => 'Deckhand',
-                    'yearsExperience' => $event->selectedDeckhand->years_experience,
-                ];
-            }
-
-            // Get all signed agreements with download URLs
             $agreements = $event->hireAgreements
                 ->filter(fn($a) => !is_null($a->pdf_path) && !is_null($a->charterer_signed_at))
                 ->map(fn($a) => [
@@ -139,10 +93,63 @@ class MyBookingController extends Controller
                     'fullySignedAt' => $a->fully_signed_at?->toIso8601String(),
                 ])->values();
 
-            // Determine available actions
+
             $canCancel = in_array($event->status, ['draft', 'awaiting_responses', 'confirmed']);
             $canComplete = $event->status === 'confirmed' && !is_null($event->completion_requested_at) && is_null($event->completed_at);
             $completionRequestedAt = $event->completion_requested_at?->toIso8601String();
+
+
+
+            $deckhandProfileId = null;
+            $captainProfileIds = collect();
+
+
+            foreach ($event->crewResponses as $response) {
+                if ($response->crew_role === 'deckhand' && !$deckhandProfileId) {
+                    $deckhandProfileId = $response->profile_id;
+                } elseif ($response->crew_role === 'captain') {
+                    $captainProfileIds->push($response->profile_id);
+                }
+            }
+
+            $captainProfileIds = $captainProfileIds->unique()->values();
+
+
+            $deckhand = null;
+            if ($deckhandProfileId) {
+                $deckhandResponse = $event->crewResponses->firstWhere('profile_id', $deckhandProfileId);
+                $profile = $deckhandResponse?->deckhandProfile;
+
+                if ($profile) {
+                    $deckhand = [
+                        'id' => $profile->id,
+                        'name' => $profile->full_name ?? 'Pending',
+                        'photo' => $profile->photo_path ? Storage::url($profile->photo_path) : null,
+                        'role' => 'Deckhand',
+                        'yearsExperience' => $profile->years_experience,
+                    ];
+                }
+            }
+
+
+            $captains = collect();
+            if ($captainProfileIds->isNotEmpty()) {
+                foreach ($event->crewResponses->whereIn('profile_id', $captainProfileIds) as $response) {
+                    $profile = $response->captainProfile;
+
+                    if ($profile) {
+                        $captains->push([
+                            'id' => $profile->id,
+                            'name' => $profile->full_name ?? 'Pending',
+                            'photo' => $profile->photo_path ? Storage::url($profile->photo_path) : null,
+                            'role' => 'Captain',
+                            'licenseType' => $profile->license_type,
+                            'yearsExperience' => $profile->years_experience,
+                        ]);
+                    }
+                }
+            }
+
 
             return [
                 'id' => $event->id,

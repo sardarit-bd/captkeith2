@@ -17,7 +17,7 @@ interface PageProps {
 
 export default function ChartererInsurancePageContent() {
     const { agreements, charterEventId, flash } = usePage<PageProps>().props;
-
+    console.log(agreements);
     return (
         <div className="mx-auto max-w-3xl space-y-6 p-6">
             {/* Flash messages */}

@@ -269,16 +269,17 @@ export default function ChartererAgreementPageContent() {
 
     const handleSign = (id: string) => {
         if (signedIds.has(id)) return;
+        console.log('signing', id);
         router.post(
             '/charterer/agreement',
-            { acknowledged: true },
+            { agreement_id: id },
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    setSignedIds(() => {
-                        const all = new Set<string>();
-                        agreements?.forEach((a) => all.add(a.id));
-                        return all;
+                    setSignedIds((prev) => {
+                        const next = new Set(prev);
+                        next.add(id);
+                        return next;
                     });
                 },
             },

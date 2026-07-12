@@ -7,8 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export default function Withdrawal() {
-    const { balance, settings, history } = usePage().props as any;
+    const { balance, settings, history, bankDetails } = usePage().props as any;
     const [amount, setAmount] = useState('');
+    const [bankName, setBankName] = useState(bankDetails?.bank_name || '');
+    const [bankAccountHolderName, setBankAccountHolderName] = useState(
+        bankDetails?.bank_account_holder_name || '',
+    );
+    const [bankAccountNumber, setBankAccountNumber] = useState(
+        bankDetails?.bank_account_number || '',
+    );
+    const [bankRoutingNumber, setBankRoutingNumber] = useState(
+        bankDetails?.bank_routing_number || '',
+    );
     const [processing, setProcessing] = useState(false);
 
     const fee = amount
@@ -18,12 +28,24 @@ export default function Withdrawal() {
         ? (parseFloat(amount) - parseFloat(fee)).toFixed(2)
         : '0.00';
 
+    const bankDetailsFilled =
+        bankName.trim() !== '' &&
+        bankAccountHolderName.trim() !== '' &&
+        bankAccountNumber.trim() !== '' &&
+        bankRoutingNumber.trim() !== '';
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
         router.post(
-            route('withdrawal.store'),
-            { amount },
+            '/withdrawal',
+            {
+                amount,
+                bank_name: bankName,
+                bank_account_holder_name: bankAccountHolderName,
+                bank_account_number: bankAccountNumber,
+                bank_routing_number: bankRoutingNumber,
+            },
             {
                 onFinish: () => setProcessing(false),
                 onSuccess: () => setAmount(''),
@@ -35,11 +57,9 @@ export default function Withdrawal() {
         switch (status) {
             case 'pending':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'approved':
-                return 'bg-blue-100 text-blue-800';
             case 'completed':
                 return 'bg-green-100 text-green-800';
-            case 'rejected':
+            case 'cancelled':
                 return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
@@ -66,7 +86,7 @@ export default function Withdrawal() {
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                                Current Balance
+                                Total Earned
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -122,6 +142,68 @@ export default function Withdrawal() {
                                     className="mt-1"
                                 />
                             </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Bank Name
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={bankName}
+                                        onChange={(e) =>
+                                            setBankName(e.target.value)
+                                        }
+                                        placeholder="Enter bank name"
+                                        className="mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Account Holder Name
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={bankAccountHolderName}
+                                        onChange={(e) =>
+                                            setBankAccountHolderName(
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="Enter account holder name"
+                                        className="mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Account Number
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={bankAccountNumber}
+                                        onChange={(e) =>
+                                            setBankAccountNumber(e.target.value)
+                                        }
+                                        placeholder="Enter account number"
+                                        className="mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Routing Number
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        value={bankRoutingNumber}
+                                        onChange={(e) =>
+                                            setBankRoutingNumber(e.target.value)
+                                        }
+                                        placeholder="Enter routing number"
+                                        className="mt-1"
+                                    />
+                                </div>
+                            </div>
+
                             {amount && parseFloat(amount) > 0 && (
                                 <div className="space-y-1 rounded-lg bg-slate-50 p-4 text-sm">
                                     <div className="flex justify-between">
@@ -141,6 +223,7 @@ export default function Withdrawal() {
                                 disabled={
                                     processing ||
                                     !amount ||
+                                    !bankDetailsFilled ||
                                     parseFloat(amount) >
                                         balance.available_balance ||
                                     parseFloat(amount) < settings.min_amount

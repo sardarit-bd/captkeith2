@@ -22,7 +22,7 @@ class WalletService
             'current_balance' => round($earned, 2),
             'pending_withdrawal' => round($pending, 2),
             'total_withdrawn' => round($withdrawn, 2),
-            'available_balance' => round(max(0, $earned - $pending), 2),
+            'available_balance' => round(max(0, $earned - $pending - $withdrawn), 2),
         ];
     }
 
@@ -75,7 +75,7 @@ class WalletService
     {
         $settings = DB::table('platform_settings')->first();
         $current = $settings ? json_decode($settings->settings, true) : [];
-        
+
         return [
             'min_amount' => $current['withdrawals']['min_amount'] ?? 50.00,
             'fee_percentage' => $current['withdrawals']['fee_percentage'] ?? 2.5,

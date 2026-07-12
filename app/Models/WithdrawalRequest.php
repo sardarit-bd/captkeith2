@@ -15,8 +15,12 @@ class WithdrawalRequest extends Model
         'profile_type',
         'profile_id',
         'amount',
-        'fee', 
+        'fee',
         'status',
+        'bank_name',
+        'bank_account_holder_name',
+        'bank_account_number',
+        'bank_routing_number',
         'requested_at',
         'completed_at',
     ];

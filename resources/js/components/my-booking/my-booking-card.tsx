@@ -119,13 +119,22 @@ export function MyBookingCard({ booking }: { booking: BookingCardRecord }) {
 
             {/* Action Buttons Row */}
             <div className="mb-6 flex flex-wrap gap-3">
-                <button
-                    onClick={handleCheckCharter}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#35AED5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#35AED5]/70"
-                >
-                    <FileText className="h-4 w-4" />
-                    Check Charter
-                </button>
+                {booking.status === 'pending' ? (
+                    <Link
+                        href={`charterer/request/${booking.id}`}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#35AED5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#35AED5]/70"
+                    >
+                        continue Charter
+                    </Link>
+                ) : (
+                    <button
+                        onClick={handleCheckCharter}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#35AED5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#35AED5]/70"
+                    >
+                        <FileText className="h-4 w-4" />
+                        check Charter
+                    </button>
+                )}
 
                 {booking.canCancel && (
                     <button
