@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import AdminUsersFilters from "@/components/admin-users/admin-users-filters";
-import AdminUsersTable from "@/components/admin-users/admin-users-table";
+import AdminUsersFilters from '@/components/admin-users/admin-users-filters';
+import AdminUsersTable from '@/components/admin-users/admin-users-table';
 import { PageProps } from '@/types';
 import { useState, useEffect } from 'react';
 
@@ -20,11 +20,14 @@ interface UsersPageProps extends PageProps {
         role?: string;
         status?: string;
     };
-     dashboardData?: {
-    };
+    dashboardData?: {};
 }
 
-export default function UsersPage({ userData, filters, dashboardData }: UsersPageProps) {
+export default function UsersPage({
+    userData,
+    filters,
+    dashboardData,
+}: UsersPageProps) {
     const [search, setSearch] = useState(filters?.search || '');
     const [role, setRole] = useState(filters?.role || 'all');
     const [status, setStatus] = useState(filters?.status || 'all');
@@ -33,9 +36,10 @@ export default function UsersPage({ userData, filters, dashboardData }: UsersPag
     // Debounced search/filter handler
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            router.get(route('admin.users.index'), 
+            router.get(
+                route('admin.users.index'),
                 { search, role, status, per_page: perPage },
-                { preserveState: true, replace: true }
+                { preserveState: true, replace: true },
             );
         }, 300);
 
@@ -45,17 +49,25 @@ export default function UsersPage({ userData, filters, dashboardData }: UsersPag
     // Safe fallbacks if backend isn't ready yet
     const users = userData?.users ?? [];
     const total = userData?.total ?? 0;
-    const availableRoles = userData?.filters?.roles ?? ['Captain', 'Owner', 'Deckhand', 'Charterer'];
-    const availableStatuses = userData?.filters?.statuses ?? ['Active', 'Verified', 'Pending Review', 'Suspended'];
-    console.log("this is dash",dashboardData)
+    const availableRoles = userData?.filters?.roles ?? [
+        'Captain',
+        'Owner',
+        'Deckhand',
+        'Charterer',
+    ];
+    const availableStatuses = userData?.filters?.statuses ?? [
+        'Active',
+        'Verified',
+        'Pending Review',
+        'Suspended',
+    ];
+
     return (
         <>
             {/* <Head title="Users Directory" /> */}
             <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                     <div className="mx-auto w-full max-w-7xl space-y-6 py-6">
-
-
                         {/* Dynamic Filters */}
                         <AdminUsersFilters
                             search={search}
@@ -70,8 +82,8 @@ export default function UsersPage({ userData, filters, dashboardData }: UsersPag
                         />
 
                         {/* Table */}
-                        <AdminUsersTable 
-                            users={users} 
+                        <AdminUsersTable
+                            users={users}
                             total={total}
                             perPage={perPage}
                             onPerPageChange={setPerPage}
@@ -82,7 +94,6 @@ export default function UsersPage({ userData, filters, dashboardData }: UsersPag
         </>
     );
 }
-
 
 UsersPage.layout = {
     breadcrumbs: [

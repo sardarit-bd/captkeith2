@@ -8,9 +8,9 @@ import { useState, useEffect } from 'react';
 
 interface UsersPageProps extends PageProps {
     userData: {
-        users:{
+        users: {
             data: any[];
-        }
+        };
         current_page: number;
         last_page: number;
         total: number;
@@ -33,15 +33,15 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
     const [status, setStatus] = useState(filters.status || 'all');
     const [perPage, setPerPage] = useState(userData.users.per_page || 10);
     const [page, setPage] = useState(userData.current_page || 1);
-    console.log('userData:', userData);
+
     // Fetch data when any filter, perPage, or page changes
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             // Use Wayfinder's generated URL function instead of Ziggy's route()
             router.get(
-                AdminUserController.index.url(), 
+                AdminUserController.index.url(),
                 { search, role, status, per_page: perPage, page },
-                { preserveState: true, replace: true }
+                { preserveState: true, replace: true },
             );
         }, 300);
 
@@ -56,7 +56,7 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
     return (
         <>
             {/* <Head title="Users Directory" /> */}
-            <div className="flex h-full pt-10 flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
+            <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] pt-10">
                 <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                     <div className="mx-auto w-full max-w-7xl space-y-6 py-6">
                         {/* Filters */}
@@ -73,8 +73,8 @@ export default function UsersPage({ userData, filters }: UsersPageProps) {
                         />
 
                         {/* Table */}
-                        <AdminUsersTable 
-                            users={userData} 
+                        <AdminUsersTable
+                            users={userData}
                             total={userData.total}
                             currentPage={userData.current_page}
                             lastPage={userData.last_page}
@@ -93,7 +93,7 @@ UsersPage.layout = {
     breadcrumbs: [
         {
             title: 'Users Directory',
-            href: "/admin/vessel-inventory",
+            href: '/admin/vessel-inventory',
         },
     ],
     pageHeader: {

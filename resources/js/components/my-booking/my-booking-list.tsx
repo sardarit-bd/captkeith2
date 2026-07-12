@@ -18,7 +18,7 @@ interface PageProps {
 export function MyBookingList() {
     const { bookings = [], filters = [] } = usePage<PageProps>().props;
     const [activeFilter, setActiveFilter] = useState<BookingFilterId>('all');
-
+    console.log('bookings', bookings);
     const filtered = bookings.filter((b) => {
         if (activeFilter === 'all') {
             return true;

@@ -22,7 +22,7 @@ const overallStatusStyles = {
     },
     'Awaiting Docs': {
         wrapper: 'border-blue-100 bg-blue-50 text-blue-700',
-        dot: 'bg-blue-500',
+        dot: 'bg-[#35AED5]',
     },
     'Blocked / Void': {
         wrapper: 'border-red-100 bg-red-50 text-red-700',
@@ -39,7 +39,8 @@ function ComplianceDocuments({ record }: { record: ComplianceLogRecord }) {
                     Demise protocol broken
                 </div>
                 <p className="pl-6 text-xs text-slate-500">
-                    Owner attempted to act as captain. System blocked transaction.
+                    Owner attempted to act as captain. System blocked
+                    transaction.
                 </p>
             </div>
         );
@@ -59,7 +60,7 @@ function ComplianceDocuments({ record }: { record: ComplianceLogRecord }) {
 
             {record.captainAgreementStatus === 'Pending Signature' ? (
                 <div className="flex items-center rounded-md border border-blue-100 bg-blue-50 p-1 text-xs text-blue-800">
-                    <Clock className="mr-2 h-4 w-4 text-blue-500" />
+                    <Clock className="mr-2 h-4 w-4 text-[#35AED5]" />
                     Pending captain signature
                 </div>
             ) : (
@@ -175,7 +176,9 @@ export function ComplianceLogRow({ record }: { record: ComplianceLogRecord }) {
                 <span
                     className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${overallStyle.wrapper}`}
                 >
-                    <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${overallStyle.dot}`} />
+                    <span
+                        className={`mr-1.5 h-1.5 w-1.5 rounded-full ${overallStyle.dot}`}
+                    />
                     {record.overallStatus}
                 </span>
             </td>

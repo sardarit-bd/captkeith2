@@ -1,4 +1,3 @@
-
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     Award,
@@ -52,7 +51,7 @@ interface PageProps {
     filters: Filters;
     vessels: VesselOption[];
     invitations: Record<string, Record<string, InvitationData>>;
-    acceptedCaptainIds: Record<string, string[]>; 
+    acceptedCaptainIds: Record<string, string[]>;
     acceptedViaInterestIds: string[];
     interestedCaptainIds: string[];
 }
@@ -84,13 +83,13 @@ function InviteModal({
     vessels: VesselOption[];
     existingInvitations: Record<string, InvitationData>;
     onClose: () => void;
-}){
+}) {
     const [selectedVessel, setSelectedVessel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const currentStatus = selectedVessel
         ? existingInvitations[selectedVessel]?.status
         : undefined;
-    console.log("this is modal console ",vessels);
+
     function handleSend() {
         if (!selectedVessel || isLoading) {
             return;
@@ -230,8 +229,11 @@ function CancelConfirmModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" >
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}    >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div
+                className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="mb-4 flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
                         <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -303,11 +305,11 @@ function InviteButton({
     onAcceptRequest: () => void;
 }) {
     const captainInvites = invitations[captain.id] ?? {};
-    const statuses = Object.values(captainInvites).map(inv => inv.status);
+    const statuses = Object.values(captainInvites).map((inv) => inv.status);
 
     // Check if captain requested owner (initiated_by === 'captain' and status is 'pending')
     const hasCaptainRequest = Object.values(captainInvites).some(
-        (data) => data.status === 'pending' && data.initiated_by === 'captain'
+        (data) => data.status === 'pending' && data.initiated_by === 'captain',
     );
 
     const acceptedVessels = acceptedCaptainIds[captain.id] ?? [];
@@ -408,7 +410,8 @@ export default function CaptainsPage() {
         useState<Captain | null>(null);
     const cancelVesselId = cancelModalCaptain
         ? (Object.entries(invitations[cancelModalCaptain.id] ?? {}).find(
-              ([, data]) => data.status === 'pending' || data.status === 'accepted',
+              ([, data]) =>
+                  data.status === 'pending' || data.status === 'accepted',
           )?.[0] ?? '')
         : '';
 
@@ -441,12 +444,16 @@ export default function CaptainsPage() {
         );
     };
 
-        const handleClearFilters = () => {
-            router.get(captains().url, {}, { 
-                preserveState: true, 
-                replace: true 
-            });
-        };
+    const handleClearFilters = () => {
+        router.get(
+            captains().url,
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
 
     const hasActiveFilters = licenseType !== '' || minExperience !== '';
 
@@ -492,13 +499,15 @@ export default function CaptainsPage() {
                                         onChange={(e) =>
                                             setLicenseType(e.target.value)
                                         }
-                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700  focus:outline-none"
+                                        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:outline-none"
                                     >
                                         {LICENSE_OPTIONS.map((o) => (
                                             <option
                                                 key={o.value}
                                                 value={o.value}
-                                                className={"hover:bg-red-500! cursor-pointer!"}
+                                                className={
+                                                    'cursor-pointer! hover:bg-red-500!'
+                                                }
                                             >
                                                 {o.label}
                                             </option>
@@ -622,7 +631,7 @@ export default function CaptainsPage() {
                                     className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-8"
                                 >
                                     <div className="mb-4 flex items-start justify-between gap-4">
-                                        <div className="flex flex-row items-start gap-4  sm:items-center">
+                                        <div className="flex flex-row items-start gap-4 sm:items-center">
                                             <div className="relative h-16 w-16 shrink-0">
                                                 {captain.photo ? (
                                                     <img
@@ -650,7 +659,7 @@ export default function CaptainsPage() {
                                                         )
                                                     }
                                                 >
-                                                    {captain.name} 
+                                                    {captain.name}
                                                 </h3>
                                                 <div className="mt-2 space-y-1">
                                                     {captain.location && (
@@ -720,18 +729,40 @@ export default function CaptainsPage() {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                    <InviteButton
-                                        captain={captain}
-                                        invitations={invitations}
-                                        acceptedCaptainIds={acceptedCaptainIds}
-                                        acceptedViaInterestIds={acceptedViaInterestIds}
-                                        interestedCaptainIds={interestedCaptainIds}
-                                        vessels={vessels}
-                                        onOpenInvite={() => setInviteModalCaptain(captain)}
-                                        onOpenCancel={() => setCancelModalCaptain(captain)}
-                                        onOpenRevokeAcceptance={() => setRevokeModalCaptain(captain)}
-                                        onAcceptRequest={() => handleAcceptRequest(captain.id)}
-                                    />
+                                            <InviteButton
+                                                captain={captain}
+                                                invitations={invitations}
+                                                acceptedCaptainIds={
+                                                    acceptedCaptainIds
+                                                }
+                                                acceptedViaInterestIds={
+                                                    acceptedViaInterestIds
+                                                }
+                                                interestedCaptainIds={
+                                                    interestedCaptainIds
+                                                }
+                                                vessels={vessels}
+                                                onOpenInvite={() =>
+                                                    setInviteModalCaptain(
+                                                        captain,
+                                                    )
+                                                }
+                                                onOpenCancel={() =>
+                                                    setCancelModalCaptain(
+                                                        captain,
+                                                    )
+                                                }
+                                                onOpenRevokeAcceptance={() =>
+                                                    setRevokeModalCaptain(
+                                                        captain,
+                                                    )
+                                                }
+                                                onAcceptRequest={() =>
+                                                    handleAcceptRequest(
+                                                        captain.id,
+                                                    )
+                                                }
+                                            />
                                             <button
                                                 type="button"
                                                 onClick={() =>

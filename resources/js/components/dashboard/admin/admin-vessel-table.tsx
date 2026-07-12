@@ -44,15 +44,23 @@ export function AdminVesselTable({ vessels }: AdminVesselTableProps) {
     };
 
     const handleApprove = (vesselId: string) => {
-        router.put(`/admin/vessels/${vesselId}/approve`, {}, {
-            preserveScroll: true,
-        });
+        router.patch(
+            `/vessels/${vesselId}/approve`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const handleReject = (vesselId: string) => {
-        router.put(`/admin/vessels/${vesselId}/reject`, {}, {
-            preserveScroll: true,
-        });
+        router.patch(
+            `/vessels/${vesselId}/reject`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     return (
@@ -77,7 +85,9 @@ export function AdminVesselTable({ vessels }: AdminVesselTableProps) {
                             </TableCell>
                             <TableCell>
                                 <div className="space-y-1">
-                                    <div className="font-medium">{vessel.owner?.name || 'Unknown'}</div>
+                                    <div className="font-medium">
+                                        {vessel.owner?.name || 'Unknown'}
+                                    </div>
                                     <div className="text-sm text-muted-foreground">
                                         {vessel.owner?.email || 'No email'}
                                     </div>
@@ -100,14 +110,18 @@ export function AdminVesselTable({ vessels }: AdminVesselTableProps) {
                                                 size="sm"
                                                 variant="default"
                                                 className="bg-green-600 hover:bg-green-700"
-                                                onClick={() => handleApprove(vessel.id)}
+                                                onClick={() =>
+                                                    handleApprove(vessel.id)
+                                                }
                                             >
                                                 Approve
                                             </Button>
                                             <Button
                                                 size="sm"
                                                 variant="destructive"
-                                                onClick={() => handleReject(vessel.id)}
+                                                onClick={() =>
+                                                    handleReject(vessel.id)
+                                                }
                                             >
                                                 Reject
                                             </Button>
@@ -119,7 +133,10 @@ export function AdminVesselTable({ vessels }: AdminVesselTableProps) {
                     ))}
                     {vessels.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            <TableCell
+                                colSpan={4}
+                                className="py-8 text-center text-muted-foreground"
+                            >
                                 No pending vessels
                             </TableCell>
                         </TableRow>

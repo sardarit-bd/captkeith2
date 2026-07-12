@@ -1,79 +1,100 @@
-import { Link } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
-import { Download, FileText } from 'lucide-react';
-import { agreement } from '@/routes/charterer';
-import { insuranceNote } from './charterer-insurance-data';
-import { ChartererInsuranceMainCard } from './charterer-insurance-main-card';
-// import { route } from '@/routes';
+import { Download, FileText, CheckCircle2 } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { checkout, agreement } from '@/routes/charterer';
+
 interface Agreement {
     id: string;
     name: string;
-    downloadUrl?: string; 
+    downloadUrl: string;
 }
-interface PageProps {
-    charterEventId?: string;
-    agreements?: Agreement[];
-}
-export function ChartererInsurancePageContent() {
 
-    const { agreements } = usePage<PageProps>().props;
-    const response = usePage<PageProps>().props;
-    console.log('response', response);
+interface PageProps {
+    charterEventId: string;
+    agreements: Agreement[];
+    flash?: { success?: string; error?: string };
+}
+
+export default function ChartererInsurancePageContent() {
+    const { agreements, charterEventId, flash } = usePage<PageProps>().props;
+    console.log(agreements);
     return (
-        <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] font-poppins">
-            {agreements && agreements.length > 0 && (
-            <div className="mb-6 rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-[#111827] flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-[#35ADD5]" />
+        <div className="mx-auto max-w-3xl space-y-6 p-6">
+            {/* Flash messages */}
+            {flash?.success && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    {flash.success}
+                </div>
+            )}
+            {flash?.error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {flash.error}
+                </div>
+            )}
+
+            <div className="rounded-2xl border border-[#edf2f7] bg-white p-6 shadow-sm">
+                <h2 className="mb-2 text-xl font-bold text-[#111827]">
                     Your Signed Agreements
-                </h3>
-                <div className="space-y-3">
-                    {agreements.map((agreement) => (
-                        <a
-                            key={agreement.id}
-                            href={`/charterer/agreement/${agreement.id}/download`}
-                            className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 transition-all hover:border-[#3DB3DE] hover:bg-[#EFF8FD]"
-                            download
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#35ADD5]/10">
-                                    <FileText className="h-5 w-5 text-[#35ADD5]" />
+                </h2>
+                <p className="mb-6 text-sm text-[#6b7280]">
+                    Below are the agreements you have signed. You can download
+                    them anytime.
+                </p>
+
+                <div className="space-y-4">
+                    {!agreements || agreements.length === 0 ? (
+                        <p className="text-center text-sm text-gray-500">
+                            No signed agreements found yet.
+                        </p>
+                    ) : (
+                        agreements.map((agreementItem) => (
+                            <div
+                                key={agreementItem.id}
+                                className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 transition-colors hover:bg-[#f3f4f6]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                                        <FileText className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-[#111827]">
+                                            {agreementItem.name}
+                                        </h3>
+                                        <div className="flex items-center gap-1 text-xs text-emerald-600">
+                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                            Signed & Ready
+                                        </div>
+                                    </div>
                                 </div>
-                                <span className="text-sm font-medium text-[#374151]">
-                                    {agreement.name}
-                                </span>
+
+                                {/* Download Button */}
+                                <a
+                                    href={agreementItem.downloadUrl}
+                                    className="flex items-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#35ADD5]/70"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Download
+                                </a>
                             </div>
-                            <button className="flex items-center gap-2 rounded-lg bg-[#35ADD5] px-4 py-2 text-xs font-semibold text-white hover:bg-[#35ADD5]/70">
-                                <Download className="h-3.5 w-3.5" />
-                                Download PDF
-                            </button>
-                        </a>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
-        )}
-            <div className="flex-1 overflow-y-auto px-4 pb-10 sm:px-6 lg:px-8">
-                <div className="mx-auto mt-2 max-w-212.5">
-                    <ChartererInsuranceMainCard />
 
-                    <section className="mb-8 rounded-xl border border-[#e5e7eb] bg-[#F8FAFC] p-5">
-                        <p className="text-sm leading-relaxed text-[#4b5563]">
-                            <span className="font-bold text-[#1f2937]">
-                                Note:
-                            </span>
-                            {insuranceNote}
-                        </p>
-                    </section>
-
-                    <footer>
-                        <Link
-                            href={agreement()}
-                            className="inline-flex w-full items-center justify-center rounded-xl border border-[#e5e7eb] bg-white px-8 py-3 text-sm font-semibold text-[#4b5563] shadow-sm transition-all duration-200 hover:border-[#d1d5db] hover:bg-[#f9fafb] sm:w-auto"
-                        >
-                            Back
-                        </Link>
-                    </footer>
-                </div>
+            {/* Continue to Checkout */}
+            <div className="flex items-center justify-between">
+                <Link
+                    href={agreement.url()}
+                    className="text-sm text-[#35ADD5] underline underline-offset-2 hover:text-[#2a8fb0]"
+                >
+                    Back to Agreements
+                </Link>
+                <Link
+                    href={checkout.url()}
+                    className="flex items-center gap-2 rounded-xl bg-[#35ADD5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#2a8fb0]"
+                >
+                    Continue to Checkout
+                </Link>
             </div>
         </div>
     );

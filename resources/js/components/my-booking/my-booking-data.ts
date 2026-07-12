@@ -7,7 +7,27 @@ export type BookingFilter = {
     active: boolean;
 };
 
-export type BookingStatus = 'pending' | 'confirmed' | 'completed';
+export interface BookingAgreement {
+    id: string;
+    name: string;
+    role: 'captain' | 'deckhand' | 'owner';
+    downloadUrl: string;
+    signedAt?: string | null;
+    fullySignedAt?: string | null;
+    signStatus?: string;
+}
+
+export type BookingCrewMember = {
+    id: string;
+    name: string;
+    photo: string | null;
+    role: string;
+    licenseType?: string;
+    yearsExperience?: number;
+    hourlyRate?: number;
+};
+
+export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 export type BookingCardRecord = {
     id: string;
@@ -16,18 +36,21 @@ export type BookingCardRecord = {
     status: BookingStatus;
     statusLabel: string;
     image: string | null;
-    captainName: string;
-    captainAvatar: string | null;
+    captains: BookingCrewMember[];
+    deckhand: BookingCrewMember | null;
     location: string;
     passengers: string;
-    coverage: string;
+    yachtCapacity: string;
     date: string;
+    startTime: string;
+    duration: number;
     time: string;
     totalPaid: string;
     rating?: number | null;
-    // actions: Array<{
-    //     id: string;
-    //     label: string;
-    //     icon: 'message-square' | 'arrow-right' | 'download' | 'refresh-cw';
-    // }>;
+    agreements: BookingAgreement[];
+    completionRequestedAt?: string | null;
+    completedAt?: string | null;
+    canCancel: boolean;
+    canComplete: boolean;
+    checkCharterUrl: string;
 };

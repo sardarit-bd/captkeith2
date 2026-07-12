@@ -10,118 +10,167 @@ use Illuminate\Support\Str;
 
 class AgreementPdfService
 {
-    /**
-     * @return string  The private-disk path where the PDF was stored.
-     */
-    public function generateBareboatAgreement(CharterEvent $event): string
-    {
-        $charterer = $event->charterer;
-        $vessel    = $event->vessel;
-        $owner     = $vessel->owner;
+  /**
+   * @return string  The private-disk path where the PDF was stored.
+   */
+  public function generateBareboatAgreement(CharterEvent $event): string
+  {
+    $charterer = $event->charterer;
+    $vessel    = $event->vessel;
+    $owner     = $vessel->owner;
 
-        $data = [
-            'agreementDate'   => now()->format('F j, Y'),
-            'ownerName'       => $owner?->full_name ?? 'Vessel Owner',
-            'chartererName'   => $charterer?->full_name ?? '—',
-            'chartererAddress' => implode(', ', array_filter([
-                $charterer?->address,
-                $charterer?->city,
-                $charterer?->state,
-                $charterer?->zip_code,
-            ])) ?: '—',
-            'vesselName'      => $vessel->name ?? '—',
-            'officialNumber'  => $vessel->official_number ?? '—',
-            'charterDate'     => $event->charter_date?->format('F j, Y') ?? '—',
-            'startTime'       => $event->start_time ?? '—',
-            'endDate'         => $event->charter_date?->format('F j, Y') ?? '—',
-            'endTime'         => '—',
-            'rentalAmount'    => '—',
-            'depositAmount'   => '—',
-            'cleaningFee'     => '—',
-            'county'          => $vessel->marina_state ?? '—',
-            'state'           => $vessel->marina_state ?? '—',
-        ];
+    $data = [
+      'agreementDate'   => now()->format('F j, Y'),
+      'ownerName'       => $owner?->full_name ?? 'Vessel Owner',
+      'chartererName'   => $charterer?->full_name ?? '—',
+      'chartererAddress' => implode(', ', array_filter([
+        $charterer?->address,
+        $charterer?->city,
+        $charterer?->state,
+        $charterer?->zip_code,
+      ])) ?: '—',
+      'vesselName'      => $vessel->name ?? '—',
+      'officialNumber'  => $vessel->official_number ?? '—',
+      'charterDate'     => $event->charter_date?->format('F j, Y') ?? '—',
+      'startTime'       => $event->start_time ?? '—',
+      'endDate'         => $event->charter_date?->format('F j, Y') ?? '—',
+      'endTime'         => '—',
+      'rentalAmount'    => '—',
+      'depositAmount'   => '—',
+      'cleaningFee'     => '—',
+      'county'          => $vessel->marina_state ?? '—',
+      'state'           => $vessel->marina_state ?? '—',
+    ];
 
-        $html = $this->renderBareboatHtml($data);
-        return $this->savePdf($html, $event->id, 'bareboat-charter-agreement');
-    }
+    $html = $this->renderBareboatHtml($data);
+    return $this->savePdf($html, $event->id, 'bareboat-charter-agreement');
+  }
 
+  /**
+   * Generates the Captain Hire Agreement PDF.
+   */
+  public function generateCaptainHireAgreement(CharterEvent $event, CaptainProfile $captain): string
+  {
 
-public function generateDeckhandHireAgreement(
+    $charterer = $event->charterer;
+    $vessel    = $event->vessel;
+
+    $data = [
+      'agreementDate'      => now()->format('F j, Y'),
+      'chartererName'      => $charterer?->full_name ?? '—',
+      'chartererAddress'   => implode(', ', array_filter([
+        $charterer?->address,
+        $charterer?->city,
+        $charterer?->state,
+        $charterer?->zip_code,
+      ])) ?: '—',
+      'chartererPhone'     => $charterer?->phone ?? '—',
+      'captainName'        => $captain->full_name ?? '—',
+      // Ensure you use the correct column name for the license (license_number or license_type)
+      'captainLicense'     => $captain->license_number ?? $captain->license_type ?? '—',
+      'captainPhone'       => $captain->phone ?? '—',
+      'vesselName'         => $vessel->name ?? '—',
+      'charterDates'       => $event->charter_date?->format('F j, Y') ?? '—',
+      'captainFee'         => $captain->hourly_rate
+        ? '$' . number_format($captain->hourly_rate, 2) . '/hr'
+        : '—',
+    ];
+
+    $html = $this->renderCaptainHireHtml($data);
+    $slug = 'captain-hire-' . Str::slug($captain->full_name ?? $captain->id ?? 'unknown');
+    return $this->savePdf($html, $event->id, $slug);
+  }
+
+  /**
+   * Central dispatcher: Generates the correct PDF based on the agreement's crew_role.
+   */
+  public function generateForAgreement(CharterHireAgreement $agreement): string
+  {
+    $event = $agreement->charterEvent;
+
+    return match ($agreement->crew_role) {
+      'owner' => $this->generateBareboatAgreement($event),
+      // FIX 3: Provide fallback models if the relationship is null to prevent crashes
+      'deckhand' => $this->generateDeckhandHireAgreement($event, $agreement->deckhandProfile ?? new DeckhandProfile(['full_name' => 'Deckhand'])),
+      'captain' => $this->generateCaptainHireAgreement($event, $agreement->captainProfile ?? new CaptainProfile(['full_name' => 'Captain'])),
+      default => throw new \InvalidArgumentException("Invalid crew role for PDF generation: {$agreement->crew_role}"),
+    };
+  }
+  public function generateDeckhandHireAgreement(
     \App\Models\CharterEvent $event,
     \App\Models\DeckhandProfile $deckhand
-): string {
+  ): string {
     $charterer = $event->charterer;
     $vessel    = $event->vessel;
     $captain   = $event->crewResponses()
-        ->where('crew_role', 'captain')
-        ->where('response', 'available')
-        ->first()?->captainProfile;
+      ->where('crew_role', 'captain')
+      ->where('response', 'available')
+      ->first()?->captainProfile;
 
     $data = [
-        'agreementDate'      => now()->format('F j, Y'),
-        'chartererName'      => $charterer?->full_name ?? '—',
-        'chartererAddress'   => implode(', ', array_filter([
-            $charterer?->address,
-            $charterer?->city,
-            $charterer?->state,
-            $charterer?->zip_code,
-        ])) ?: '—',
-        'deckhandName'       => $deckhand->full_name ?? '—',
-        'deckhandPhone'      => $deckhand->phone ?? '—',
-        'captainName'        => $captain?->full_name ?? '—',
-        'vesselName'         => $vessel->name ?? '—',
-        'charterDates'       => $event->charter_date?->format('F j, Y') ?? '—',
-        'deckhandFee'        => $deckhand->hourly_rate
-            ? '$' . number_format($deckhand->hourly_rate, 2) . '/hr'
-            : '—',
+      'agreementDate'      => now()->format('F j, Y'),
+      'chartererName'      => $charterer?->full_name ?? '—',
+      'chartererAddress'   => implode(', ', array_filter([
+        $charterer?->address,
+        $charterer?->city,
+        $charterer?->state,
+        $charterer?->zip_code,
+      ])) ?: '—',
+      'deckhandName'       => $deckhand->full_name ?? '—',
+      'deckhandPhone'      => $deckhand->phone ?? '—',
+      'captainName'        => $captain?->full_name ?? '—',
+      'vesselName'         => $vessel->name ?? '—',
+      'charterDates'       => $event->charter_date?->format('F j, Y') ?? '—',
+      'deckhandFee'        => $deckhand->hourly_rate
+        ? '$' . number_format($deckhand->hourly_rate, 2) . '/hr'
+        : '—',
     ];
 
     $html = $this->renderDeckhandHireHtml($data);
     $slug = 'deckhand-hire-' . \Illuminate\Support\Str::slug($deckhand->full_name ?? $deckhand->id);
     return $this->savePdf($html, $event->id, $slug);
-}
+  }
 
 
 
-    private function savePdf(string $html, string $eventId, string $slug): string
-    {
-        $pdf  = $this->htmlToPdf($html);
-        $path = "agreements/{$eventId}/{$slug}.pdf";
-        Storage::disk('local')->put($path, $pdf);
-        return $path;
+  private function savePdf(string $html, string $eventId, string $slug): string
+  {
+    $pdf  = $this->htmlToPdf($html);
+    $path = "agreements/{$eventId}/{$slug}.pdf";
+    Storage::disk('local')->put($path, $pdf);
+    return $path;
+  }
+
+
+  private function htmlToPdf(string $html): string
+  {
+    if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+      $instance = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)
+        ->setPaper('letter', 'portrait');
+      return $instance->output();
     }
 
-
-    private function htmlToPdf(string $html): string
-    {
-        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            $instance = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)
-                ->setPaper('letter', 'portrait');
-            return $instance->output();
-        }
-
-        if (class_exists(\Dompdf\Dompdf::class)) {
-            $dompdf = new \Dompdf\Dompdf();
-            $dompdf->loadHtml($html);
-            $dompdf->setPaper('letter', 'portrait');
-            $dompdf->render();
-            return $dompdf->output();
-        }
-
-        throw new \RuntimeException(
-            'No PDF library found. Please install barryvdh/laravel-dompdf: ' .
-                'composer require barryvdh/laravel-dompdf'
-        );
+    if (class_exists(\Dompdf\Dompdf::class)) {
+      $dompdf = new \Dompdf\Dompdf();
+      $dompdf->loadHtml($html);
+      $dompdf->setPaper('letter', 'portrait');
+      $dompdf->render();
+      return $dompdf->output();
     }
 
+    throw new \RuntimeException(
+      'No PDF library found. Please install barryvdh/laravel-dompdf: ' .
+        'composer require barryvdh/laravel-dompdf'
+    );
+  }
 
 
-    private function renderBareboatHtml(array $d): string
-    {
-        $css = $this->sharedCss();
 
-        return <<<HTML
+  private function renderBareboatHtml(array $d): string
+  {
+    $css = $this->sharedCss();
+
+    return <<<HTML
 <!DOCTYPE html>
 <html>
 <head>
@@ -319,9 +368,9 @@ public function generateDeckhandHireAgreement(
 </body>
 </html>
 HTML;
-    }
-private function renderDeckhandHireHtml(array $d): string
-{
+  }
+  private function renderDeckhandHireHtml(array $d): string
+  {
     $css = $this->sharedCss();
 
     return <<<HTML
@@ -443,12 +492,12 @@ private function renderDeckhandHireHtml(array $d): string
 </body>
 </html>
 HTML;
-}
-    private function renderCaptainHireHtml(array $d): string
-    {
-        $css = $this->sharedCss();
+  }
+  private function renderCaptainHireHtml(array $d): string
+  {
+    $css = $this->sharedCss();
 
-        return <<<HTML
+    return <<<HTML
 <!DOCTYPE html>
 <html>
 <head>
@@ -588,11 +637,11 @@ HTML;
 </body>
 </html>
 HTML;
-    }
+  }
 
-    private function sharedCss(): string
-    {
-        return <<<CSS
+  private function sharedCss(): string
+  {
+    return <<<CSS
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: "Times New Roman", Times, serif;
@@ -680,5 +729,5 @@ ul li {
     margin-bottom: 6pt;
 }
 CSS;
-    }
+  }
 }

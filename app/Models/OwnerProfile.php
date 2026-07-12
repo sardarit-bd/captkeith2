@@ -57,7 +57,10 @@ class OwnerProfile extends Model
     {
         return array_merge(self::defaultPreferences(), $this->preferences ?? []);
     }
-
+    public function hireAgreements(): HasMany
+    {
+        return $this->hasMany(CharterHireAgreement::class, 'owner_profile_id');
+    }
     protected function casts(): array
     {
         return [

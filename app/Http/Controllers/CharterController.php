@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\CharterEvent;
 use App\Models\ChartererProfile;
+
 use App\Models\OwnerProfile;
 use App\Models\OwnerCaptainInvitation;
 use App\Models\Vessel;
@@ -34,40 +36,42 @@ class CharterController extends Controller
             ]);
         }
 
-            $vessels = Vessel::where('owner_id', $owner->id)
-                ->whereNull('deleted_at')
-                ->where('is_active', true)
-                ->with(['charterEvents.hireAgreements'])
-                ->orderBy('name')
-                ->get()
-                ->map(function(Vessel $v) {
-                    $agreements = $v->charterEvents->flatMap(function($event) {
-                        return $event->hireAgreements
-                            ->where('agreement_type', 'bareboat') 
-                            ->map(function($agreement) {
-                                return [
-                                    'id' => $agreement->id,
-                                    'type' => 'Owner-Charterer Agreement',
-                                    'signedAt' => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
-                                ];
-                            });
-                    })->values();
+        $vessels = Vessel::where('owner_id', $owner->id)
+            ->whereNull('deleted_at')
+            ->where('is_active', true)
+            ->with(['charterEvents.hireAgreements'])
+            ->orderBy('name')
+            ->get()
+            ->map(function (Vessel $v) {
+                $agreements = $v->charterEvents->flatMap(function ($event) {
+                    return $event->hireAgreements
+                        ->where('agreement_type', 'bareboat')
+                        ->map(function ($agreement) {
+                            return [
+                                'id' => $agreement->id,
+                                'type' => 'Owner-Charterer Agreement',
+                                'signedAt' => $agreement->fully_signed_at?->format('M d, Y') ?? 'Pending',
+                            ];
+                        });
+                })->values();
 
-                    return [
-                        'value' => $v->id,
-                        'label' => $v->name,
-                        'id' => $v->id,
-                        'name' => $v->name,
-                        'registrationNo' => $v->official_number ?? '—',
-                        'image' => $v->photos->first() ? Storage::url($v->photos->first()->image_path) : null,
-                        'agreements' => $agreements,
-                  
-                    ];
-                });
+                return [
+                    'value' => $v->id,
+                    'label' => $v->name,
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'registrationNo' => $v->official_number ?? '—',
+                    'image' => $v->photos->first() ? Storage::url($v->photos->first()->image_path) : null,
+                    'agreements' => $agreements,
 
+                ];
+            });
         $vesselIds = Vessel::where('owner_id', $owner->id)
             ->whereNull('deleted_at')
             ->pluck('id');
+
+        // Dynamically update past charters to 'completed'
+        CharterEvent::updatePastEventsToCompleted($vesselIds);
 
         $drafts = CharterEvent::whereIn('vessel_id', $vesselIds)
             ->whereNull('deleted_at')
@@ -94,26 +98,38 @@ class CharterController extends Controller
                 'specialNotes'  => $event->special_notes,
             ]);
 
-            $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
-                ->whereNull('deleted_at')
-                ->whereNotIn('status', ['draft', 'completed', 'cancelled'])
-                ->with(['vessel.photos', 'charterer.user', 'hireAgreements']) 
-                ->latest('charter_date')
-                ->get()
-                ->map(fn(CharterEvent $event) => [
-                    'id'              => $event->id,
-                    'yachtName'       => $event->vessel->name,
-                    'yachtType'       => ucfirst($event->vessel->vessel_type ?? ''),
-                    'yachtLength'     => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
-                    'date'            => $event->charter_date?->format('M d, Y') ?? '—',
-                    'yachtImage'      => $event->vessel->photos->first()
-                        ? Storage::url($event->vessel->photos->first()->image_path)
-                        : null,
-                    'chartererName'   => $event->charterer?->user?->name ?? 'Pending',
-                    'chartererAvatar' => null,
-                    'status'          => ucfirst($event->status ?? 'Booked'),
-                    'bareboatAgreementId' => $event->hireAgreements->where('agreement_type', 'bareboat')->first()?->id,
-                ]);
+        $bookings = CharterEvent::whereIn('vessel_id', $vesselIds)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['draft', 'cancelled'])
+            ->with(['vessel.photos', 'charterer.user', 'hireAgreements', 'crewResponses.captainProfile', 'crewResponses.deckhandProfile'])
+            ->latest('charter_date')
+            ->get()
+            ->map(fn(CharterEvent $event) => [
+                'id'              => $event->id,
+                'yachtName'       => $event->vessel->name,
+                'yachtType'       => ucfirst($event->vessel->vessel_type ?? ''),
+                'yachtLength'     => $event->vessel->length_ft ? $event->vessel->length_ft . ' ft' : '—',
+                'date'            => $event->charter_date?->format('M d, Y') ?? '—',
+                'startTime'       => $event->start_time ?? '—',
+                'duration'        => $event->duration_minutes ? round($event->duration_minutes / 60, 1) . ' hrs' : '—',
+                'yachtImage'      => $event->vessel->photos->first()
+                    ? Storage::url($event->vessel->photos->first()->image_path)
+                    : null,
+                'chartererName'   => $event->charterer?->user?->name ?? 'Pending',
+                'chartererAvatar' => null,
+                'status'          => ucfirst($event->status ?? 'Booked'),
+                'bareboatAgreementId' => $event->hireAgreements->where('agreement_type', 'bareboat')->first()?->id,
+                'inviteLink'      => $event->invite_token ? url('/charterer/join/' . $event->invite_token) : null,
+                'completionRequestedAt' => $event->completion_requested_at?->toIso8601String(),
+                'captains'        => $event->crewResponses->where('crew_role', 'captain')->where('response', 'available')->map(fn($r) => [
+                    'name' => $r->captainProfile?->full_name ?? 'Pending',
+                    'avatar' => $r->captainProfile?->photo_path ? Storage::url($r->captainProfile?->photo_path) : null,
+                ])->values(),
+                'deckhand'        => $event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first() ? [
+                    'name' => $event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first()->deckhandProfile?->full_name ?? 'Pending',
+                    'avatar' => $event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first()->deckhandProfile?->photo_path ? Storage::url($event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first()->deckhandProfile?->photo_path) : null,
+                ] : null,
+            ]);
 
         return Inertia::render('charterers', [
             'vessels'  => $vessels,
@@ -132,6 +148,7 @@ class CharterController extends Controller
             'start_time'     => ['required', 'string'],
             'duration_hours' => ['required', 'integer', 'min:1'],
             'special_notes'  => ['nullable', 'string', 'max:2000'],
+            'rental_cost'    => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $vessel = Vessel::where('id', $validated['vessel_id'])
@@ -144,6 +161,7 @@ class CharterController extends Controller
             'start_time'              => $validated['start_time'],
             'duration_minutes'        => (int) $validated['duration_hours'] * 60,
             'special_notes'           => $validated['special_notes'] ?? null,
+            'rental_cost'             => $validated['rental_cost'] ?? null,
             'status'                  => 'draft',
             'invite_token'            => Str::random(32),
             'invite_token_expires_at' => now()->addDays(7),
@@ -202,7 +220,7 @@ class CharterController extends Controller
         }
 
         $vessel = $event->vessel;
-       
+
         if (! $vessel) {
             abort(404, 'The yacht associated with this booking is no longer available.');
         }
@@ -526,7 +544,7 @@ class CharterController extends Controller
             ->where('crew_role', 'captain')
             ->firstOrFail();
 
-    
+
         abort_if($response->response === 'available', 403, 'Cannot cancel an accepted captain.');
 
         $response->update([
@@ -542,25 +560,19 @@ class CharterController extends Controller
     {
         $profile = ChartererProfile::where('user_id', auth()->id())->first();
 
-        $firstName = '';
-        $lastName  = '';
-
-        if ($profile?->full_name) {
-            $parts     = explode(' ', $profile->full_name, 2);
-            $firstName = $parts[0] ?? '';
-            $lastName  = $parts[1] ?? '';
-        }
-
         return Inertia::render('charterer/information', [
             'profile' => [
-                'first_name' => $firstName,
-                'last_name'  => $lastName,
-                'phone'      => $profile?->phone ?? '',
-                'address'    => $profile?->address ?? '',
-                'city'       => $profile?->city ?? '',
-                'state'      => $profile?->state ?? '',
-                'zip_code'   => $profile?->zip_code ?? '',
-                'photo_path' => $profile?->photo_path
+                'full_name'     => $profile?->full_name ?? '',
+                'phone'         => $profile?->phone ?? '',
+                'date_of_birth' => $profile?->date_of_birth
+                    ? \Carbon\Carbon::parse($profile->date_of_birth)->format('Y-m-d')
+                    : '',
+                'country'       => $profile?->country ?? '',
+                'address'       => $profile?->address ?? '',
+                'city'          => $profile?->city ?? '',
+                'state'         => $profile?->state ?? '',
+                'zip_code'      => $profile?->zip_code ?? '',
+                'photo_path'    => $profile?->photo_path
                     ? Storage::url($profile->photo_path)
                     : null,
             ],
@@ -570,17 +582,16 @@ class CharterController extends Controller
     public function saveInformation(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'full_name' => ['required', 'string', 'max:75'],
-            // 'last_name'  => ['required', 'string', 'max:75'],
-            'phone'      => ['required', 'string', 'max:20'],
-            'address'    => ['required', 'string', 'max:255'],
-            'city'       => ['required', 'string', 'max:100'],
-            'state'      => ['required', 'string', 'max:50'],
-            'zip_code'   => ['required', 'string', 'max:10'],
-            'photo'      => ['nullable', 'image', 'max:2048'],
+            'full_name'      => ['required', 'string', 'max:75'],
+            'phone'          => ['required', 'string', 'max:20'],
+            'date_of_birth'  => ['nullable', 'date'],
+            'country'        => ['nullable', 'string', 'max:100'],
+            'address'        => ['required', 'string', 'max:255'],
+            'city'           => ['required', 'string', 'max:100'],
+            'state'          => ['required', 'string', 'max:50'],
+            'zip_code'       => ['required', 'string', 'max:10'],
+            'photo'          => ['nullable', 'image', 'max:2048'],
         ]);
-
-        // $full_name = trim($validated['first_name'] . ' ' . $validated['last_name']);
 
         $profile = ChartererProfile::where('user_id', auth()->id())->first();
 
@@ -593,24 +604,36 @@ class CharterController extends Controller
             $photoPath = $request->file('photo')->store('charterer-photos', 'public');
         }
 
-   
+        // Create or update the charterer profile
         if ($profile) {
             $profile->update([
-                'full_name'  => $validated['full_name'],
-                'phone'      => $validated['phone'],
-                'address'    => $validated['address'],
-                'city'       => $validated['city'],
-                'state'      => $validated['state'],
-                'zip_code'   => $validated['zip_code'],
-                'photo_path' => $photoPath,
+                'full_name'     => $validated['full_name'],
+                'phone'         => $validated['phone'],
+                'date_of_birth' => $validated['date_of_birth'] ?? null,
+                'country'       => $validated['country'] ?? null,
+                'address'       => $validated['address'],
+                'city'          => $validated['city'],
+                'state'         => $validated['state'],
+                'zip_code'      => $validated['zip_code'],
+                'photo_path'    => $photoPath,
+            ]);
+        } else {
+            $profile = ChartererProfile::create([
+                'user_id'       => auth()->id(),
+                'full_name'     => $validated['full_name'],
+                'phone'         => $validated['phone'],
+                'date_of_birth' => $validated['date_of_birth'] ?? null,
+                'country'       => $validated['country'] ?? null,
+                'address'       => $validated['address'],
+                'city'          => $validated['city'],
+                'state'         => $validated['state'],
+                'zip_code'      => $validated['zip_code'],
+                'photo_path'    => $photoPath,
             ]);
         }
 
         $charterer = $profile;
 
-
-        $charterer = $profile;
-        
         $event = CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')
             ->whereNotIn('status', ['completed', 'cancelled'])
@@ -621,12 +644,11 @@ class CharterController extends Controller
             return redirect()->route('dashboard')->with('error', 'No active charter event found.');
         }
 
-
         \App\Models\CharterHireAgreement::updateOrCreate(
             [
                 'charter_event_id'   => $event->id,
                 'charterer_id'       => $charterer->id,
-                'captain_profile_id' => null, 
+                'captain_profile_id' => null,
                 'agreement_type'     => 'bareboat',
                 'crew_role'          => 'owner',
             ]
@@ -653,18 +675,21 @@ class CharterController extends Controller
         }
 
         $agreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
-            ->where('charterer_id', $charterer->id)
-            ->whereNotNull('charterer_signed_at') 
-            ->with('captainProfile')
+            // REMOVED: ->where('charterer_id', $charterer->id) 
+            // (Scoping by event ID is enough and prevents filtering out records where this column might be null)
+            ->whereNotNull('charterer_signed_at')
+            ->with(['captainProfile', 'deckhandProfile', 'ownerProfile'])
             ->get()
             ->map(fn($a) => [
                 'id' => $a->id,
-                'name' => match($a->agreement_type) {
-                    'bareboat' => 'Bareboat Charter Agreement',
-                    'captain_hire' => 'Captain ' . ($a->captainProfile?->full_name ?? 'Hire') . ' Agreement',
+                // FIXED: Use 'crew_role' instead of 'agreement_type'
+                'name' => match ($a->crew_role) {
+                    'owner' => 'Bareboat Charter Agreement',
+                    'captain' => 'Captain ' . ($a->captainProfile?->full_name ?? 'Hire') . ' Agreement',
+                    'deckhand' => 'Deckhand ' . ($a->deckhandProfile?->full_name ?? 'Hire') . ' Agreement',
                     default => 'Agreement',
                 },
-                'downloadUrl' => url("/charterer/agreement/{$a->id}/download"), 
+                'downloadUrl' => url("/charterer/agreement/{$a->id}/download"),
             ]);
 
         return \Inertia\Inertia::render('charterer/insurance', [
@@ -672,95 +697,192 @@ class CharterController extends Controller
             'agreements' => $agreements,
         ]);
     }
-public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
+    public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
     {
         $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->first();
 
         if (! $charterer) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Please complete your charterer profile first.');
+            return redirect()->route('dashboard')->with('error', 'Please complete your charterer profile first.');
         }
 
         $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')
-            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->whereNotIn('status', ['completed', 'cancelled', 'confirmed'])
             ->with(['vessel.photos', 'crewResponses.captainProfile', 'crewResponses.deckhandProfile'])
             ->latest('created_at')
             ->first();
 
         if (! $event) {
-            return redirect()->route('dashboard')
-                ->with('error', 'No active charter event found.');
+            return redirect()->route('dashboard')->with('error', 'No active charter event found.');
         }
 
         $vessel = $event->vessel;
         $hours  = $event->duration_minutes ? round($event->duration_minutes / 60, 1) : 0;
-
-        // Yacht rental cost lives on the charter event and is nullable for now —
-        // no pricing UI exists yet. Treat null as "pending" rather than silently
-        // charging $0, so the charterer never sees an inaccurate total.
         $rentalCostPending = is_null($event->rental_cost);
         $rentalCost        = $rentalCostPending ? 0.0 : (float) $event->rental_cost;
 
-        $acceptedCaptains = $event->crewResponses
-            ->where('crew_role', 'captain')
-            ->where('response', 'available')
-            ->take(2)
-            ->values();
-
+        $acceptedCaptains = $event->crewResponses->where('crew_role', 'captain')->where('response', 'available')->take(2)->values();
         $captains = $acceptedCaptains->map(function ($response) use ($hours) {
             $profile = $response->captainProfile;
             $rate    = $profile?->hourly_rate !== null ? (float) $profile->hourly_rate : null;
             $fee     = $rate !== null ? round($rate * $hours, 2) : 0.0;
-
-            return [
-                'id'          => $profile?->id,
-                'name'        => $profile?->full_name ?? '—',
-                'hourlyRate'  => $rate,
-                'hours'       => $hours,
-                'fee'         => $fee,
-                'ratePending' => $rate === null,
-            ];
+            return ['id' => $profile?->id, 'name' => $profile?->full_name ?? '—', 'hourlyRate' => $rate, 'hours' => $hours, 'fee' => $fee, 'ratePending' => $rate === null];
         })->values();
 
-        $deckhandResponse = $event->crewResponses
-            ->where('crew_role', 'deckhand')
-            ->where('response', 'available')
-            ->first();
-
+        $deckhandResponse = $event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first();
         $deckhand = null;
         if ($deckhandResponse) {
             $profile = $deckhandResponse->deckhandProfile;
             $rate    = $profile?->hourly_rate !== null ? (float) $profile->hourly_rate : null;
             $fee     = $rate !== null ? round($rate * $hours, 2) : 0.0;
-
-            $deckhand = [
-                'id'          => $profile?->id,
-                'name'        => $profile?->full_name ?? '—',
-                'hourlyRate'  => $rate,
-                'hours'       => $hours,
-                'fee'         => $fee,
-                'ratePending' => $rate === null,
-            ];
+            $deckhand = ['id' => $profile?->id, 'name' => $profile?->full_name ?? '—', 'hourlyRate' => $rate, 'hours' => $hours, 'fee' => $fee, 'ratePending' => $rate === null];
         }
 
         $total = round($rentalCost + $captains->sum('fee') + ($deckhand['fee'] ?? 0.0), 2);
 
         return \Inertia\Inertia::render('charterer/checkout', [
             'charterEventId'    => $event->id,
-            'vessel'            => [
-                'name'  => $vessel?->name ?? '—',
-                'image' => $vessel?->photos->first()
-                    ? Storage::url($vessel->photos->first()->image_path)
-                    : null,
-            ],
+            'vessel'            => ['name' => $vessel?->name ?? '—', 'image' => $vessel?->photos->first() ? Storage::url($vessel->photos->first()->image_path) : null],
             'hours'             => $hours,
             'rentalCost'        => $rentalCost,
             'rentalCostPending' => $rentalCostPending,
             'captains'          => $captains,
             'deckhand'          => $deckhand,
             'total'             => $total,
+            'stripeKey'         => config('services.stripe.key'),
         ]);
+    }
+
+    public function processCheckout(Request $request)
+    {
+        $request->validate(['payment_method_id' => 'required|string']);
+
+        $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+        $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['completed', 'cancelled', 'confirmed'])
+            ->with(['crewResponses.captainProfile', 'crewResponses.deckhandProfile'])
+            ->latest('created_at')
+            ->firstOrFail();
+
+        // 1. Securely calculate total on backend
+        $hours = $event->duration_minutes ? round($event->duration_minutes / 60, 1) : 0;
+        $rentalCost = (float) ($event->rental_cost ?? 0);
+
+        $acceptedCaptains = $event->crewResponses->where('crew_role', 'captain')->where('response', 'available')->take(2);
+        $captainFee = $acceptedCaptains->sum(fn($r) => ($r->captainProfile->hourly_rate ?? 0) * $hours);
+
+        $deckhandResponse = $event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first();
+        $deckhandFee = $deckhandResponse ? ($deckhandResponse->deckhandProfile->hourly_rate ?? 0) * $hours : 0;
+
+        $total = $rentalCost + $captainFee + $deckhandFee;
+        $totalCents = round($total * 100);
+
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+        try {
+            // 2. Create and confirm PaymentIntent
+            $paymentIntent = \Stripe\PaymentIntent::create([
+                'amount' => $totalCents,
+                'currency' => 'usd',
+                'payment_method' => $request->payment_method_id,
+                'confirm' => true,
+                'automatic_payment_methods' => ['enabled' => true, 'allow_redirects' => 'never'],
+                'metadata' => ['charter_event_id' => $event->id, 'charterer_id' => $charterer->id],
+            ]);
+
+            if ($paymentIntent->status === 'succeeded') {
+                // 3. Create individual payment records for accurate withdrawal tracking
+
+
+                if ($rentalCost > 0 && $event->vessel && $event->vessel->owner) {
+                    \App\Models\CharterPayment::create([
+                        'charter_event_id' => $event->id,
+                        'charterer_id' => $charterer->id,
+                        'payment_type' => 'crew_hire', // <--- ADDED: Required by Enum
+                        'payee_role' => 'owner',       // <--- NOW VALID: Thanks to new migration
+                        'amount' => $rentalCost,
+                        'currency' => 'usd',
+                        'status' => 'paid',            // <--- FIXED: Changed from 'completed' to 'paid'
+                        'provider' => 'stripe',
+                        'provider_payment_id' => $paymentIntent->id . '_owner',
+                        'paid_at' => now(),
+                    ]);
+                }
+
+                // --- CAPTAIN PAYMENTS ---
+                foreach ($acceptedCaptains as $response) {
+                    $fee = ($response->captainProfile->hourly_rate ?? 0) * $hours;
+                    if ($fee > 0) {
+                        \App\Models\CharterPayment::create([
+                            'charter_event_id' => $event->id,
+                            'charterer_id' => $charterer->id,
+                            'payment_type' => 'crew_hire', // <--- ADDED
+                            'payee_role' => 'captain',
+                            'captain_profile_id' => $response->captainProfile->id,
+                            'amount' => $fee,
+                            'currency' => 'usd',
+                            'status' => 'paid',            // <--- FIXED
+                            'provider' => 'stripe',
+                            'provider_payment_id' => $paymentIntent->id . '_captain_' . $response->captainProfile->id,
+                            'paid_at' => now(),
+                        ]);
+                    }
+                }
+
+                // --- DECKHAND PAYMENT ---
+                if ($deckhandResponse && $deckhandFee > 0) {
+                    \App\Models\CharterPayment::create([
+                        'charter_event_id' => $event->id,
+                        'charterer_id' => $charterer->id,
+                        'payment_type' => 'crew_hire', // <--- ADDED
+                        'payee_role' => 'deckhand',
+                        'deckhand_profile_id' => $deckhandResponse->deckhandProfile->id,
+                        'amount' => $deckhandFee,
+                        'currency' => 'usd',
+                        'status' => 'paid',            // <--- FIXED
+                        'provider' => 'stripe',
+                        'provider_payment_id' => $paymentIntent->id . '_deckhand_' . $deckhandResponse->deckhandProfile->id,
+                        'paid_at' => now(),
+                    ]);
+                }
+
+                $event->update(['status' => 'confirmed']);
+
+                $notification = new \App\Notifications\CharterConfirmedNotification($event);
+
+
+                $admins = \App\Models\User::role('admin')->get();
+                if ($admins->isNotEmpty()) {
+                    \Illuminate\Support\Facades\Notification::send($admins, $notification);
+                }
+
+
+                if ($event->vessel && $event->vessel->owner && $event->vessel->owner->user) {
+                    $event->vessel->owner->user->notify($notification);
+                }
+
+
+                $assignedCaptains = $event->crewResponses->where('crew_role', 'captain')->where('response', 'available');
+                foreach ($assignedCaptains as $response) {
+                    if ($response->captainProfile && $response->captainProfile->user) {
+                        $response->captainProfile->user->notify($notification);
+                    }
+                }
+
+
+                $assignedDeckhand = $event->crewResponses->where('crew_role', 'deckhand')->where('response', 'available')->first();
+                if ($assignedDeckhand && $assignedDeckhand->deckhandProfile && $assignedDeckhand->deckhandProfile->user) {
+                    $assignedDeckhand->deckhandProfile->user->notify($notification);
+                }
+
+                return redirect()->route('charterer.confirmed');
+            }
+
+            return back()->withErrors(['payment' => 'Payment requires additional authentication or failed.']);
+        } catch (\Exception $e) {
+            return back()->withErrors(['payment' => $e->getMessage()]);
+        }
     }
 
     public function agreement(): \Inertia\Response|\Illuminate\Http\RedirectResponse
@@ -774,10 +896,10 @@ public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
         $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
             ->whereNull('deleted_at')
             ->whereNotIn('status', ['completed', 'cancelled'])
-            ->with(['vessel.owner', 'crewResponses.captainProfile.user'])
+            // ->with(['vessel.owner', 'crewResponses.captainProfile.user'])
             ->latest('created_at')
             ->first();
-
+        // dd($event);
         if (! $event) {
             return redirect()->route('dashboard')
                 ->with('error', 'No active charter event found.');
@@ -804,9 +926,9 @@ public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
         $vessel = $event->vessel;
         $owner  = $vessel?->owner;
 
-        // Fetch all agreements for this event and charterer
+        // Fetch all agreements for this event
+        // FIX: Removed ->where('charterer_id', $charterer->id) because the event already belongs to the charterer
         $existingAgreements = \App\Models\CharterHireAgreement::where('charter_event_id', $event->id)
-            ->where('charterer_id', $charterer->id)
             ->get();
 
         // Log for debugging
@@ -814,7 +936,7 @@ public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
             'event_id' => $event->id,
             'agreements_count' => $existingAgreements->count(),
             'agreements' => $existingAgreements->map(fn($a) => [
-                'type' => $a->agreement_type,
+                'type' => $a->agreement_type ?? $a->type, // Fallback to 'type' just in case
                 'captain_id' => $a->captain_profile_id,
                 'signed_at' => $a->charterer_signed_at
             ])->toArray()
@@ -823,13 +945,16 @@ public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
         // Map agreements to a keyed array for easy lookup
         $agreementMap = [];
         foreach ($existingAgreements as $agreement) {
-            if ($agreement->agreement_type === 'bareboat') {
+            // FIX: Check both 'agreement_type' and 'type' in case your database column is named 'type'
+            $type = $agreement->agreement_type ?? $agreement->type;
+
+            if ($type === 'bareboat') {
                 $agreementMap['bareboat'] = $agreement;
-            } elseif ($agreement->agreement_type === 'captain_hire' && $agreement->captain_profile_id) {
-                $agreementMap['captain_' . $agreement->captain_profile_id] = $agreement;
+            } elseif ($type === 'captain_hire' && $agreement->captain_profile_id) {
+                $agreementMap['captain-' . $agreement->captain_profile_id] = $agreement;
             }
         }
-
+        // dd($existingAgreements);
         return \Inertia\Inertia::render('charterer/agreement', [
             'charterEventId' => $event->id,
             'agreements' => [
@@ -857,6 +982,8 @@ public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
                     'isSigned' => isset($agreementMap['captain_' . $captain['profileId']]) && !is_null($agreementMap['captain_' . $captain['profileId']]->charterer_signed_at),
                 ]))->toArray(),
             ],
+
+
             'vessel' => [
                 'name'           => $vessel?->name ?? '—',
                 'officialNumber' => $vessel?->official_number ?? '—',
@@ -865,143 +992,153 @@ public function checkout(): \Inertia\Response|\Illuminate\Http\RedirectResponse
         ]);
     }
 
-        public function signAgreements(
-            \Illuminate\Http\Request $request,
-            AgreementPdfService $pdfService
-        ): \Illuminate\Http\RedirectResponse {
-            $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+    public function signAgreements(Request $request)
+    {
+        $request->validate([
+            'agreement_id' => 'required|string',
+        ]);
 
+        $charterer = \App\Models\ChartererProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $rawId = $request->input('agreement_id');
+        $parts = explode('_', $rawId);
+        $uuid = end($parts);
+        $prefix = count($parts) > 1 ? $parts[0] : null;
+
+        // Determine the crew role based on the prefix
+        $role = match ($prefix) {
+            'captain' => 'captain',
+            'deckhand' => 'deckhand',
+            default => 'owner', // handles 'bareboat' or no prefix
+        };
+
+        // 1. Try to find the agreement by matching the role and the profile ID
+        $agreement = \App\Models\CharterHireAgreement::where('crew_role', $role)
+            ->when($role === 'captain', fn($q) => $q->where('captain_profile_id', $uuid))
+            ->when($role === 'deckhand', fn($q) => $q->where('deckhand_profile_id', $uuid))
+            ->first();
+
+        // 2. If not found by profile ID, maybe the UUID is the actual agreement ID (for bareboat/owner)
+        if (!$agreement) {
+            $agreement = \App\Models\CharterHireAgreement::find($uuid);
+        }
+
+        // 3. If STILL not found, get the charter event and create it
+        if (!$agreement) {
             $event = \App\Models\CharterEvent::where('charterer_id', $charterer->id)
                 ->whereNull('deleted_at')
                 ->whereNotIn('status', ['completed', 'cancelled'])
-                ->with(['vessel.owner', 'crewResponses.captainProfile'])
                 ->latest('created_at')
                 ->firstOrFail();
 
-            $request->validate([
-                'acknowledged' => ['required', 'accepted'],
+            $agreement = \App\Models\CharterHireAgreement::create([
+                'charter_event_id'    => $event->id,
+                'charterer_id'        => $charterer->id,
+                'crew_role'           => $role,
+                'captain_profile_id'  => $role === 'captain' ? $uuid : null,
+                'deckhand_profile_id' => $role === 'deckhand' ? $uuid : null,
             ]);
-
-            // Step 1: Record signing intent for ALL agreements immediately (before PDF generation).
-            // This ensures isSigned is persisted even if PDF generation later fails.
-            $bareboatAgreement = \App\Models\CharterHireAgreement::updateOrCreate(
-                [
-                    'charter_event_id'   => $event->id,
-                    'charterer_id'       => $charterer->id,
-                    'captain_profile_id' => null,
-                    'agreement_type'     => 'bareboat',
-                    'crew_role'          => 'owner',
-                ],
-                [
-                    'sign_status'         => 'partially_signed',
-                    'charterer_signed_at' => now(),
-                    'initiated_by'        => 'charterer',
-                    'payor'               => 'charterer',
-                ]
-            );
-
-            $acceptedCaptains = $event->crewResponses
-                ->where('crew_role', 'captain')
-                ->where('response', 'available')
-                ->take(2);
-
-            $captainAgreements = [];
-            foreach ($acceptedCaptains as $crewResponse) {
-                $captain = $crewResponse->captainProfile;
-                if (! $captain) {
-                    continue;
-                }
-
-                $captainAgreements[$captain->id] = \App\Models\CharterHireAgreement::updateOrCreate(
-                    [
-                        'charter_event_id'   => $event->id,
-                        'charterer_id'       => $charterer->id,
-                        'captain_profile_id' => $captain->id,
-                        'agreement_type'     => 'captain_hire',
-                        'crew_role'          => 'captain',
-                    ],
-                    [
-                        'sign_status'         => 'partially_signed',
-                        'charterer_signed_at' => now(),
-                        'initiated_by'        => 'charterer',
-                        'payor'               => 'charterer',
-                    ]
-                );
-            }
-
-            // Step 2: Update event status now that signing is recorded.
-            if (in_array($event->status, ['awaiting_responses', 'draft'])) {
-                $event->update(['status' => 'agreements_signed']);
-            }
-
-            // Step 3: Attempt PDF generation as best-effort (non-blocking).
-            // If PDF generation fails, signing is already recorded above — user still proceeds to insurance.
-            try {
-                $bareboatPath = $pdfService->generateBareboatAgreement($event);
-                $bareboatAgreement->update(['pdf_path' => $bareboatPath]);
-
-                foreach ($acceptedCaptains as $crewResponse) {
-                    $captain = $crewResponse->captainProfile;
-                    if (! $captain) {
-                        continue;
-                    }
-
-                    $captainPath = $pdfService->generateCaptainHireAgreement($event, $captain);
-
-                    $agreement = $captainAgreements[$captain->id] ?? null;
-                    if ($agreement) {
-                        $agreement->update(['pdf_path' => $captainPath]);
-
-                        if ($event->vessel && $event->vessel->owner && $event->vessel->owner->user) {
-                            $event->vessel->owner->user->notify(
-                                new AgreementSignedNotification($agreement, $charterer->user)
-                            );
-                        }
-                    }
-                }
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Agreement PDF generation failed (non-blocking)', [
-                    'charter_event_id' => $event->id,
-                    'error'            => $e->getMessage(),
-                ]);
-                // Do NOT return back() here — signing is already recorded, user should proceed.
-            }
-
-            return redirect()->route('charterer.insurance')
-                ->with('success', 'Agreements signed and saved successfully.');
         }
 
+        // Security check: Ensure the agreement belongs to this charterer's event
+        if ($agreement->charterEvent->charterer_id !== $charterer->id) {
+            abort(403, 'You are not authorized to sign this agreement.');
+        }
 
-public function downloadAgreement(string $agreementId): StreamedResponse
-{
-    $user = auth()->user();
-    
-    // Find the agreement
-    $agreement = \App\Models\CharterHireAgreement::with([
-        'charterEvent.vessel.owner.user',
-        'charterer.user',
-        'captainProfile.user',
-    ])->findOrFail($agreementId);
+        $agreement->update([
+            'charterer_signed_at' => now(),
+        ]);
 
-    // Check if the current user is authorized to download this agreement
-    $isCharterer = $agreement->charterer && $agreement->charterer->user_id === $user->id;
-    $isCaptain = $agreement->captainProfile && $agreement->captainProfile->user_id === $user->id;
-    $isOwner = $agreement->charterEvent && $agreement->charterEvent->vessel && 
-               $agreement->charterEvent->vessel->owner && 
-               $agreement->charterEvent->vessel->owner->user_id === $user->id;
+        // Check if the PDF path is null OR if the file is actually missing from the disk
+        $pdfIsMissing = is_null($agreement->pdf_path) || !\Illuminate\Support\Facades\Storage::disk('local')->exists($agreement->pdf_path);
 
-    if (!$isCharterer && !$isCaptain && !$isOwner) {
-        abort(403, 'Unauthorized to download this agreement.');
+        // Generate and save the PDF if it's missing
+        if ($pdfIsMissing) {
+            try {
+                $pdfService = app(\App\Services\AgreementPdfService::class);
+                $pdfPath = $pdfService->generateForAgreement($agreement);
+
+                $agreement->update([
+                    'pdf_path' => $pdfPath,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('PDF Generation Error: ' . $e->getMessage());
+                return back()->with('error', 'Agreement signed, but PDF generation failed. Check logs.');
+            }
+        }
+
+        return redirect()->back()->with('success', 'Agreement signed successfully.');
     }
 
-    // Get the PDF path from the agreement
-    $path = $agreement->pdf_path;
-    
-    if (!$path || !Storage::disk('private')->exists($path)) {
-        abort(404, 'Agreement document not found.');
+
+
+    public function downloadAgreement(string $agreementId): StreamedResponse
+    {
+        $user = auth()->user();
+
+        // Find the agreement
+        $agreement = \App\Models\CharterHireAgreement::with([
+            'charterEvent.vessel.owner.user',
+            'charterer.user',
+            'captainProfile.user',
+        ])->findOrFail($agreementId);
+
+        // Check if the current user is authorized to download this agreement
+        $isCharterer = $agreement->charterer && $agreement->charterer->user_id === $user->id;
+        $isCaptain = $agreement->captainProfile && $agreement->captainProfile->user_id === $user->id;
+        $isOwner = $agreement->charterEvent && $agreement->charterEvent->vessel &&
+            $agreement->charterEvent->vessel->owner &&
+            $agreement->charterEvent->vessel->owner->user_id === $user->id;
+
+        if (!$isCharterer && !$isCaptain && !$isOwner) {
+            abort(403, 'Unauthorized to download this agreement.');
+        }
+
+        // Get the PDF path from the agreement
+        $path = $agreement->pdf_path;
+
+        if (!$path || !Storage::disk('private')->exists($path)) {
+            abort(404, 'Agreement document not found.');
+        }
+
+        // Return the file as a download
+        return Storage::disk('private')->download($path, basename($path));
     }
 
-    // Return the file as a download
-    return Storage::disk('private')->download($path, basename($path));
-}
+
+    public function requestCompletion(string $id)
+    {
+        $owner = \App\Models\OwnerProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = \App\Models\CharterEvent::where('id', $id)
+            ->where('status', 'confirmed')
+            ->whereHas('vessel', fn($q) => $q->where('owner_id', $owner->id))
+            ->firstOrFail();
+
+        if ($event->completion_requested_at) {
+            return back()->with('error', 'Completion already requested.');
+        }
+
+        $event->update(['completion_requested_at' => now()]);
+
+        // Notify Charterer
+        if ($event->charterer && $event->charterer->user) {
+            $event->charterer->user->notify(new \App\Notifications\CharterCompletionRequestedNotification($event));
+        }
+
+        return back()->with('success', 'Completion request sent to charterer.');
+    }
+    public function cancelCompletionRequest(string $id): RedirectResponse
+    {
+        $owner = \App\Models\OwnerProfile::where('user_id', auth()->id())->firstOrFail();
+
+        $event = \App\Models\CharterEvent::where('id', $id)
+            ->whereHas('vessel', fn($q) => $q->where('owner_id', $owner->id))
+            ->whereNotNull('completion_requested_at')
+            ->firstOrFail();
+
+        $event->update(['completion_requested_at' => null]);
+
+        return back()->with('success', 'Completion request cancelled.');
+    }
 }

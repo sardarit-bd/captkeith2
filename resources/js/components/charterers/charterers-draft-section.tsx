@@ -20,8 +20,6 @@ interface Props {
 }
 
 export function DraftChartersSection({ drafts }: Props) {
-    console.log('Draft charters:', drafts);
-
     return (
         <section>
             <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

@@ -18,7 +18,7 @@ export const confirmationDocuments = [
         id: 'vessel-charter-agreement',
         title: 'Vessel Charter Agreement',
         subtitle: 'Signed on 4/15/2026',
-        accentColor: 'text-blue-500',
+        accentColor: 'text-[#35AED5]',
     },
     {
         id: 'captain-hire-agreement',

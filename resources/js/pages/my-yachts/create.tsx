@@ -59,7 +59,7 @@ interface VesselData {
     marina_state: string;
     marina_zip: string;
     operating_area: string;
-    passenger_capacity: string; 
+    passenger_capacity: string;
     required_license_type: string;
     required_endorsement: string;
     required_tonnage_rating: string;
@@ -84,7 +84,7 @@ type VesselFormData = {
     marina_state: string;
     marina_zip: string;
     operating_area: string;
-    passenger_capacity: string; 
+    passenger_capacity: string;
     required_license_type: string;
     required_endorsement: string;
     required_tonnage_rating: string;
@@ -151,15 +151,49 @@ export default function CreateYachtPage() {
             documents: [],
         });
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files ?? []);
-        const previews: PreviewPhoto[] = files.map((file) => ({
-            id: crypto.randomUUID(),
-            url: URL.createObjectURL(file),
-            file,
-        }));
-        setNewPhotos((prev) => [...prev, ...previews]);
+        const validPreviews: PreviewPhoto[] = [];
+        let errorMessages: string[] = [];
 
+        files.forEach((file) => {
+            // 1. Validate File Type
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                errorMessages.push(
+                    `"${file.name}" is not a valid image type (JPG, PNG, WEBP).`,
+                );
+                return;
+            }
+
+            // 2. Validate File Size
+            if (file.size > MAX_FILE_SIZE) {
+                errorMessages.push(
+                    `"${file.name}" is too large. Maximum size is 10MB.`,
+                );
+                return;
+            }
+
+            // If valid, add to previews
+            validPreviews.push({
+                id: crypto.randomUUID(),
+                url: URL.createObjectURL(file),
+                file,
+            });
+        });
+
+        if (errorMessages.length > 0) {
+            // You can set this to a state variable to show an alert/toast to the user
+            alert(errorMessages.join('\n'));
+        }
+
+        if (validPreviews.length > 0) {
+            setNewPhotos((prev) => [...prev, ...validPreviews]);
+        }
+
+        // Reset input so the same file can be selected again if removed
         if (photoInputRef.current) {
             photoInputRef.current.value = '';
         }
@@ -233,7 +267,7 @@ export default function CreateYachtPage() {
             formData.append('marina_state', data.marina_state);
             formData.append('marina_zip', data.marina_zip);
             formData.append('operating_area', data.operating_area);
-            formData.append('passenger_capacity', data.passenger_capacity); 
+            formData.append('passenger_capacity', data.passenger_capacity);
             // formData.append('passengerCapacity', data.passengerCapacity);
             formData.append(
                 'required_license_type',
@@ -642,31 +676,33 @@ export default function CreateYachtPage() {
                                 <FieldError message={errors.operating_area} />
                             </div>
 
-
-
-                                <div className="mt-6">
-                                    <label className="mb-2 block text-sm font-semibold text-gray-900">
-                                        Passenger Capacity
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        placeholder="8"
-                                        min="1"
-                                        max="1000"
-                                        value={data.passenger_capacity}
-                                        onChange={(e) =>
-                                            setData('passenger_capacity', e.target.value)
-                                        }
-                                        className={
-                                            errors.passenger_capacity
-                                                ? inputErrCls
-                                                : inputCls
-                                        }
-                                    />
-                                    <FieldError message={errors.passenger_capacity} />
-                                </div>
-
+                            <div className="mt-6">
+                                <label className="mb-2 block text-sm font-semibold text-gray-900">
+                                    Passenger Capacity
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="8"
+                                    min="1"
+                                    max="1000"
+                                    value={data.passenger_capacity}
+                                    onChange={(e) =>
+                                        setData(
+                                            'passenger_capacity',
+                                            e.target.value,
+                                        )
+                                    }
+                                    className={
+                                        errors.passenger_capacity
+                                            ? inputErrCls
+                                            : inputCls
+                                    }
+                                />
+                                <FieldError
+                                    message={errors.passenger_capacity}
+                                />
+                            </div>
 
                             <div className="mt-6">
                                 <label className="mb-2 block text-sm font-semibold text-gray-900">
@@ -861,7 +897,7 @@ export default function CreateYachtPage() {
                                                 <X className="h-3.5 w-3.5 text-gray-700 hover:text-red-500" />
                                             </button>
                                         </div>
-                                        <span className="absolute bottom-1.5 left-1.5 rounded-md bg-blue-500/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                                        <span className="absolute bottom-1.5 left-1.5 rounded-md bg-[#35AED5]/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
                                             New
                                         </span>
                                     </div>

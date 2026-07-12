@@ -34,19 +34,27 @@ interface CaptainShowProps {
 
 export default function CaptainShow({ captain }: CaptainShowProps) {
     const handleApprove = () => {
-        router.patch(`/admin/captains/${captain.id}/approve`, {}, {
-            onSuccess: () => {
-                // Success handled by Inertia
+        router.patch(
+            `/admin/captains/${captain.id}/approve`,
+            {},
+            {
+                onSuccess: () => {
+                    // Success handled by Inertia
+                },
             },
-        });
+        );
     };
 
     const handleReject = () => {
-        router.patch(`/admin/captains/${captain.id}/reject`, {}, {
-            onSuccess: () => {
-                // Success handled by Inertia
+        router.patch(
+            `/admin/captains/${captain.id}/reject`,
+            {},
+            {
+                onSuccess: () => {
+                    // Success handled by Inertia
+                },
             },
-        });
+        );
     };
 
     const getStatusBadge = () => {
@@ -57,8 +65,14 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
         };
 
         return (
-            <Badge className={variants[captain.status as keyof typeof variants] || 'bg-gray-500'}>
-                {captain.status.charAt(0).toUpperCase() + captain.status.slice(1)}
+            <Badge
+                className={
+                    variants[captain.status as keyof typeof variants] ||
+                    'bg-gray-500'
+                }
+            >
+                {captain.status.charAt(0).toUpperCase() +
+                    captain.status.slice(1)}
             </Badge>
         );
     };
@@ -66,7 +80,7 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
     return (
         <>
             {/* <Head title={`Captain Profile - ${captain.full_name}`} /> */}
-            
+
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-6">
                     <Button
@@ -81,13 +95,15 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
 
                 <div className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">{captain.full_name}</h1>
+                        <h1 className="text-3xl font-bold">
+                            {captain.full_name}
+                        </h1>
                         <p className="text-muted-foreground">Captain Profile</p>
                     </div>
                     <div className="flex gap-2">
                         {getStatusBadge()}
                         {captain.is_verified && (
-                            <Badge variant="secondary" className="bg-blue-500">
+                            <Badge variant="secondary" className="bg-[#35AED5]">
                                 Verified
                             </Badge>
                         )}
@@ -127,8 +143,10 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
                                     Address
                                 </label>
                                 <p className="mt-1">
-                                    {captain.address}<br />
-                                    {captain.city}, {captain.state} {captain.zip_code}
+                                    {captain.address}
+                                    <br />
+                                    {captain.city}, {captain.state}{' '}
+                                    {captain.zip_code}
                                 </p>
                             </div>
                         </CardContent>
@@ -158,14 +176,18 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
                                 <label className="text-sm font-medium text-muted-foreground">
                                     Tonnage Rating
                                 </label>
-                                <p className="mt-1">{captain.tonnage_rating} tons</p>
+                                <p className="mt-1">
+                                    {captain.tonnage_rating} tons
+                                </p>
                             </div>
                             <Separator />
                             <div>
                                 <label className="text-sm font-medium text-muted-foreground">
                                     Years of Experience
                                 </label>
-                                <p className="mt-1">{captain.years_experience} years</p>
+                                <p className="mt-1">
+                                    {captain.years_experience} years
+                                </p>
                             </div>
                         </CardContent>
                     </Card>
@@ -199,8 +221,16 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
                                         Resume
                                     </label>
                                     <div className="mt-1">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <a href={captain.resume_path} target="_blank" rel="noopener noreferrer">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            asChild
+                                        >
+                                            <a
+                                                href={captain.resume_path}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
                                                 View Resume
                                             </a>
                                         </Button>
@@ -213,8 +243,16 @@ export default function CaptainShow({ captain }: CaptainShowProps) {
                                         License Document
                                     </label>
                                     <div className="mt-1">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <a href={captain.license_doc_path} target="_blank" rel="noopener noreferrer">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            asChild
+                                        >
+                                            <a
+                                                href={captain.license_doc_path}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
                                                 View License
                                             </a>
                                         </Button>
@@ -263,6 +301,7 @@ CaptainShow.layout = {
     ],
     pageHeader: {
         title: 'My Profile',
-        description: 'Manage your personal information and security preferences. yoyo',
+        description:
+            'Manage your personal information and security preferences. yoyo',
     },
 };

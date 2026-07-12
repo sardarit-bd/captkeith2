@@ -5,7 +5,7 @@ const dotColor: Record<string, string> = {
     draft: 'bg-gray-400',
     awaiting_responses: 'bg-amber-400',
     ready_for_charterer: 'bg-blue-400',
-    captain_selected: 'bg-blue-500',
+    captain_selected: 'bg-[#35AED5]',
     agreements_pending: 'bg-yellow-400',
     agreements_signed: 'bg-green-400',
     insurance_pending: 'bg-orange-400',

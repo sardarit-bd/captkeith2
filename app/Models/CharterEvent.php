@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'invite_token',
     'invite_token_expires_at',
     'passengerCapacity', 
+    'completion_requested_at',
+    'completed_at',
 ])]
 class CharterEvent extends Model
 {
@@ -81,7 +83,19 @@ class CharterEvent extends Model
     {
         return $this->hasOne(InsurancePolicy::class, 'charter_event_id');
     }
+    public static function updatePastEventsToCompleted($vesselIds = null): void
+    {
+        $query = static::query()
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', ['draft', 'completed', 'cancelled', 'deleted'])
+            ->where('charter_date', '<', now()->startOfDay());
 
+        if ($vesselIds) {
+            $query->whereIn('vessel_id', $vesselIds);
+        }
+
+        $query->update(['status' => 'completed']);
+    }
 protected function casts(): array
     {
         return [
@@ -91,6 +105,8 @@ protected function casts(): array
             'rental_cost' => 'decimal:2',
             'invite_token_expires_at' => 'datetime',
             'deleted_at' => 'datetime',
+            'completion_requested_at' => 'datetime',
+            'completed_at' => 'datetime', 
         ];
     }
 }

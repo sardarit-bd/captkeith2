@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { ChartererAgreementPageContent } from '@/components/charterer-agreement/charterer-agreement-page-content';
+import ChartererAgreementPageContent from '@/components/charterer-agreement/charterer-agreement-page-content';
 import { agreement } from '@/routes/charterer';
 
 export default function ChartererAgreementPage() {
@@ -15,7 +15,7 @@ ChartererAgreementPage.layout = {
     breadcrumbs: [
         {
             title: 'Agreement',
-            href: agreement(),
+            href: agreement.url(), // <-- .url() to get the string URL
         },
     ],
     pageHeader: {

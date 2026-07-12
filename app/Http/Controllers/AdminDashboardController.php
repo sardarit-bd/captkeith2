@@ -80,7 +80,7 @@ class AdminDashboardController extends Controller
                     'submitted_at' => $vessel->created_at,
                 ];
             });
-            // dd($pendingCaptains);
+        // dd($pendingCaptains);
         return Inertia::render('admin/dashboard', [
             ...$data,
             'pendingVerifications' => $pendingVerifications,
@@ -137,9 +137,9 @@ class AdminDashboardController extends Controller
             'pendingVerifications' => $pendingVerifications,
             'dashboardData' => [
                 'stats' => [
-                    'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                    'pendingVerificationsCount' => User::whereHas('captainProfile', function ($query) {
                         $query->where('is_verified', 'pending');
-                    })->orWhereHas('deckhandProfile', function($query) {
+                    })->orWhereHas('deckhandProfile', function ($query) {
                         $query->where('is_verified', 'pending');
                     })->count(),
                     'vesselApprovalsCount' => Vessel::where('status', 'pending')->count(),
@@ -151,12 +151,12 @@ class AdminDashboardController extends Controller
 
     public function index()
     {
-        $pendingVerifications = User::whereHas('captainProfile', function($query) {
+        $pendingVerifications = User::whereHas('captainProfile', function ($query) {
             $query->where('is_verified', 'pending');
-        })->orWhereHas('deckhandProfile', function($query) {
+        })->orWhereHas('deckhandProfile', function ($query) {
             $query->where('is_verified', 'pending');
         })->latest()->take(5)->get();
-        
+
         $pendingVesselListings = Vessel::where('is_verified', 'pending')
             ->with(['ownerProfile', 'vesselPhotos'])
             ->latest()
@@ -168,9 +168,9 @@ class AdminDashboardController extends Controller
             'pendingVesselListings' => $pendingVesselListings,
             'dashboardData' => [
                 'stats' => [
-                    'pendingVerificationsCount' => User::whereHas('captainProfile', function($query) {
+                    'pendingVerificationsCount' => User::whereHas('captainProfile', function ($query) {
                         $query->where('is_verified', 'pending');
-                    })->orWhereHas('deckhandProfile', function($query) {
+                    })->orWhereHas('deckhandProfile', function ($query) {
                         $query->where('is_verified', 'pending');
                     })->count(),
                     'vesselApprovalsCount' => Vessel::where('is_verified', 'pending')->count(),
@@ -185,7 +185,7 @@ class AdminDashboardController extends Controller
         // dd("vessel");
         $vessel = Vessel::findOrFail($vesselId);
         $vessel->update([
-            'status' => 'approved', 
+            'status' => 'approved',
             'is_verified' => true,
         ]);
         //  
@@ -194,32 +194,33 @@ class AdminDashboardController extends Controller
         if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
             $vessel->ownerProfile->user->notify(new \App\Notifications\VesselStatusUpdatedNotification($vessel, 'approved'));
         }
-        
+
         return redirect()->back()->with('success', 'Vessel has been approved successfully.');
     }
 
     public function rejectVessel($vesselId)
     {
+        dd("vessel rejected", $vessel);
         $vessel = Vessel::findOrFail($vesselId);
         $vessel->update([
             'status' => 'rejected',
             'is_verified' => false,
         ]);
-        
+
         // Notify the owner about the rejection
         $vessel->load('ownerProfile.user');
         if ($vessel->ownerProfile && $vessel->ownerProfile->user) {
             $vessel->ownerProfile->user->notify(new \App\Notifications\VesselStatusUpdatedNotification($vessel, 'rejected'));
         }
-        
+
         return redirect()->back()->with('success', 'Vessel has been rejected.');
     }
 
     public function approveCaptain($captainId)
     {
-//  dd("captain", $captainId);
-        $captain = CaptainProfile::where('user_id', $captainId)->firstOrFail(); 
-       
+        //  dd("captain", $captainId);
+        $captain = CaptainProfile::where('user_id', $captainId)->firstOrFail();
+
         $captain->update([
             'status' => 'approved',
             'is_verified' => 'approved',
@@ -227,32 +228,32 @@ class AdminDashboardController extends Controller
         if ($captain->user) {
             $captain->user->notify(new \App\Notifications\ProfileApprovedNotification('captain'));
         }
-        
+
         return redirect()->back()->with('success', 'Captain has been approved successfully.');
     }
 
     public function rejectCaptain($captainId)
     {
         // dd($captainId);
-        $captain = CaptainProfile::where('user_id', $captainId)->firstOrFail(); 
+        $captain = CaptainProfile::where('user_id', $captainId)->firstOrFail();
         // dd($captain);
         $captain->update([
             'status' => 'rejected',
             'is_verified' => "rejected",
         ]);
-        
+
         // Note: Consider creating a ProfileRejectedNotification class if you want specific rejection messaging
         if ($captain->user) {
-            $captain->user->notify(new \App\Notifications\ProfileApprovedNotification('captain')); 
+            $captain->user->notify(new \App\Notifications\ProfileApprovedNotification('captain'));
         }
-        
+
         return redirect()->back()->with('success', 'Captain has been rejected.');
     }
 
     public function approveDeckhand($userId)
     {
         // dd($userId);
-        $deckhand = DeckhandProfile::where('user_id', $userId)->firstOrFail();   
+        $deckhand = DeckhandProfile::where('user_id', $userId)->firstOrFail();
         // dd($deckhand);
         $deckhand->update([
             'status' => 'approved',
@@ -271,12 +272,12 @@ class AdminDashboardController extends Controller
             'status' => 'rejected',
             'is_verified' => "rejected",
         ]);
-        
+
         // Note: Consider creating a ProfileRejectedNotification class if you want specific rejection messaging
         if ($deckhand->user) {
             $deckhand->user->notify(new \App\Notifications\ProfileApprovedNotification('deckhand'));
         }
-        
+
         return redirect()->back()->with('success', 'Deckhand has been rejected.');
     }
 }
