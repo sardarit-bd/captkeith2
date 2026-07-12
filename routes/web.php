@@ -62,9 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('charterers/{id}/request-completion', [\App\Http\Controllers\CharterController::class, 'requestCompletion'])->name('charterers.request-completion');
         Route::patch('my-yachts-requests-for-approval/{vessel}', [\App\Http\Controllers\Vessels\VesselController::class, 'requestForApproval'])
             ->name('my-yachts.requests-for-approval');
-        Route::post('/charterers/{charter}/request-completion', [\App\Http\Controllers\ChartererController::class, 'requestCompletion'])
-            ->name('charterers.request-completion')
-            ->middleware(['auth', 'verified']);
+
         Route::inertia('my-yachts/create', 'my-yachts/create')->name('my-yachts.create');
         Route::get('captains', [\App\Http\Controllers\CaptainController::class, 'index'])->name('captains');
         Route::get('charterers', [\App\Http\Controllers\CharterController::class, 'index'])->name('charterers');
@@ -122,7 +120,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'captains/{captain}/revoke-acceptance',
             [\App\Http\Controllers\OwnerCaptainRequestsController::class, 'revokeAcceptance']
         )->name('captains.revoke-acceptance');
-        Route::post('charterers/{id}/request-completion', [\App\Http\Controllers\CharterController::class, 'requestCompletion'])->name('charterers.request-completion');
     });
 
     // ==========================================
