@@ -19,7 +19,7 @@ export default function Profile({
     const { auth } = usePage().props;
 
     return (
-        <>
+        <div className="pt-8">
             <Head title="Profile settings" />
 
             <h1 className="sr-only">Profile settings</h1>
@@ -100,7 +100,7 @@ export default function Profile({
             </div>
 
             <DeleteUser />
-        </>
+        </div>
     );
 }
 
