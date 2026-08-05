@@ -235,7 +235,7 @@ export default function MessagesPage() {
         <>
             <Head title="Messages" />
 
-            <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] px-2 py-3 sm:px-4 sm:py-4 lg:px-8 lg:py-5">
+            <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] px-2 py-3 sm:px-4 sm:py-4 lg:px-8 lg:py-5 lg:pt-12!">
                 <div className="mx-auto flex h-[calc(100dvh-90px)] w-full max-w-7xl overflow-hidden rounded-2xl border border-[#d8e7ef] bg-white shadow-[0_8px_32px_rgba(17,57,93,0.08)] sm:rounded-3xl sm:shadow-[0_18px_40px_rgba(17,57,93,0.08)]">
                     {sidebarOpen && (
                         <div
