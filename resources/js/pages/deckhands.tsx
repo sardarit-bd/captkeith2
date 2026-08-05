@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react'; 
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Check,
     ChevronDown,
@@ -471,8 +471,12 @@ export default function DeckhandsPage() {
             '/deckhands',
             {
                 ...(minExperience ? { min_experience: minExperience } : {}),
-                ...(hasServerExperience ? { has_server_experience: hasServerExperience } : {}),
-                ...(hasBartendingExperience ? { has_bartending_experience: hasBartendingExperience } : {}),
+                ...(hasServerExperience
+                    ? { has_server_experience: hasServerExperience }
+                    : {}),
+                ...(hasBartendingExperience
+                    ? { has_bartending_experience: hasBartendingExperience }
+                    : {}),
             },
             {
                 preserveState: true,
@@ -489,7 +493,10 @@ export default function DeckhandsPage() {
         router.get('/deckhands', {}, { preserveState: false });
     };
 
-    const hasActiveFilters = minExperience !== '' || hasServerExperience !== '' || hasBartendingExperience !== '';
+    const hasActiveFilters =
+        minExperience !== '' ||
+        hasServerExperience !== '' ||
+        hasBartendingExperience !== '';
 
     return (
         <>
@@ -520,7 +527,7 @@ export default function DeckhandsPage() {
                 />
             )}
             <div className="flex h-full flex-1 flex-col overflow-x-auto bg-[#F6FDFF] px-4 py-5 sm:px-6 lg:px-8">
-                <div className="mx-auto w-full max-w-7xl space-y-8">
+                <div className="mx-auto w-full max-w-7xl space-y-8 pt-8">
                     <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
@@ -556,7 +563,9 @@ export default function DeckhandsPage() {
                                     <select
                                         value={hasServerExperience}
                                         onChange={(e) =>
-                                            setHasServerExperience(e.target.value)
+                                            setHasServerExperience(
+                                                e.target.value,
+                                            )
                                         }
                                         className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#35ADD5] focus:outline-none"
                                     >
@@ -576,7 +585,9 @@ export default function DeckhandsPage() {
                                     <select
                                         value={hasBartendingExperience}
                                         onChange={(e) =>
-                                            setHasBartendingExperience(e.target.value)
+                                            setHasBartendingExperience(
+                                                e.target.value,
+                                            )
                                         }
                                         className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-10 text-sm text-gray-700 focus:ring-2 focus:ring-[#35ADD5] focus:outline-none"
                                     >
@@ -626,10 +637,15 @@ export default function DeckhandsPage() {
                                 )}
                                 {hasServerExperience && (
                                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-medium text-[#1d4ed8]">
-                                        Server: {hasServerExperience === '1' ? 'Yes' : 'No'}
+                                        Server:{' '}
+                                        {hasServerExperience === '1'
+                                            ? 'Yes'
+                                            : 'No'}
                                         <button
                                             type="button"
-                                            onClick={() => setHasServerExperience('')}
+                                            onClick={() =>
+                                                setHasServerExperience('')
+                                            }
                                             className="cursor-pointer"
                                         >
                                             ×
@@ -638,10 +654,15 @@ export default function DeckhandsPage() {
                                 )}
                                 {hasBartendingExperience && (
                                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-medium text-[#1d4ed8]">
-                                        Bartending: {hasBartendingExperience === '1' ? 'Yes' : 'No'}
+                                        Bartending:{' '}
+                                        {hasBartendingExperience === '1'
+                                            ? 'Yes'
+                                            : 'No'}
                                         <button
                                             type="button"
-                                            onClick={() => setHasBartendingExperience('')}
+                                            onClick={() =>
+                                                setHasBartendingExperience('')
+                                            }
                                             className="cursor-pointer"
                                         >
                                             ×
@@ -667,7 +688,8 @@ export default function DeckhandsPage() {
                                 No deckhands match your filters
                             </p>
                             <p className="mt-1 text-xs text-gray-400">
-                                Try adjusting the experience or skill requirements.
+                                Try adjusting the experience or skill
+                                requirements.
                             </p>
                             <button
                                 type="button"
