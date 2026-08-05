@@ -19,7 +19,7 @@ export function CharterersPageContent() {
     const { vessels, drafts, bookings } = usePage<PageProps>().props;
 
     return (
-        <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF]">
+        <div className="flex h-full flex-1 flex-col overflow-hidden bg-[#F6FDFF] pt-8">
             <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8">
                 <div className="mx-auto w-full max-w-4xl space-y-10 py-2 sm:py-4">
                     <CharterersFormCard vessels={vessels} />

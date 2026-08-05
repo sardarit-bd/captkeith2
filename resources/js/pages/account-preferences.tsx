@@ -4,10 +4,10 @@ import { accountPreferences } from '@/routes';
 
 export default function AccountPreferencesPage() {
     return (
-        <>
+        <div className="pt-8">
             <Head title="Account Preferences" />
             <AccountPreferencesPageContent />
-        </>
+        </div>
     );
 }
 

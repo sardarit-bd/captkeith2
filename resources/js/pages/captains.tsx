@@ -486,7 +486,7 @@ export default function CaptainsPage() {
                 />
             )}
             <div className="flex h-full flex-1 flex-col overflow-x-auto bg-[#F6FDFF] px-4 py-5 sm:px-6 lg:px-8">
-                <div className="mx-auto w-full max-w-7xl space-y-8">
+                <div className="mx-auto w-full max-w-7xl space-y-8 pt-8">
                     <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
