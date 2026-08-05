@@ -440,17 +440,18 @@ export default function Register({
                                 Create Account
                                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                             </button>
-
-                            <p className="pt-2 text-center text-sm text-gray-500">
-                                Already have an account?{' '}
-                                <Link
-                                    href={login()}
-                                    className="font-semibold text-[#35ADD5] transition-colors hover:text-[#3DB3DE]"
-                                >
-                                    Sign in here
-                                </Link>
+                        <div className="pt-2 text-center">
+                            <p className="mb-3 text-sm text-gray-500">
+                                Already have an account?
                             </p>
-                        </form>
+                            <Link
+                                href={login()}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#3DB3DE] px-4 py-3 font-semibold text-[#35ADD5] transition-colors hover:bg-[#F4FAFE]"
+                            >
+                                Sign In
+                            </Link>
+                        </div>
+                         </form>
                     </div>
                 </div>
             </div>

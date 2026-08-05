@@ -95,7 +95,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         </p>
                     </div>
 
-                    <div className="relative z-20">
+                    {/* <div className="relative z-20">
                         <p className="text-sm text-[#F9FCFF99]">
                             Don't have an account?
                             <Link
@@ -105,7 +105,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 Register here
                             </Link>
                         </p>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="relative flex w-full flex-col overflow-y-auto bg-white md:w-7/12 lg:w-1/2">
@@ -254,15 +254,17 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 Sign In
                             </button>
 
-                            <p className="text-center text-sm text-gray-500 md:hidden">
-                                Don't have an account?{' '}
-                                <Link
-                                    href="/register"
-                                    className="font-semibold text-[#3DB3DE] hover:text-[#2A9BCA]"
-                                >
-                                    Register here
-                                </Link>
+                        <div className="text-center ">
+                            <p className="mb-3 text-sm text-gray-500">
+                                Don't have an account?
                             </p>
+                            <Link
+                                href="/register"
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#3DB3DE] px-4 py-3 font-semibold text-[#35ADD5] transition-colors hover:bg-[#F4FAFE]"
+                            >
+                                Create Account
+                            </Link>
+                        </div>
                         </form>
                     </div>
                 </div>

@@ -207,7 +207,128 @@ export function UploadBox({
         </div>
     );
 }
+export function MultiUploadBox({
+    title,
+    subtitle,
+    buttonLabel,
+    existingFiles,
+    newFiles,
+    onExistingRemove,
+    onNewFilesAdd,
+    onNewFileRemove,
+    accept,
+    maxFiles = 6,
+}: {
+    title: string;
+    subtitle?: string;
+    buttonLabel: string;
+    existingFiles: { path: string; url: string }[];
+    newFiles: File[];
+    onExistingRemove: (path: string) => void;
+    onNewFilesAdd: (files: File[]) => void;
+    onNewFileRemove: (index: number) => void;
+    accept?: string;
+    maxFiles?: number;
+}) {
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    const totalCount = existingFiles.length + newFiles.length;
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selected = Array.from(e.target.files ?? []);
+        if (selected.length === 0) return;
+
+        const remaining = Math.max(maxFiles - totalCount, 0);
+        onNewFilesAdd(selected.slice(0, remaining));
+
+        if (inputRef.current) {
+            inputRef.current.value = '';
+        }
+    };
+
+    return (
+        <div className="rounded-xl border-2 border-dashed border-[#e5e7eb] p-8 text-center transition-colors hover:bg-[#f9fafb]">
+            <FileText className="mx-auto mb-3 h-8 w-8 text-[#d1d5db]" />
+            <p className="mb-1 text-[13px] font-medium text-[#4b5563]">
+                {title}
+            </p>
+            {subtitle && (
+                <p className="mb-4 text-[11px] tracking-wider text-[#9ca3af] uppercase">
+                    {subtitle}
+                </p>
+            )}
+            {!subtitle && <div className="mb-4" />}
+
+            {(existingFiles.length > 0 || newFiles.length > 0) && (
+                <div className="mb-3 flex flex-wrap justify-center gap-2">
+                    {existingFiles.map((file) => (
+                        <div
+                            key={file.path}
+                            className="inline-flex items-center gap-2 rounded-md border border-[#e5e7eb] bg-[#f9fafb] px-3 py-1.5 text-[12px] text-[#374151]"
+                        >
+                            <FileText className="h-3.5 w-3.5 text-[#6b7280]" />
+                            <a
+                                href={file.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="max-w-40 truncate text-[#35ADD5] underline underline-offset-2"
+                            >
+                                View
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => onExistingRemove(file.path)}
+                                className="ml-1 text-[#9ca3af] hover:text-[#374151]"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    ))}
+                    {newFiles.map((file, index) => (
+                        <div
+                            key={`${file.name}-${index}`}
+                            className="inline-flex items-center gap-2 rounded-md border border-[#e5e7eb] bg-[#f9fafb] px-3 py-1.5 text-[12px] text-[#374151]"
+                        >
+                            <FileText className="h-3.5 w-3.5 text-[#6b7280]" />
+                            <span className="max-w-40 truncate">{file.name}</span>
+                            <button
+                                type="button"
+                                onClick={() => onNewFileRemove(index)}
+                                className="ml-1 text-[#9ca3af] hover:text-[#374151]"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <p className="mb-3 text-[11px] text-[#9ca3af]">
+                {totalCount} / {maxFiles} files
+            </p>
+
+            <div>
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept={accept}
+                    multiple
+                    className="hidden"
+                    onChange={handleFileChange}
+                    disabled={totalCount >= maxFiles}
+                />
+                <button
+                    type="button"
+                    onClick={() => inputRef.current?.click()}
+                    disabled={totalCount >= maxFiles}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-[13px] font-medium text-[#374151] shadow-sm transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <Upload className="h-4 w-4" />
+                    {buttonLabel}
+                </button>
+            </div>
+        </div>
+    );
+}
 export function ToggleField({
     id,
     label,
@@ -249,5 +370,15 @@ export function ToggleField({
         </label>
     );
 }
+
+
+
+
+
+
+
+
+
+
 
 import React from 'react';

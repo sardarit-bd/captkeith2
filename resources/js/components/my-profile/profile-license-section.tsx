@@ -8,6 +8,7 @@ import {
     SelectInput,
     TextInput,
     UploadBox,
+    MultiUploadBox,
 } from './profile-form-elements';
 
 interface LicenseSectionProps {
@@ -18,11 +19,13 @@ interface LicenseSectionProps {
         years_experience: string | number;
     };
     errors: Partial<Record<string, string>>;
-    licenseDocUrl: string | null;
-    licenseDocFile: File | null;
+    licenseDocExisting: { path: string; url: string }[];
+    licenseDocNewFiles: File[];
     resumeUrl: string | null;
     resumeFile: File | null;
-    onLicenseDocSelect: (file: File | null) => void;
+    onLicenseDocAdd: (files: File[]) => void;
+    onLicenseDocRemoveExisting: (path: string) => void;
+    onLicenseDocRemoveNew: (index: number) => void;
     onResumeSelect: (file: File | null) => void;
     onChange: (field: string, value: string) => void;
 }
@@ -35,11 +38,13 @@ const tonnageOptions = [25, 50, 100, 200, 500, 1600].map((t) => ({
 export function ProfileLicenseSection({
     data,
     errors,
-    licenseDocUrl,
-    licenseDocFile,
+    licenseDocExisting,
+    licenseDocNewFiles,
     resumeUrl,
     resumeFile,
-    onLicenseDocSelect,
+    onLicenseDocAdd,
+    onLicenseDocRemoveExisting,
+    onLicenseDocRemoveNew,
     onResumeSelect,
     onChange,
 }: LicenseSectionProps) {
@@ -77,16 +82,17 @@ export function ProfileLicenseSection({
 
             <div className="mb-8 cursor-pointer">
                 <FieldLabel>License Document</FieldLabel>
-                <UploadBox
-                    title="Upload license scan or photo"
-                    subtitle="PDF, JPG, PNG (Max 5MB)"
-                    buttonLabel={
-                        licenseDocFile ? 'Change Document' : 'Upload Document'
-                    }
-                    existingUrl={licenseDocUrl}
-                    existingName={licenseDocFile?.name ?? null}
-                    onFileSelect={onLicenseDocSelect}
+                <MultiUploadBox
+                    title="Upload license scans or photos"
+                    subtitle="PDF, JPG, PNG (Max 5MB each, up to 6 files)"
+                    buttonLabel="Add Document"
+                    existingFiles={licenseDocExisting}
+                    newFiles={licenseDocNewFiles}
+                    onExistingRemove={onLicenseDocRemoveExisting}
+                    onNewFilesAdd={onLicenseDocAdd}
+                    onNewFileRemove={onLicenseDocRemoveNew}
                     accept="application/pdf,image/jpeg,image/png"
+                    maxFiles={6}
                 />
                 <FieldError message={errors.license_doc} />
             </div>

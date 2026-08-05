@@ -39,7 +39,7 @@ class StoreVesselRequest extends FormRequest
             'required_tonnage_rating' => ['required', 'integer', 'min:0', 'max:65535'],
             'required_years_experience' => ['required', 'integer', 'min:0', 'max:65535'],
             'requires_deckhand' => ['boolean'],
-            'photos' => ['required', 'array', 'min:6'],
+            'photos' => ['required', 'array', 'min:1'],
             'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['file', 'mimes:pdf,doc,docx', 'max:20480'],

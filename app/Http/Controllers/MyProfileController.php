@@ -85,9 +85,16 @@ class MyProfileController extends Controller
                 'resume_url'           => $profile->resume_path
                     ? Storage::url($profile->resume_path)
                     : null,
-                'license_doc_url'      => $profile->license_doc_path
-                    ? Storage::url($profile->license_doc_path)
-                    : null,
+                'license_doc_files'    => collect(
+                        $profile->license_doc_paths
+                            ?: ($profile->license_doc_path ? [$profile->license_doc_path] : [])
+                    )
+                    ->map(fn ($path) => [
+                        'path' => $path,
+                        'url'  => Storage::url($path),
+                    ])
+                    ->values()
+                    ->all(),
             ] : null,
         ]);
     }
@@ -192,7 +199,10 @@ class MyProfileController extends Controller
             'deckhand_hourly_rate' => ['nullable', 'numeric', 'min:0'],
             'photo'                => ['nullable', 'image', 'max:5120'],
             'resume'               => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
-            'license_doc'          => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'license_doc'          => ['nullable', 'array', 'max:6'],
+            'license_doc.*'        => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'keep_license_docs'    => ['nullable', 'array'],
+            'keep_license_docs.*'  => ['string'],
         ]);
 
         $profile = $user->captainProfile()->firstOrNew(['user_id' => $user->id]);
@@ -213,15 +223,30 @@ class MyProfileController extends Controller
                 ->store('captain-resumes', 'public');
         }
 
-        if ($request->hasFile('license_doc')) {
-            if ($profile->license_doc_path) {
-                Storage::disk('public')->delete($profile->license_doc_path);
-            }
-            $validated['license_doc_path'] = $request->file('license_doc')
-                ->store('captain-licenses', 'public');
+        $existingLicensePaths = $profile->license_doc_paths
+            ?: ($profile->license_doc_path ? [$profile->license_doc_path] : []);
+        $keepLicensePaths = $request->input('keep_license_docs', []);
+        $newLicenseUploads = $request->file('license_doc', []);
+
+        if ((count($keepLicensePaths) + count($newLicenseUploads)) > 6) {
+            return back()
+                ->withErrors(['license_doc' => 'You may have a maximum of 6 license documents.'])
+                ->withInput();
         }
 
-        unset($validated['photo'], $validated['resume'], $validated['license_doc']);
+        foreach (array_diff($existingLicensePaths, $keepLicensePaths) as $path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        $newLicensePaths = [];
+        foreach ($newLicenseUploads as $file) {
+            $newLicensePaths[] = $file->store('captain-licenses', 'public');
+        }
+
+        $validated['license_doc_paths'] = array_values(array_merge($keepLicensePaths, $newLicensePaths));
+        $validated['license_doc_path'] = null;
+
+        unset($validated['photo'], $validated['resume'], $validated['license_doc'], $validated['keep_license_docs']);
 
         $profile->fill($validated);
         $profile->user_id = $user->id;

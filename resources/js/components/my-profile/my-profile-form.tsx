@@ -24,7 +24,7 @@ interface CaptainProfileProps {
     deckhand_hourly_rate: number | null;
     photo_url: string | null;
     resume_url: string | null;
-    license_doc_url: string | null;
+    license_doc_files: { path: string; url: string }[];
 }
 
 export function MyProfileForm() {
@@ -32,7 +32,8 @@ export function MyProfileForm() {
     const profile = page.props.profile;
 
     const [photoFile, setPhotoFile] = useState<File | null>(null);
-    const [licenseDocFile, setLicenseDocFile] = useState<File | null>(null);
+const [licenseDocExisting, setLicenseDocExisting] = useState<{ path: string; url: string }[]>(profile?.license_doc_files ?? []);
+    const [licenseDocNewFiles, setLicenseDocNewFiles] = useState<File[]>([]);
     const [resumeFile, setResumeFile] = useState<File | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -55,7 +56,8 @@ export function MyProfileForm() {
         deckhand_hourly_rate: profile?.deckhand_hourly_rate ?? '',
         photo: null as File | null,
         resume: null as File | null,
-        license_doc: null as File | null,
+        license_doc: [] as File[],
+        keep_license_docs: (profile?.license_doc_files ?? []).map((f) => f.path),
     });
 
     const handleChange = (field: string, value: string | boolean) =>
@@ -65,9 +67,29 @@ export function MyProfileForm() {
         setPhotoFile(file);
         setData('photo', file);
     };
-    const handleLicenseDocSelect = (file: File | null) => {
-        setLicenseDocFile(file);
-        setData('license_doc', file);
+    const handleLicenseDocAdd = (files: File[]) => {
+        setLicenseDocNewFiles((prev) => {
+            const next = [...prev, ...files];
+            setData('license_doc', next);
+            return next;
+        });
+    };
+    const handleLicenseDocRemoveExisting = (path: string) => {
+        setLicenseDocExisting((prev) => {
+            const next = prev.filter((f) => f.path !== path);
+            setData(
+                'keep_license_docs',
+                next.map((f) => f.path),
+            );
+            return next;
+        });
+    };
+    const handleLicenseDocRemoveNew = (index: number) => {
+        setLicenseDocNewFiles((prev) => {
+            const next = prev.filter((_, i) => i !== index);
+            setData('license_doc', next);
+            return next;
+        });
     };
     const handleResumeSelect = (file: File | null) => {
         setResumeFile(file);
@@ -86,7 +108,8 @@ export function MyProfileForm() {
     const handleCancel = () => {
         reset();
         setPhotoFile(null);
-        setLicenseDocFile(null);
+        setLicenseDocExisting(profile?.license_doc_files ?? []);
+        setLicenseDocNewFiles([]);
         setResumeFile(null);
     };
 
@@ -95,6 +118,7 @@ export function MyProfileForm() {
             <ProfilePersonalInformationSection
                 data={{
                     full_name: String(data.full_name),
+                    email: '',
                     phone: String(data.phone),
                     address: String(data.address),
                     city: String(data.city),
@@ -119,11 +143,13 @@ export function MyProfileForm() {
                     years_experience: data.years_experience,
                 }}
                 errors={errors}
-                licenseDocUrl={profile?.license_doc_url ?? null}
-                licenseDocFile={licenseDocFile}
+                licenseDocExisting={licenseDocExisting}
+                licenseDocNewFiles={licenseDocNewFiles}
                 resumeUrl={profile?.resume_url ?? null}
                 resumeFile={resumeFile}
-                onLicenseDocSelect={handleLicenseDocSelect}
+                onLicenseDocAdd={handleLicenseDocAdd}
+                onLicenseDocRemoveExisting={handleLicenseDocRemoveExisting}
+                onLicenseDocRemoveNew={handleLicenseDocRemoveNew}
                 onResumeSelect={handleResumeSelect}
                 onChange={handleChange}
             />

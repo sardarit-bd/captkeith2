@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'geographic_area',
     'resume_path',
     'license_doc_path',
+    'license_doc_paths',
     'hourly_rate',
     'can_provide_deckhand',
     'deckhand_hourly_rate',
@@ -132,6 +133,7 @@ class CaptainProfile extends Model
             'deckhand_hourly_rate' => 'decimal:2',
             // 'is_verified'          => 'boolean',
             'preferences'          => 'array',
+            'license_doc_paths'    => 'array',
             'deleted_at'           => 'datetime',
         ];
     }

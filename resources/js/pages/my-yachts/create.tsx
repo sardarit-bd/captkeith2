@@ -25,7 +25,7 @@ const ENDORSEMENTS = [
     { value: 'unlimited', label: 'Unlimited' },
 ] as const;
 
-const MIN_PHOTOS = 6;
+const MIN_PHOTOS = 1;
 
 interface ExistingPhoto {
     id: string;
